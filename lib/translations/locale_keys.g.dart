@@ -7,6 +7,7 @@ abstract class  LocaleKeys {
   static const exit_alert_title = 'exit_alert_title';
   static const exit_alert_desc = 'exit_alert_desc';
   static const navbar_icon_title_home = 'navbar_icon_title.home';
+  static const navbar_icon_title_member = 'navbar_icon_title.member';
   static const navbar_icon_title_event = 'navbar_icon_title.event';
   static const navbar_icon_title_bluetooth = 'navbar_icon_title.bluetooth';
   static const navbar_icon_title_setting = 'navbar_icon_title.setting';
