@@ -162,10 +162,14 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0.0;
+
     return PopScope(
       canPop: _canCloseApp && _selectedIndex == 2 ? true : false,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
+        extendBody: isKeyboardOpen, // Add this line
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Center(child: Text(LocaleKeys.app_title.tr(context: context))),
           leading: Container(
