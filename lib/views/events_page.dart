@@ -911,8 +911,10 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0.0;
+
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: isKeyboardOpen ? null : FloatingActionButton(
         onPressed: () => onAddEditButton(context),
         tooltip: LocaleKeys.event_page_button_add.tr(context: context),
         backgroundColor: Theme.of(context).brightness == Brightness.light
@@ -1038,7 +1040,7 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
                 nextPageButton(),
               ],
             ),
-            SizedBox(height: 25.0),
+            SizedBox(height: 30.0),
           ],
         ),
       ),
