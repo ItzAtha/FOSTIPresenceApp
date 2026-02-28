@@ -5,7 +5,6 @@ import 'package:attendance_management/manager/events_manager.dart';
 import 'package:attendance_management/manager/wifi_manager.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:attendance_management/views/control_panel_page.dart';
-import 'package:attendance_management/views/wifi_page.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,6 +12,8 @@ import 'package:toastification/toastification.dart';
 
 import '../utilities/connectivity_utils.dart';
 import '../manager/database_manager.dart';
+
+enum Answer { YES, NO }
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -143,6 +144,147 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  Future<bool> openWiFiDialog() async {
+    bool showPassword = false;
+    bool isConnecting = false;
+    TextEditingController ssidController = TextEditingController();
+    TextEditingController passwordController = TextEditingController();
+
+    var wifiDialog = StatefulBuilder(
+      builder: (context, setDialogState) {
+        return AlertDialog(
+          title: Text("ESP32 WiFi Setup", textAlign: TextAlign.center),
+          scrollable: true,
+          contentPadding: EdgeInsets.all(24.0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                "Please connect to the ESP32 WiFi network first to access the control panel.",
+                textAlign: TextAlign.justify,
+              ),
+              SizedBox(height: 8.0),
+              TextField(
+                controller: ssidController,
+                decoration: InputDecoration(
+                  labelText: "WiFi SSID",
+                  hintText: "e.g. ESP32-Access-Point",
+                ),
+                textInputAction: TextInputAction.next,
+              ),
+              SizedBox(height: 16.0),
+              TextField(
+                controller: passwordController,
+                decoration: InputDecoration(
+                  labelText: "WiFi Password",
+                  suffixIcon: InkWell(
+                    customBorder: CircleBorder(),
+                    onTap: () => setDialogState(() => showPassword = !showPassword),
+                    child: showPassword
+                        ? Icon(Icons.visibility)
+                        : Icon(Icons.visibility_off, color: Colors.grey),
+                  ),
+                ),
+                obscureText: !showPassword,
+                enableSuggestions: false,
+              ),
+              isConnecting
+                  ? Padding(
+                      padding: EdgeInsets.only(top: 16.0),
+                      child: Row(
+                        children: [
+                          Text("Connecting to ESP32 WiFi"),
+                          SizedBox(width: 8.0),
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.green.shade300
+                                    : Colors.green.shade200,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SizedBox.shrink(),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: !isConnecting
+                  ? () async {
+                      setDialogState(() => isConnecting = true);
+                      FocusScope.of(context).unfocus();
+
+                      WiFiManager wifiManager = WiFiManager(context: context);
+                      bool isSuccess = await wifiManager.connectToWiFi(
+                        ssidController.text.trim(),
+                        passwordController.text.trim(),
+                      );
+
+                      if (!context.mounted) return;
+
+                      if (!isSuccess) {
+                        setDialogState(() => isConnecting = false);
+                        Toastification().show(
+                          context: context,
+                          title: Text(LocaleKeys.alert_notify_wifi_title.tr(context: context)),
+                          description: Text(
+                            "Failed to connect to ESP32 WiFi. Please check your credentials and try again.",
+                          ),
+                          type: ToastificationType.error,
+                          style: ToastificationStyle.flat,
+                          alignment: Alignment.bottomCenter,
+                          autoCloseDuration: Duration(seconds: 2),
+                          animationDuration: Duration(milliseconds: 500),
+                        );
+                        return;
+                      }
+
+                      Navigator.of(context).pop(Answer.YES);
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: Text("Connect", style: TextStyle(color: Colors.black)),
+            ),
+            SizedBox(width: 4.0),
+            ElevatedButton(
+              onPressed: !isConnecting
+                  ? () {
+                      Navigator.of(context).pop();
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+              child: Text(
+                LocaleKeys.event_page_dialog_button_cancel.tr(context: context),
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    var isDialogComplete = await showDialog(
+      context: context,
+      barrierDismissible: false,
+      animationStyle: AnimationStyle(
+        curve: Curves.easeIn,
+        reverseCurve: Curves.easeOut,
+        duration: Duration(milliseconds: 300),
+      ),
+      builder: (BuildContext context) {
+        return wifiDialog;
+      },
+    );
+
+    return isDialogComplete == Answer.YES;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -222,40 +364,37 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: const EdgeInsets.all(16.0),
                     child: activeEvent != null
                         ? Column(
-                      children: <Widget>[
-                        Text(
-                          activeEvent!.name,
-                          style: const TextStyle(
-                            fontSize: 24.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          DateFormat(
-                            'dd MMMM yyyy, HH:mm',
-                          ).format(DateTime.parse(activeEvent!.eventDate)),
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          activeEvent!.location,
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    )
+                            children: <Widget>[
+                              Text(
+                                activeEvent!.name,
+                                style: const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                DateFormat(
+                                  'dd MMMM yyyy, HH:mm',
+                                ).format(DateTime.parse(activeEvent!.eventDate)),
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              Text(
+                                activeEvent!.location,
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          )
                         : Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: CircularProgressIndicator(),
-                    ),
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: CircularProgressIndicator(),
+                          ),
                   ),
                 ],
               ),
@@ -305,10 +444,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                                     Text(
                                       isDeviceConnect
                                           ? LocaleKeys.home_page_esp_statuses_status_connected.tr(
-                                        context: context,
-                                      )
+                                              context: context,
+                                            )
                                           : LocaleKeys.home_page_esp_statuses_status_disconnected
-                                          .tr(context: context),
+                                                .tr(context: context),
                                       style: const TextStyle(fontSize: 16.0),
                                       textAlign: TextAlign.center,
                                     ),
@@ -323,10 +462,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                                     Text(
                                       isWiFiConnect
                                           ? LocaleKeys.home_page_esp_statuses_status_connected.tr(
-                                        context: context,
-                                      )
+                                              context: context,
+                                            )
                                           : LocaleKeys.home_page_esp_statuses_status_disconnected
-                                          .tr(context: context),
+                                                .tr(context: context),
                                       style: const TextStyle(fontSize: 16.0),
                                       textAlign: TextAlign.center,
                                     ),
@@ -371,12 +510,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             child: Center(
                               child: isDataLoaded
                                   ? Text(
-                                eventsData.length.toString(),
-                                style: const TextStyle(
-                                  fontSize: 48.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
+                                      eventsData.length.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 48.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
                                   : CircularProgressIndicator(),
                             ),
                           ),
@@ -387,25 +526,29 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 ],
               ),
             ),
-            SizedBox(height: 60.0),
+            SizedBox(height: 80.0),
             ElevatedButton(
-              // TODO: Change system to connect ESP32 to WiFi from the app
               onPressed: () async {
-                // if (!isWiFiConnect) {
-                //   Toastification().show(
-                //     context: context,
-                //     title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
-                //     description: Text(
-                //       LocaleKeys.alert_notify_esp_description_no_wifi.tr(context: context),
-                //     ),
-                //     type: ToastificationType.info,
-                //     style: ToastificationStyle.flat,
-                //     alignment: Alignment.bottomCenter,
-                //     autoCloseDuration: Duration(seconds: 2),
-                //     animationDuration: Duration(milliseconds: 500),
-                //   );
-                //   return;
-                // }
+                if (!isDeviceConnect) {
+                  Toastification().show(
+                    context: context,
+                    title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
+                    description: Text(
+                      LocaleKeys.alert_notify_esp_description_no_bluetooth.tr(context: context),
+                    ),
+                    type: ToastificationType.info,
+                    style: ToastificationStyle.flat,
+                    alignment: Alignment.bottomCenter,
+                    autoCloseDuration: Duration(seconds: 2),
+                    animationDuration: Duration(milliseconds: 500),
+                  );
+                  return;
+                }
+
+                if (!isWiFiConnect) {
+                  var isSuccess = await openWiFiDialog();
+                  if (!context.mounted || !isSuccess) return;
+                }
 
                 await Navigator.push(
                   context,
@@ -434,69 +577,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 ],
               ),
             ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () async {
-                if (!isDeviceConnect) {
-                  Toastification().show(
-                    context: context,
-                    title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
-                    description: Text(
-                      LocaleKeys.alert_notify_esp_description_no_bluetooth.tr(context: context),
-                    ),
-                    type: ToastificationType.info,
-                    style: ToastificationStyle.flat,
-                    alignment: Alignment.bottomCenter,
-                    autoCloseDuration: Duration(seconds: 2),
-                    animationDuration: Duration(milliseconds: 500),
-                  );
-                  return;
-                }
-
-                if (isWiFiConnect) {
-                  Toastification().show(
-                    context: context,
-                    title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
-                    description: Text(
-                      LocaleKeys.alert_notify_esp_description_wifi_connected.tr(context: context),
-                    ),
-                    type: ToastificationType.info,
-                    style: ToastificationStyle.flat,
-                    alignment: Alignment.bottomCenter,
-                    autoCloseDuration: Duration(seconds: 2),
-                    animationDuration: Duration(milliseconds: 500),
-                  );
-                  return;
-                }
-
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (BuildContext context) {
-                      return WiFiPage();
-                    },
-                  ),
-                );
-
-                setState(() {
-                  isWiFiConnect = WiFiManager.isESPWiFiConnected;
-                  isDeviceConnect = BluetoothManager.isBluetoothConnected;
-                });
-              },
-              style: ButtonStyle(minimumSize: WidgetStateProperty.all(Size(200, 50))),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(Icons.wifi),
-                  SizedBox(width: 16.0),
-                  Text(
-                    LocaleKeys.home_page_button_setup.tr(context: context),
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 30.0),
           ],
         ),
       ),
