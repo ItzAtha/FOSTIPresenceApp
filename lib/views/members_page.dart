@@ -217,134 +217,142 @@ class _MemberPageState extends State<MemberPage> with WidgetsBindingObserver {
     memberNIMController.text = member.nim;
     setState(() => selectedMode = member.division);
 
-    if (!context.mounted) return;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, dialogSetState) {
-            return AlertDialog(
-              title: Text(
-                LocaleKeys.member_page_dialog_title.tr(context: context),
-                textAlign: TextAlign.center,
-              ),
-              content: Form(
-                key: formKey,
-                canPop: false,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      SizedBox(height: 8.0),
-                      TextFormField(
-                        controller: memberNameController,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
-                          hintText: "Andi Setya Budi",
-                          icon: Icon(Icons.person, size: 24.0),
-                          border: OutlineInputBorder(),
-                          errorMaxLines: 2,
-                        ),
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.next,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (String? value) {
-                          if (value.toString().isEmpty) {
-                            return LocaleKeys.member_page_dialog_validation_name_required.tr(
-                              context: context,
-                            );
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 14.0),
-                      TextFormField(
-                        controller: memberNIMController,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
-                          hintText: "L200250001",
-                          icon: Icon(Icons.perm_identity, size: 24.0),
-                          border: OutlineInputBorder(),
-                          errorMaxLines: 2,
-                        ),
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.next,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (String? value) {
-                          bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
-                          bool isNIMExists = membersData.any(
-                            (user) => user.nim == value && user.id != member.id,
-                          );
+    var editDialog = StatefulBuilder(
+      builder: (context, dialogSetState) {
+        return AlertDialog(
+          title: Text(
+            LocaleKeys.member_page_dialog_title.tr(context: context),
+            textAlign: TextAlign.center,
+          ),
+          content: Form(
+            key: formKey,
+            canPop: false,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SizedBox(height: 8.0),
+                  TextFormField(
+                    controller: memberNameController,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
+                      hintText: "Andi Setya Budi",
+                      icon: Icon(Icons.person, size: 24.0),
+                      border: OutlineInputBorder(),
+                      errorMaxLines: 2,
+                    ),
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? value) {
+                      if (value.toString().isEmpty) {
+                        return LocaleKeys.member_page_dialog_validation_name_required.tr(
+                          context: context,
+                        );
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 14.0),
+                  TextFormField(
+                    controller: memberNIMController,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
+                      hintText: "L200250001",
+                      icon: Icon(Icons.perm_identity, size: 24.0),
+                      border: OutlineInputBorder(),
+                      errorMaxLines: 2,
+                    ),
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? value) {
+                      bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
+                      bool isNIMExists = membersData.any(
+                        (user) => user.nim == value && user.id != member.id,
+                      );
 
-                          if (value.toString().isEmpty) {
-                            return LocaleKeys.member_page_dialog_validation_nim_required_empty.tr(
-                              context: context,
-                            );
-                          } else if (isNIMExists) {
-                            return LocaleKeys.member_page_dialog_validation_nim_required_exists.tr(
-                              context: context,
-                            );
-                          } else if (!isValidFormat) {
-                            return LocaleKeys.member_page_dialog_validation_nim_required_invalid.tr(
-                              context: context,
-                            );
-                          }
-                          return null;
+                      if (value.toString().isEmpty) {
+                        return LocaleKeys.member_page_dialog_validation_nim_required_empty.tr(
+                          context: context,
+                        );
+                      } else if (isNIMExists) {
+                        return LocaleKeys.member_page_dialog_validation_nim_required_exists.tr(
+                          context: context,
+                        );
+                      } else if (!isValidFormat) {
+                        return LocaleKeys.member_page_dialog_validation_nim_required_invalid.tr(
+                          context: context,
+                        );
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 14.0),
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.category, size: 24.0),
+                      SizedBox(width: 16.0),
+                      DropdownButton<String>(
+                        value: selectedMode,
+                        hint: Text(
+                          LocaleKeys.member_page_dialog_field_division.tr(context: context),
+                        ),
+                        items: divisionList.map((item) {
+                          return DropdownMenuItem<String>(value: item, child: Text(item));
+                        }).toList(),
+                        onChanged: (String? value) {
+                          if (value == selectedMode) return;
+                          dialogSetState(() => selectedMode = value);
                         },
-                      ),
-                      SizedBox(height: 14.0),
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.category, size: 24.0),
-                          SizedBox(width: 16.0),
-                          DropdownButton<String>(
-                            value: selectedMode,
-                            hint: Text(
-                              LocaleKeys.member_page_dialog_field_division.tr(context: context),
-                            ),
-                            items: divisionList.map((item) {
-                              return DropdownMenuItem<String>(value: item, child: Text(item));
-                            }).toList(),
-                            onChanged: (String? value) {
-                              if (value == selectedMode) return;
-                              dialogSetState(() => selectedMode = value);
-                            },
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-              actions: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    ElevatedButton(
-                      onPressed: () => validateFormInput(member.id),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      child: Text(
-                        LocaleKeys.member_page_dialog_button_update.tr(context: context),
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
-                    SizedBox(width: 24.0),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
-                      child: Text(
-                        LocaleKeys.member_page_dialog_button_cancel.tr(context: context),
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
-                  ],
+            ),
+          ),
+          actions: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: () => validateFormInput(member.id),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: Text(
+                    LocaleKeys.member_page_dialog_button_update.tr(context: context),
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                SizedBox(width: 24.0),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+                  child: Text(
+                    LocaleKeys.member_page_dialog_button_cancel.tr(context: context),
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
               ],
-            );
-          },
+            ),
+          ],
         );
+      },
+    );
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      animationStyle: AnimationStyle(
+        curve: Curves.easeIn,
+        reverseCurve: Curves.easeOut,
+        duration: Duration(milliseconds: 300),
+      ),
+      builder: (BuildContext context) {
+        return editDialog;
       },
     );
   }
