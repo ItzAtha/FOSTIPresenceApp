@@ -157,14 +157,14 @@ class WiFiManager {
     return true;
   }
 
-  Future<bool?> connectToWiFi(WiFiAccessPoint wifi, String password) async {
-    print("Connecting to WiFi ${wifi.ssid} with password $password");
+  Future<bool> connectToWiFi(String ssid, String password) async {
+    print("Connecting to WiFi $ssid with password $password");
 
     BluetoothManager.clearReceivedData();
     BluetoothDevice? device = BluetoothManager.getConnectedDevice;
     if (device == null) return false;
 
-    String data = '{"ssid":"${wifi.ssid}","password":"$password"}';
+    String data = '{"ssid":"$ssid","password":"$password"}';
     bluetoothManager.sendBluetoothData(device, data);
 
     Timer? timeoutTimer;
@@ -186,12 +186,10 @@ class WiFiManager {
       }
 
       if (status == WiFiStatus.success) {
-        _foundWiFisList.value[wifi] = WiFiConnectionState.connected;
         _isESPWiFiConnected = true;
         _startESPWiFiCheckerTask();
         timeoutCompleter.complete(true);
       } else {
-        _foundWiFisList.value[wifi] = WiFiConnectionState.disconnected;
         timeoutCompleter.complete(false);
       }
       timer.cancel();
@@ -201,7 +199,6 @@ class WiFiManager {
       30.seconds,
       onTimeout: () {
         timeoutTimer?.cancel();
-        _foundWiFisList.value[wifi] = WiFiConnectionState.disconnected;
         return false;
       },
     );
