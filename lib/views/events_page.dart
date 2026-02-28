@@ -606,6 +606,7 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
 
     showDialog(
       context: context,
+      animationStyle: AnimationStyle(curve: Curves.easeIn, reverseCurve: Curves.easeOut, duration: Duration(milliseconds: 300)),
       builder: (BuildContext context) {
         return eventAddEditForm;
       },
@@ -808,6 +809,7 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
 
     if (await showDialog(
           context: context,
+          animationStyle: AnimationStyle(curve: Curves.easeIn, reverseCurve: Curves.easeOut, duration: Duration(milliseconds: 300)),
           builder: (BuildContext context) {
             return eventDeleteConfirm;
           },
