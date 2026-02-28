@@ -277,7 +277,7 @@ class _PresencePageState extends State<PresencePage> {
                           ),
                           onSubmitted: (value) {
                             sendMessage(message: value, newLine: false);
-                            if (selectedMode == "Manual") {
+                            if (onManualPresence) {
                               BluetoothDevice? device = BluetoothManager.getConnectedDevice;
                               if (device != null) {
                                 bluetoothManager.sendBluetoothData(device, value);
