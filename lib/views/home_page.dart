@@ -27,10 +27,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   List<Event> eventsData = [];
 
   Timer? wifiCheckerTask;
-  bool isInternetConnected = false;
-
   Timer? espStatusChecker;
-  bool isDataLoaded = false;
+  bool isInternetConnected = false;
 
   late bool isLoadingDone;
   late bool isWiFiConnect;
@@ -65,10 +63,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (rawData != null) {
       eventsData = rawData as List<Event>;
       if (eventsData.isNotEmpty) {
-        setState(() {
-          isDataLoaded = true;
-          activeEvent = eventsData.where((event) => event.isActive == true).firstOrNull;
-        });
+        setState(
+          () => activeEvent = eventsData.where((event) => event.isActive == true).firstOrNull,
+        );
 
         if (activeEvent == null) {
           Toastification().show(
@@ -360,41 +357,51 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       ],
                     ),
                   ),
-                  Padding(
+                  Container(
+                    height: 150.0,
                     padding: const EdgeInsets.all(16.0),
-                    child: activeEvent != null
-                        ? Column(
-                            children: <Widget>[
-                              Text(
-                                activeEvent!.name,
-                                style: const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
-                              Text(
-                                DateFormat(
-                                  'dd MMMM yyyy, HH:mm',
-                                ).format(DateTime.parse(activeEvent!.eventDate)),
-                                style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              Text(
-                                activeEvent!.location,
-                                style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey[600],
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          )
-                        : Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: CircularProgressIndicator(),
-                          ),
+                    child: Center(
+                      child: isLoadingDone
+                          ? activeEvent != null
+                                ? Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Text(
+                                        activeEvent!.name,
+                                        style: const TextStyle(
+                                          fontSize: 24.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Text(
+                                        DateFormat(
+                                          'dd MMMM yyyy, HH:mm',
+                                        ).format(DateTime.parse(activeEvent!.eventDate)),
+                                        style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      Text(
+                                        activeEvent!.location,
+                                        style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[600],
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  )
+                                : Text(
+                                    "No active event found",
+                                    style: const TextStyle(fontSize: 16.0, color: Colors.grey),
+                                    textAlign: TextAlign.center,
+                                  )
+                          : CircularProgressIndicator(),
+                    ),
                   ),
                 ],
               ),
@@ -508,7 +515,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           ),
                           Expanded(
                             child: Center(
-                              child: isDataLoaded
+                              child: isLoadingDone
                                   ? Text(
                                       eventsData.length.toString(),
                                       style: const TextStyle(
