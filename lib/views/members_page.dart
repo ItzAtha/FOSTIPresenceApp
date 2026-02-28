@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/manager/members_manager.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -489,52 +488,6 @@ class _MemberPageState extends State<MemberPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text(LocaleKeys.member_page_title.tr(context: context))),
-        leading: BackButton(),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green.shade400, Colors.green.shade800],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-        ),
-        leadingWidth: 55.0,
-        actions: <Widget>[
-          ValueListenableBuilder<AdaptiveThemeMode?>(
-            valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
-            builder: (context, mode, _) {
-              final isLight = mode == AdaptiveThemeMode.light;
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) {
-                  return RotationTransition(
-                    turns: child.key == ValueKey('icon1')
-                        ? Tween<double>(begin: 1, end: 0.75).animate(animation)
-                        : Tween<double>(begin: 0.75, end: 1).animate(animation),
-                    child: FadeTransition(opacity: animation, child: child),
-                  );
-                },
-                child: IconButton(
-                  key: ValueKey(isLight ? 'icon1' : 'icon2'),
-                  onPressed: () {
-                    if (isLight) {
-                      AdaptiveTheme.of(context).setDark();
-                    } else {
-                      AdaptiveTheme.of(context).setLight();
-                    }
-                  },
-                  icon: Icon(isLight ? Icons.wb_sunny : Icons.nights_stay),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: isLoadingDone
           ? isDataLoaded
                 ? hasMembers()
