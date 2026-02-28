@@ -307,39 +307,6 @@ class _ControlPanelPageState extends State<ControlPanelPage> {
                                   ),
                                 ),
                               ),
-                              OpenContainer(
-                                transitionDuration: 500.ms,
-                                openBuilder: (BuildContext context, VoidCallback closeContainer) {
-                                  return const MemberPage();
-                                },
-                                closedBuilder: (BuildContext context, VoidCallback openContainer) {
-                                  return SizedBox(
-                                    width: 42.0,
-                                    height: 42.0,
-                                    child: FittedBox(
-                                      child: FloatingActionButton(
-                                        heroTag: "showDataButton",
-                                        tooltip: LocaleKeys
-                                            .control_page_menu_register_action_show_members
-                                            .tr(context: context),
-                                        onPressed: openContainer,
-                                        shape: CircleBorder(),
-                                        backgroundColor: Colors.blue.shade600,
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Theme.of(context).brightness == Brightness.light
-                                              ? Colors.black
-                                              : Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                closedShape: const CircleBorder(),
-                                closedColor: Colors.transparent,
-                                closedElevation: 6.0,
-                              ),
-                              SizedBox(width: 32.0),
                               ElevatedButton(
                                 onPressed: !isEventDataEmpty && isDeviceConnect
                                     ? () {
