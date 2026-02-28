@@ -188,318 +188,316 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 16.0),
-              Card(
-                margin: const EdgeInsets.all(12.0),
-                clipBehavior: Clip.antiAlias,
-                elevation: 10.0,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      height: 50.0,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.green.shade300, Colors.green.shade700],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            Card(
+              margin: const EdgeInsets.all(12.0),
+              clipBehavior: Clip.antiAlias,
+              elevation: 10.0,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    height: 50.0,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.green.shade300, Colors.green.shade700],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.event),
+                        SizedBox(width: 8.0),
+                        Text(
+                          LocaleKeys.home_page_event_title_active.tr(context: context),
+                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: activeEvent != null
+                        ? Column(
+                      children: <Widget>[
+                        Text(
+                          activeEvent!.name,
+                          style: const TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          DateFormat(
+                            'dd MMMM yyyy, HH:mm',
+                          ).format(DateTime.parse(activeEvent!.eventDate)),
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          activeEvent!.location,
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    )
+                        : Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.all(10.0),
+              height: 180.0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 5.0,
+                      child: Column(
                         children: <Widget>[
-                          Icon(Icons.event),
-                          SizedBox(width: 8.0),
-                          Text(
-                            LocaleKeys.home_page_event_title_active.tr(context: context),
-                            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                          Container(
+                            height: 50.0,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.green.shade300, Colors.green.shade700],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Image.asset("assets/esp32-icon.png", width: 36.0, height: 36.0),
+                                SizedBox(width: 4.0),
+                                Text(
+                                  LocaleKeys.home_page_esp_statuses_title.tr(context: context),
+                                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.bluetooth),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      isDeviceConnect
+                                          ? LocaleKeys.home_page_esp_statuses_status_connected.tr(
+                                        context: context,
+                                      )
+                                          : LocaleKeys.home_page_esp_statuses_status_disconnected
+                                          .tr(context: context),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16.0),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.wifi),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      isWiFiConnect
+                                          ? LocaleKeys.home_page_esp_statuses_status_connected.tr(
+                                        context: context,
+                                      )
+                                          : LocaleKeys.home_page_esp_statuses_status_disconnected
+                                          .tr(context: context),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: activeEvent != null
-                          ? Column(
+                  ),
+                  SizedBox(width: 12.0),
+                  Expanded(
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 10.0,
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                            height: 50.0,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.green.shade300, Colors.green.shade700],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
+                                Icon(Icons.add_chart),
+                                SizedBox(width: 8.0),
                                 Text(
-                                  activeEvent!.name,
-                                  style: const TextStyle(
-                                    fontSize: 24.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  DateFormat(
-                                    'dd MMMM yyyy, HH:mm',
-                                  ).format(DateTime.parse(activeEvent!.eventDate)),
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                Text(
-                                  activeEvent!.location,
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey[600],
-                                  ),
-                                  textAlign: TextAlign.center,
+                                  LocaleKeys.home_page_event_title_total.tr(context: context),
+                                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                                 ),
                               ],
-                            )
-                          : Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: CircularProgressIndicator(),
                             ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.all(10.0),
-                height: 180.0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: Card(
-                        clipBehavior: Clip.antiAlias,
-                        elevation: 5.0,
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              height: 50.0,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.green.shade300, Colors.green.shade700],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: isDataLoaded
+                                  ? Text(
+                                eventsData.length.toString(),
+                                style: const TextStyle(
+                                  fontSize: 48.0,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Image.asset("assets/esp32-icon.png", width: 36.0, height: 36.0),
-                                  SizedBox(width: 4.0),
-                                  Text(
-                                    LocaleKeys.home_page_esp_statuses_title.tr(context: context),
-                                    style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
+                              )
+                                  : CircularProgressIndicator(),
                             ),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.bluetooth),
-                                      SizedBox(width: 8.0),
-                                      Text(
-                                        isDeviceConnect
-                                            ? LocaleKeys.home_page_esp_statuses_status_connected.tr(
-                                                context: context,
-                                              )
-                                            : LocaleKeys.home_page_esp_statuses_status_disconnected
-                                                  .tr(context: context),
-                                        style: const TextStyle(fontSize: 16.0),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.wifi),
-                                      SizedBox(width: 8.0),
-                                      Text(
-                                        isWiFiConnect
-                                            ? LocaleKeys.home_page_esp_statuses_status_connected.tr(
-                                                context: context,
-                                              )
-                                            : LocaleKeys.home_page_esp_statuses_status_disconnected
-                                                  .tr(context: context),
-                                        style: const TextStyle(fontSize: 16.0),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(width: 12.0),
-                    Expanded(
-                      child: Card(
-                        clipBehavior: Clip.antiAlias,
-                        elevation: 10.0,
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              height: 50.0,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.green.shade300, Colors.green.shade700],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Icon(Icons.add_chart),
-                                  SizedBox(width: 8.0),
-                                  Text(
-                                    LocaleKeys.home_page_event_title_total.tr(context: context),
-                                    style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: Center(
-                                child: isDataLoaded
-                                    ? Text(
-                                        eventsData.length.toString(),
-                                        style: const TextStyle(
-                                          fontSize: 48.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                    : CircularProgressIndicator(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(height: 80.0),
-              ElevatedButton(
-                onPressed: () async {
-                  if (!isWiFiConnect) {
-                    Toastification().show(
-                      context: context,
-                      title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
-                      description: Text(
-                        LocaleKeys.alert_notify_esp_description_no_wifi.tr(context: context),
-                      ),
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flat,
-                      alignment: Alignment.bottomCenter,
-                      autoCloseDuration: Duration(seconds: 2),
-                      animationDuration: Duration(milliseconds: 500),
-                    );
-                    return;
-                  }
+            ),
+            SizedBox(height: 60.0),
+            ElevatedButton(
+              // TODO: Change system to connect ESP32 to WiFi from the app
+              onPressed: () async {
+                // if (!isWiFiConnect) {
+                //   Toastification().show(
+                //     context: context,
+                //     title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
+                //     description: Text(
+                //       LocaleKeys.alert_notify_esp_description_no_wifi.tr(context: context),
+                //     ),
+                //     type: ToastificationType.info,
+                //     style: ToastificationStyle.flat,
+                //     alignment: Alignment.bottomCenter,
+                //     autoCloseDuration: Duration(seconds: 2),
+                //     animationDuration: Duration(milliseconds: 500),
+                //   );
+                //   return;
+                // }
 
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return ControlPanelPage();
-                      },
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return ControlPanelPage();
+                    },
+                  ),
+                );
+
+                setState(() {
+                  isWiFiConnect = WiFiManager.isESPWiFiConnected;
+                  isDeviceConnect = BluetoothManager.isBluetoothConnected;
+                });
+              },
+              style: ButtonStyle(minimumSize: WidgetStateProperty.all(Size(200, 50))),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.laptop),
+                  SizedBox(width: 16.0),
+                  Text(
+                    LocaleKeys.home_page_button_control.tr(context: context),
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: () async {
+                if (!isDeviceConnect) {
+                  Toastification().show(
+                    context: context,
+                    title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
+                    description: Text(
+                      LocaleKeys.alert_notify_esp_description_no_bluetooth.tr(context: context),
                     ),
+                    type: ToastificationType.info,
+                    style: ToastificationStyle.flat,
+                    alignment: Alignment.bottomCenter,
+                    autoCloseDuration: Duration(seconds: 2),
+                    animationDuration: Duration(milliseconds: 500),
                   );
+                  return;
+                }
 
-                  setState(() {
-                    isWiFiConnect = WiFiManager.isESPWiFiConnected;
-                    isDeviceConnect = BluetoothManager.isBluetoothConnected;
-                  });
-                },
-                style: ButtonStyle(minimumSize: WidgetStateProperty.all(Size(200, 50))),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(Icons.laptop),
-                    SizedBox(width: 16.0),
-                    Text(
-                      LocaleKeys.home_page_button_control.tr(context: context),
-                      style: TextStyle(fontSize: 16.0),
+                if (isWiFiConnect) {
+                  Toastification().show(
+                    context: context,
+                    title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
+                    description: Text(
+                      LocaleKeys.alert_notify_esp_description_wifi_connected.tr(context: context),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20.0),
-              ElevatedButton(
-                onPressed: () async {
-                  if (!isDeviceConnect) {
-                    Toastification().show(
-                      context: context,
-                      title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
-                      description: Text(
-                        LocaleKeys.alert_notify_esp_description_no_bluetooth.tr(context: context),
-                      ),
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flat,
-                      alignment: Alignment.bottomCenter,
-                      autoCloseDuration: Duration(seconds: 2),
-                      animationDuration: Duration(milliseconds: 500),
-                    );
-                    return;
-                  }
-
-                  if (isWiFiConnect) {
-                    Toastification().show(
-                      context: context,
-                      title: Text(LocaleKeys.alert_notify_esp_title.tr(context: context)),
-                      description: Text(
-                        LocaleKeys.alert_notify_esp_description_wifi_connected.tr(context: context),
-                      ),
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flat,
-                      alignment: Alignment.bottomCenter,
-                      autoCloseDuration: Duration(seconds: 2),
-                      animationDuration: Duration(milliseconds: 500),
-                    );
-                    return;
-                  }
-
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return WiFiPage();
-                      },
-                    ),
+                    type: ToastificationType.info,
+                    style: ToastificationStyle.flat,
+                    alignment: Alignment.bottomCenter,
+                    autoCloseDuration: Duration(seconds: 2),
+                    animationDuration: Duration(milliseconds: 500),
                   );
+                  return;
+                }
 
-                  setState(() {
-                    isWiFiConnect = WiFiManager.isESPWiFiConnected;
-                    isDeviceConnect = BluetoothManager.isBluetoothConnected;
-                  });
-                },
-                style: ButtonStyle(minimumSize: WidgetStateProperty.all(Size(200, 50))),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(Icons.wifi),
-                    SizedBox(width: 16.0),
-                    Text(
-                      LocaleKeys.home_page_button_setup.tr(context: context),
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ],
-                ),
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return WiFiPage();
+                    },
+                  ),
+                );
+
+                setState(() {
+                  isWiFiConnect = WiFiManager.isESPWiFiConnected;
+                  isDeviceConnect = BluetoothManager.isBluetoothConnected;
+                });
+              },
+              style: ButtonStyle(minimumSize: WidgetStateProperty.all(Size(200, 50))),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.wifi),
+                  SizedBox(width: 16.0),
+                  Text(
+                    LocaleKeys.home_page_button_setup.tr(context: context),
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                ],
               ),
-              SizedBox(height: 30.0),
-            ],
-          ),
+            ),
+            SizedBox(height: 30.0),
+          ],
         ),
       ),
     );
