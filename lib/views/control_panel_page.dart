@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:animations/animations.dart';
 import 'package:attendance_management/manager/bluetooth_manager.dart';
 import 'package:attendance_management/manager/database_manager.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
-import 'package:attendance_management/views/members_page.dart';
 import 'package:attendance_management/views/presence_menu_page.dart';
 import 'package:attendance_management/views/register_page.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -308,7 +306,7 @@ class _ControlPanelPageState extends State<ControlPanelPage> {
                                 ),
                               ),
                               ElevatedButton(
-                                onPressed: !isEventDataEmpty && isDeviceConnect
+                                onPressed: !isEventDataEmpty
                                     ? () {
                                         Navigator.push(
                                           context,
