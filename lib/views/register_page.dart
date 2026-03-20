@@ -62,7 +62,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void initState() {
     super.initState();
     bluetoothManager = BluetoothManager(context: context);
-    membersData = MembersData(fileName: 'Daftar Anggota FOSTI.xlsx');
+    membersData = MembersData();
 
     sendMessage(message: "Load FOSTI members data excel...");
     membersData
@@ -279,7 +279,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                             String decodedData = jsonEncode(data);
                             messageValue = decodedData;
-                            setState(() => onRegisterCard = false);
                           } else {
                             sendMessage(message: "NIM not found in FOSTI members excel data.");
                             sendMessage(message: "Using manual presence mode.");
