@@ -271,7 +271,6 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
         body: PageTransitionSwitcher(
           duration: const Duration(milliseconds: 500),
           transitionBuilder: (child, primaryAnimation, secondaryAnimation) => FadeThroughTransition(
-            fillColor: Colors.transparent,
             animation: primaryAnimation,
             secondaryAnimation: secondaryAnimation,
             child: child,
