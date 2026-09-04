@@ -1,13 +1,13 @@
 import 'package:attendance_management/core/app_constants.dart';
-import 'package:attendance_management/features/dashboard/views/views/events_page.dart';
-import 'package:attendance_management/features/dashboard/views/views/members_page.dart';
+import 'package:attendance_management/features/dashboard/views/events_page.dart';
+import 'package:attendance_management/features/dashboard/views/members_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_routes.dart';
 import '../features/dashboard/base_pages.dart';
-import '../features/dashboard/views/views/home_page.dart';
-import '../features/dashboard/views/views/settings_page.dart';
+import '../features/dashboard/views/home_page.dart';
+import '../features/dashboard/views/settings_page.dart';
 
 class AppRouter {
   static final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
