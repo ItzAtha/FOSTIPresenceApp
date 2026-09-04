@@ -1,0 +1,67 @@
+import 'package:attendance_management/core/app_constants.dart';
+import 'package:attendance_management/features/dashboard/views/views/events_page.dart';
+import 'package:attendance_management/features/dashboard/views/views/members_page.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../core/constants/app_routes.dart';
+import '../features/dashboard/base_pages.dart';
+import '../features/dashboard/views/views/home_page.dart';
+import '../features/dashboard/views/views/settings_page.dart';
+
+class AppRouter {
+  static final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+  static final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  static final GoRouter router = GoRouter(
+    observers: [routeObserver],
+    navigatorKey: _navigatorKey,
+    initialLocation: AppRoutes.homeRoute.path,
+    debugLogDiagnostics: true,
+    routes: <RouteBase>[
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return BasePages(navigationShell: navigationShell);
+        },
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                name: AppRoutes.homeRoute.name,
+                path: AppRoutes.homeRoute.path,
+                builder: (context, state) => const HomePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                name: AppRoutes.memberRoute.name,
+                path: AppRoutes.memberRoute.path,
+                builder: (context, state) => const MemberPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                name: AppRoutes.eventRoute.name,
+                path: AppRoutes.eventRoute.path,
+                builder: (context, state) => const EventPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                name: AppRoutes.settingRoute.name,
+                path: AppRoutes.settingRoute.path,
+                builder: (context, state) => const SettingPage(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+}
