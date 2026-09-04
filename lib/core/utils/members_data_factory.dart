@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:attendance_management/utilities/string_similar.dart';
+import 'package:attendance_management/core/utils/string_similar.dart';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
