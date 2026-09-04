@@ -2,14 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:attendance_management/utilities/members_data_factory.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../manager/bluetooth_manager.dart';
-import '../translations/locale_keys.g.dart';
+import '../../../../core/utils/members_data_factory.dart';
+import '../../../../manager/bluetooth_manager.dart';
+import '../../../../translations/locale_keys.g.dart';
+
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

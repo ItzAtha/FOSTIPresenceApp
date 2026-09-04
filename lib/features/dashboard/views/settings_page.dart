@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_android/shared_preferences_android.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:toastification/toastification.dart';
 
-import '../manager/bluetooth_manager.dart';
-import '../utilities/language.dart';
+import '../../../../core/utils/language.dart';
+import '../../../../manager/bluetooth_manager.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -26,8 +26,8 @@ class _SettingPageState extends State<SettingPage> {
   late SharedPreferencesAsyncAndroidOptions prefsOption;
 
   Timer? btCheckerTask;
-  late bool autoReconnectBTEnable;
-  late bool autoReconnectWiFiEnable;
+  bool autoReconnectBTEnable = true;
+  bool autoReconnectWiFiEnable = true;
 
   Future<void> loadSettingsData() async {
     bool? autoReconnectBT = await preferences.getBool('autoReconnectBT');
@@ -37,6 +37,9 @@ class _SettingPageState extends State<SettingPage> {
       autoReconnectBTEnable = autoReconnectBT ?? false;
       autoReconnectWiFiEnable = autoReconnectWiFi ?? true;
     });
+
+    print(autoReconnectBTEnable);
+    print(autoReconnectWiFiEnable);
   }
 
   @override
@@ -126,20 +129,24 @@ class _SettingPageState extends State<SettingPage> {
                       value: autoReconnectBTEnable,
                       onChanged: (bool value) async {
                         // Not yet implements, will be implements in next app update
-                        Toastification().show(
-                          context: context,
-                          title: Text(
-                            LocaleKeys.alert_notify_coming_soon_title.tr(context: context),
-                          ),
-                          description: Text(
-                            LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                          ),
-                          type: ToastificationType.info,
-                          style: ToastificationStyle.flat,
-                          alignment: Alignment.bottomCenter,
-                          autoCloseDuration: Duration(seconds: 2),
-                          animationDuration: Duration(milliseconds: 500),
-                        );
+                        setState(() {
+                          autoReconnectBTEnable = value;
+                        });
+                        // Toastification().show(
+                        //   context: context,
+                        //   title: Text(
+                        //     LocaleKeys.alert_notify_coming_soon_title.tr(context: context),
+                        //   ),
+                        //   description: Text(
+                        //     LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
+                        //   ),
+                        //   type: ToastificationType.info,
+                        //   style: ToastificationStyle.flat,
+                        //   alignment: Alignment.bottomCenter,
+                        //   autoCloseDuration: Duration(seconds: 2),
+                        //   animationDuration: Duration(milliseconds: 500),
+                        // );
+                        preferences.setBool('autoReconnectBT', autoReconnectBTEnable);
                       },
                     ),
                   ),

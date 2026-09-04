@@ -2,20 +2,21 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/features/dashboard/views/presence_menu_page.dart';
+import 'package:attendance_management/features/dashboard/views/register_page.dart';
 import 'package:attendance_management/manager/bluetooth_manager.dart';
 import 'package:attendance_management/manager/database_manager.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
-import 'package:attendance_management/views/presence_menu_page.dart';
-import 'package:attendance_management/views/register_page.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:path/path.dart' as path;
 
-import '../manager/events_manager.dart';
+// import '../../../../manager/events_manager.dart';
+
 
 class ControlPanelPage extends StatefulWidget {
   const ControlPanelPage({super.key});
@@ -42,13 +43,13 @@ class _ControlPanelPageState extends State<ControlPanelPage> {
     eventDataChecker = Timer.periodic(500.milliseconds, (timer) async {
       setState(() => isDeviceConnect = BluetoothManager.isBluetoothConnected);
 
-      dynamic rawEventData = await database.readData(urlPath: 'api/event');
+      dynamic rawEventData = await database.readData(endpoint: 'api/event');
       if (rawEventData == null) return;
 
       if (!mounted) return;
 
-      List<Event> eventDataList = rawEventData as List<Event>;
-      setState(() => isEventDataEmpty = eventDataList.isEmpty);
+      // List<Event> eventDataList = rawEventData as List<Event>;
+      // setState(() => isEventDataEmpty = eventDataList.isEmpty);
     });
   }
 
@@ -227,11 +228,12 @@ class _ControlPanelPageState extends State<ControlPanelPage> {
                                     tooltip: LocaleKeys.control_page_menu_register_action_set_excel
                                         .tr(context: context),
                                     onPressed: () async {
-                                      FilePickerResult? result = await FilePicker.platform
-                                          .pickFiles(
-                                            type: FileType.custom,
-                                            allowedExtensions: ['xlsx'],
-                                          );
+                                      // FilePickerResult? result = await FilePicker.platform
+                                      //     .pickFiles(
+                                      //       type: FileType.custom,
+                                      //       allowedExtensions: ['xlsx'],
+                                      //     );
+                                      final result = null;
 
                                       if (result != null) {
                                         File file = File(result.files.single.path!);

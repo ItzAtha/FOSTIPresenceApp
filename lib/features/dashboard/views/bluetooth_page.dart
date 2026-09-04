@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:attendance_management/manager/bluetooth_manager.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:toastification/toastification.dart';
 
-import '../translations/locale_keys.g.dart';
+import '../../../../translations/locale_keys.g.dart';
 
 class BluetoothPage extends StatefulWidget {
   const BluetoothPage({super.key});
@@ -149,7 +149,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
                                       if (!device.isConnected) {
                                         try {
-                                          value[device] = BluetoothConnectionState.connecting;
+                                          value[device] = BluetoothConnectionState.connected;
                                           if (BluetoothManager.isBluetoothConnected) {
                                             Toastification().show(
                                               context: context,
@@ -180,7 +180,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                         }
                                       } else {
                                         try {
-                                          value[device] = BluetoothConnectionState.disconnecting;
+                                          value[device] = BluetoothConnectionState.disconnected;
                                           await bluetoothManager.disconnectFromDevice(device);
                                         } catch (e) {
                                           print('Disconnection failed: $e');
@@ -214,7 +214,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                         Icon(Icons.link_off, color: Colors.red),
                                       ],
                                     )
-                                  : value[device] == BluetoothConnectionState.connecting
+                                  : value[device] == BluetoothConnectionState.disconnected
                                   ? Row(
                                       children: [
                                         Text(
