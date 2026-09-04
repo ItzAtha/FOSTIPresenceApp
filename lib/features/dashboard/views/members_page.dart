@@ -14,7 +14,7 @@ import 'package:toastification/toastification.dart';
 import '../../../../core/utils/connectivity_utils.dart';
 import '../../../../shared/provider/members_notifier.dart';
 import '../../../../translations/locale_keys.g.dart';
-import '../../widgets/member_card_widget.dart';
+import '../widgets/member_card_widget.dart';
 
 part 'members_page.freezed.dart';
 
