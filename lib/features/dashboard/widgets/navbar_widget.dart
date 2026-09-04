@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_constants.dart';
@@ -52,11 +50,13 @@ class NavbarWidget extends StatelessWidget {
     required this._selectedIndex,
     required this._onDestinationSelect,
     required this._destinations,
+    this._floatingActionButton,
   });
 
   final int _selectedIndex;
   final ValueChanged<int> _onDestinationSelect;
   final List<Widget> _destinations;
+  final Widget? _floatingActionButton;
 
   List<Widget> _generateNavbarIcons(BuildContext context) {
     List<Widget> navbarIcons = [];
@@ -70,45 +70,9 @@ class NavbarWidget extends StatelessWidget {
         .toList();
 
     for (int i = 0; i < navbarIconsDestination.length; i++) {
-      if (i == (navbarIconsDestination.length / 2).floor()) {
-        SpeedDial actionButton = SpeedDial(
-          elevation: 2.0,
-          spacing: 3.0,
-          foregroundColor: Colors.white,
-          backgroundColor: AppColors.primary,
-          childPadding: const EdgeInsets.all(AppSizes.p8 / 2),
-          spaceBetweenChildren: 4.0,
-          overlayColor: Colors.black,
-          overlayOpacity: 0.5,
-          labelTransitionBuilder: (widget, animation) =>
-              ScaleTransition(scale: animation, child: widget),
-          animationDuration: const Duration(milliseconds: 300),
-          children: [
-            SpeedDialChild(
-              child: const FaIcon(FontAwesomeIcons.clipboardList),
-              label: 'Activity',
-              onTap: () {
-                // Handle add action
-              },
-            ),
-            SpeedDialChild(
-              child: const FaIcon(FontAwesomeIcons.code, size: 20.0),
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-              label: 'Code Sandbox',
-              labelStyle: Theme.of(context).textTheme.labelMedium,
-              labelBackgroundColor: Theme.of(context).cardTheme.color,
-              labelShadow: [],
-              onTap: () {
-                // DebugLogger(message: 'Code Sandbox', level: LogLevel.debug).log();
-              },
-            ),
-          ],
-          child: const FaIcon(FontAwesomeIcons.expand),
-        );
-
+      if (_floatingActionButton != null && i == (navbarIconsDestination.length / 2).floor()) {
         navbarIcons.add(const SizedBox(width: 8.0));
-        navbarIcons.add(actionButton);
+        navbarIcons.add(_floatingActionButton);
         navbarIcons.add(const SizedBox(width: 8.0));
       }
       navbarIcons.add(navbarIconsDestination[i]);
