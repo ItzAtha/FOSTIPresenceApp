@@ -5,8 +5,8 @@
 
   "navbar_icon_title": {
     "home": "Home",
+    "member": "Members",
     "event": "Events",
-    "bluetooth": "Bluetooth",
     "setting": "Setting"
   },
 
@@ -138,10 +138,12 @@
   },
 
   "home_page": {
-    "event_title": {
-      "active": "Active Event",
-      "total": "Total Events"
+    "stats_title": {
+      "active_event": "Active Event",
+      "total_events": "Total Events",
+      "total_members": "Total Members"
     },
+    "no_active_event": "No active event available",
     "esp_statuses": {
       "title": "ESP Status",
       "status": {

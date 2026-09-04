@@ -5,8 +5,8 @@
 
   "navbar_icon_title": {
     "home": "Beranda",
+    "member": "Anggota",
     "event": "Acara",
-    "bluetooth": "Bluetooth",
     "setting": "Setelan"
   },
 
@@ -138,10 +138,12 @@
   },
 
   "home_page": {
-    "event_title": {
-      "active": "Acara Aktif",
-      "total": "Total Acara"
+    "stats_title": {
+      "active_event": "Acara Aktif",
+      "total_events": "Total Acara",
+      "total_members": "Total Anggota"
     },
+    "no_active_event": "Tidak ada acara aktif yang tersedia",
     "esp_statuses": {
       "title": "Status ESP",
       "status": {
