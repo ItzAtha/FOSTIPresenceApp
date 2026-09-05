@@ -1,620 +1,263 @@
-import 'dart:async';
-
+import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/shared/models/event_model.dart';
+import 'package:attendance_management/shared/provider/events_notifier.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-
-import 'package:pulsator/pulsator.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/connectivity_utils.dart';
-import '../../../../core/utils/events_recap_factory.dart';
-import '../../../../manager/database_manager.dart';
-// import '../../../../manager/events_manager.dart';
 import '../../../../translations/locale_keys.g.dart';
+import '../../../core/app_constants.dart';
+import '../widgets/event_card_widget.dart';
 
-
-class EventPage extends StatefulWidget {
+class EventPage extends ConsumerStatefulWidget {
   const EventPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _EventPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _EventPageState();
 }
 
 enum Answer { YES, NO }
 
-class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
+class _EventPageState extends ConsumerState<EventPage> {
   int currentPage = 1;
-  final int maxPerPage = 12;
-
-  late bool isLoadingDone;
-  bool isDataLoaded = false;
-
-  // List<Event> eventsData = [];
-  // List<Event> filteredEventsData = [];
-
-  Timer? wifiCheckerTask;
-  bool isInternetConnected = false;
+  String searchQuery = "";
+  static const int maxEventPerPage = 12;
 
   DateTime? selectedDateTime;
-  final ScrollController scrollController = ScrollController();
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final ScrollController scrollController = ScrollController();
   final TextEditingController eventNameController = TextEditingController();
   final TextEditingController eventDescController = TextEditingController();
   final TextEditingController eventLocController = TextEditingController();
   final TextEditingController eventDateTimeController = TextEditingController();
+  final TextEditingController searchBarController = TextEditingController();
 
-  late DatabaseManager database;
-
-  Future<void> fetchAllEvents({required String path}) async {
-    setState(() => isLoadingDone = false);
+  Future<void> eventEditButton({
+    required List<EventModel> eventsData,
+    required EventModel eventData,
+  }) async {
+    EventModel event = eventData;
+    String? formattedDate;
 
     if (!await ConnectivityUtils.checkConnection()) {
       if (!mounted) return;
 
       Toastification().show(
-        context: context,
         title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
         description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
-        autoCloseDuration: Duration(seconds: 2),
-        animationDuration: Duration(milliseconds: 500),
+        autoCloseDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 500),
       );
-
-      setState(() => isLoadingDone = true);
       return;
     }
 
-    dynamic rawEventsData = await database.readData(endpoint: path);
+    eventNameController.text = event.title;
+    eventDescController.text = event.description;
+    eventLocController.text = event.location;
+
+    formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(event.eventDate);
+    eventDateTimeController.text = formattedDate;
+
     if (!mounted) return;
 
-    if (rawEventsData != null) {
-      // eventsData = rawEventsData as List<Event>;
-      // if (eventsData.isNotEmpty) {
-      //   setState(() {
-      //     filteredEventsData = eventsData;
-      //     isDataLoaded = true;
-      //   });
-      //   isInternetConnected = true;
-      // } else {
-      //   Toastification().show(
-      //     context: context,
-      //     title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-      //     description: Text(LocaleKeys.alert_notify_event_description_no_data.tr(context: context)),
-      //     type: ToastificationType.info,
-      //     style: ToastificationStyle.flat,
-      //     alignment: Alignment.bottomCenter,
-      //     autoCloseDuration: Duration(seconds: 2),
-      //     animationDuration: Duration(milliseconds: 500),
-      //   );
-      // }
-    } else {
-      Toastification().show(
-        context: context,
-        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-        description: Text(LocaleKeys.alert_notify_event_description_not_load.tr(context: context)),
-        type: ToastificationType.info,
-        style: ToastificationStyle.flat,
-        alignment: Alignment.bottomCenter,
-        autoCloseDuration: Duration(seconds: 2),
-        animationDuration: Duration(milliseconds: 500),
-      );
-    }
+    var eventEditForm = AlertDialog(
+      title: Text(
+        LocaleKeys.event_page_dialog_edit_title.tr(context: context),
+        textAlign: TextAlign.center,
+      ),
+      content: Form(
+        key: formKey,
+        canPop: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const SizedBox(height: 8.0),
+              TextFormField(
+                controller: eventNameController,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_name.tr(context: context),
+                  hintText: "Event FOSTI 202X",
+                  icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                keyboardType: TextInputType.name,
+                textInputAction: TextInputAction.next,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_name_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: eventDescController,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_description.tr(context: context),
+                  hintText: "FOSTI event held once a year",
+                  icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.next,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_description_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: eventLocController,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_location.tr(context: context),
+                  hintText: "Gedung J, Kampus 2, UMS",
+                  icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                maxLines: null,
+                keyboardType: TextInputType.streetAddress,
+                textInputAction: TextInputAction.next,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_location_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: eventDateTimeController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_date_label.tr(context: context),
+                  hintText: LocaleKeys.event_page_dialog_field_date_hint.tr(context: context),
+                  icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                onTap: () async {
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDateTime ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2030),
+                  );
 
-    setState(() => isLoadingDone = true);
+                  if (pickedDate != null) {
+                    if (!mounted) return;
+
+                    final TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(selectedDateTime ?? DateTime.now()),
+                      builder: (BuildContext context, Widget? child) {
+                        return MediaQuery(
+                          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                          child: child!,
+                        );
+                      },
+                    );
+
+                    if (pickedTime != null) {
+                      DateTime? rawDateTime;
+                      int seconds = DateTime.now().second;
+                      setState(() {
+                        rawDateTime = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                          seconds,
+                        );
+                      });
+
+                      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(rawDateTime!);
+                      eventDateTimeController.text = formattedDate;
+                    }
+                  }
+                },
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_date_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => validateFormInput(event),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                child: Text(
+                  LocaleKeys.member_page_dialog_button_update.tr(context: context),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 24.0),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => context.pop(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.dangerZone,
+                  side: const BorderSide(color: AppColors.dangerZone),
+                ),
+                child: Text(LocaleKeys.member_page_dialog_button_cancel.tr(context: context)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    showDialog(
+      context: context,
+      animationStyle: const AnimationStyle(
+        curve: Curves.easeIn,
+        reverseCurve: Curves.easeOut,
+        duration: Duration(milliseconds: 300),
+      ),
+      builder: (BuildContext context) {
+        return eventEditForm;
+      },
+    );
   }
 
-  // Map<int, List<Widget>> getEventList(List<Event> jsonData) {
-  //   List<Widget> eventList = [];
-  //   Map<int, List<Widget>> eventListPerPage = {};
-  //   int indexPage = 1;
-  //
-  //   for (final event in jsonData) {
-  //     eventList.add(
-  //       RepaintBoundary(
-  //         child: Stack(
-  //           clipBehavior: Clip.none,
-  //           children: <Widget>[
-  //             Card(
-  //               margin: const EdgeInsets.all(16.0),
-  //               elevation: 5.0,
-  //               child: Padding(
-  //                 padding: const EdgeInsets.all(16.0),
-  //                 child: Column(
-  //                   children: <Widget>[
-  //                     Row(
-  //                       mainAxisAlignment: MainAxisAlignment.center,
-  //                       children: <Widget>[
-  //                         Icon(Icons.event, size: 30.0),
-  //                         SizedBox(width: 12.0),
-  //                         Expanded(
-  //                           child: Column(
-  //                             children: <Widget>[
-  //                               Text(
-  //                                 event.name,
-  //                                 textAlign: TextAlign.center,
-  //                                 style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-  //                               ),
-  //                               Text(
-  //                                 DateFormat(
-  //                                   'dd MMM yyyy, HH:mm',
-  //                                 ).format(DateTime.parse(event.eventDate)),
-  //                                 textAlign: TextAlign.center,
-  //                                 style: TextStyle(
-  //                                   fontSize: 14.0,
-  //                                   fontWeight: FontWeight.w500,
-  //                                   color: Colors.grey[600],
-  //                                 ),
-  //                               ),
-  //                               Text(
-  //                                 event.location,
-  //                                 textAlign: TextAlign.center,
-  //                                 style: TextStyle(
-  //                                   fontSize: 14.0,
-  //                                   fontWeight: FontWeight.w500,
-  //                                   color: Colors.grey[600],
-  //                                 ),
-  //                               ),
-  //                             ],
-  //                           ),
-  //                         ),
-  //                         SizedBox(width: 24.0),
-  //                         Align(
-  //                           widthFactor: 0.3,
-  //                           child: SizedBox(
-  //                             width: 40.0,
-  //                             height: 40.0,
-  //                             child: Pulsator(
-  //                               style: PulseStyle(
-  //                                 color: event.isActive ? Colors.green : Colors.red,
-  //                               ),
-  //                               count: 1,
-  //                               duration: Duration(seconds: 1),
-  //                               startFromScratch: false,
-  //                               child: Container(
-  //                                 width: 15.0,
-  //                                 height: 15.0,
-  //                                 decoration: BoxDecoration(
-  //                                   shape: BoxShape.circle,
-  //                                   color: event.isActive
-  //                                       ? Colors.green.withValues(alpha: 0.7)
-  //                                       : Colors.red.withValues(alpha: 0.7),
-  //                                 ),
-  //                               ),
-  //                             ),
-  //                           ),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                     SizedBox(height: 6.0),
-  //                     Divider(color: Colors.grey, thickness: 1.5),
-  //                     SizedBox(height: 6.0),
-  //                     Text(
-  //                       event.description,
-  //                       textAlign: TextAlign.center,
-  //                       style: TextStyle(fontSize: 14.0),
-  //                     ),
-  //                     SizedBox(height: 32.0),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //             Positioned(
-  //               bottom: 0,
-  //               left: 0,
-  //               right: 32,
-  //               child: Row(
-  //                 mainAxisAlignment: MainAxisAlignment.end,
-  //                 children: <Widget>[
-  //                   SizedBox(
-  //                     width: 45.0,
-  //                     height: 45.0,
-  //                     child: FittedBox(
-  //                       child: FloatingActionButton(
-  //                         heroTag: "editEventButton${event.id}",
-  //                         tooltip: LocaleKeys.event_page_button_edit.tr(context: context),
-  //                         onPressed: () => onAddEditButton(context, eventData: event),
-  //                         shape: CircleBorder(),
-  //                         backgroundColor: Colors.orange.shade600,
-  //                         child: Icon(
-  //                           Icons.edit,
-  //                           color: Theme.of(context).brightness == Brightness.light
-  //                               ? Colors.black
-  //                               : Colors.white,
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   SizedBox(width: 12.0),
-  //                   SizedBox(
-  //                     width: 45.0,
-  //                     height: 45.0,
-  //                     child: FittedBox(
-  //                       child: FloatingActionButton(
-  //                         heroTag: "downloadRecapButton${event.id}",
-  //                         tooltip: LocaleKeys.event_page_button_download_recap.tr(context: context),
-  //                         onPressed: () async {
-  //                           if (!await ConnectivityUtils.checkConnection()) {
-  //                             if (!mounted) return;
-  //
-  //                             Toastification().show(
-  //                               context: context,
-  //                               title: Text(
-  //                                 LocaleKeys.alert_notify_internet_title.tr(context: context),
-  //                               ),
-  //                               description: Text(
-  //                                 LocaleKeys.alert_notify_internet_description.tr(context: context),
-  //                               ),
-  //                               type: ToastificationType.info,
-  //                               style: ToastificationStyle.flat,
-  //                               alignment: Alignment.bottomCenter,
-  //                               autoCloseDuration: Duration(seconds: 2),
-  //                               animationDuration: Duration(milliseconds: 500),
-  //                             );
-  //                             return;
-  //                           }
-  //
-  //                           if (!mounted) return;
-  //                           Toastification().show(
-  //                             context: context,
-  //                             title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-  //                             description: Text(
-  //                               LocaleKeys.alert_notify_event_description_saving_recap_process.tr(
-  //                                 context: context,
-  //                               ),
-  //                             ),
-  //                             type: ToastificationType.info,
-  //                             style: ToastificationStyle.flat,
-  //                             alignment: Alignment.bottomCenter,
-  //                             autoCloseDuration: Duration(seconds: 2),
-  //                             animationDuration: Duration(milliseconds: 500),
-  //                           );
-  //
-  //                           RecapFactory recapFactory = RecapFactory(eventId: event.id);
-  //
-  //                           await recapFactory.createExcel().then((factory) {
-  //                             if (factory != null) {
-  //                               factory.saveExcel().then((isSuccess) {
-  //                                 if (!mounted || isSuccess == null) return;
-  //
-  //                                 if (isSuccess) {
-  //                                   Toastification().show(
-  //                                     context: context,
-  //                                     title: Text(
-  //                                       LocaleKeys.alert_notify_event_title.tr(context: context),
-  //                                     ),
-  //                                     description: Text(
-  //                                       LocaleKeys
-  //                                           .alert_notify_event_description_saving_recap_success
-  //                                           .tr(context: context),
-  //                                     ),
-  //                                     type: ToastificationType.success,
-  //                                     style: ToastificationStyle.flat,
-  //                                     alignment: Alignment.bottomCenter,
-  //                                     autoCloseDuration: Duration(seconds: 2),
-  //                                     animationDuration: Duration(milliseconds: 500),
-  //                                   );
-  //                                 } else {
-  //                                   Toastification().show(
-  //                                     context: context,
-  //                                     title: Text(
-  //                                       LocaleKeys.alert_notify_event_title.tr(context: context),
-  //                                     ),
-  //                                     description: Text(
-  //                                       LocaleKeys
-  //                                           .alert_notify_event_description_saving_recap_failed
-  //                                           .tr(context: context),
-  //                                     ),
-  //                                     type: ToastificationType.error,
-  //                                     style: ToastificationStyle.flat,
-  //                                     alignment: Alignment.bottomCenter,
-  //                                     autoCloseDuration: Duration(seconds: 2),
-  //                                     animationDuration: Duration(milliseconds: 500),
-  //                                   );
-  //                                 }
-  //                               });
-  //                             } else {
-  //                               if (!mounted) return;
-  //
-  //                               Toastification().show(
-  //                                 context: context,
-  //                                 title: Text(
-  //                                   LocaleKeys.alert_notify_event_title.tr(context: context),
-  //                                 ),
-  //                                 description: Text(
-  //                                   LocaleKeys
-  //                                       .alert_notify_event_description_saving_recap_no_users_log
-  //                                       .tr(context: context),
-  //                                 ),
-  //                                 type: ToastificationType.info,
-  //                                 style: ToastificationStyle.flat,
-  //                                 alignment: Alignment.bottomCenter,
-  //                                 autoCloseDuration: Duration(seconds: 2),
-  //                                 animationDuration: Duration(milliseconds: 500),
-  //                               );
-  //                             }
-  //                           });
-  //                         },
-  //                         shape: CircleBorder(),
-  //                         backgroundColor: Colors.lightGreen,
-  //                         child: Icon(
-  //                           Icons.download,
-  //                           color: Theme.of(context).brightness == Brightness.light
-  //                               ? Colors.black
-  //                               : Colors.white,
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   SizedBox(width: 12.0),
-  //                   SizedBox(
-  //                     width: 45.0,
-  //                     height: 45.0,
-  //                     child: FittedBox(
-  //                       child: FloatingActionButton(
-  //                         heroTag: "deleteEventButton${event.id}",
-  //                         tooltip: LocaleKeys.event_page_button_delete.tr(context: context),
-  //                         onPressed: () => onDeleteConfirm(context, eventId: event.id),
-  //                         shape: CircleBorder(),
-  //                         backgroundColor: Colors.red.shade600,
-  //                         child: Icon(
-  //                           Icons.delete,
-  //                           color: Theme.of(context).brightness == Brightness.light
-  //                               ? Colors.black
-  //                               : Colors.white,
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     );
-  //
-  //     if (eventList.length == maxPerPage || event == jsonData.last) {
-  //       eventListPerPage[indexPage++] = eventList;
-  //       eventList = [];
-  //     }
-  //   }
-  //
-  //   return eventListPerPage;
-  // }
-
-  // Future<void> onAddEditButton(BuildContext context, {Event? eventData}) async {
-  //   bool hasEventData = eventData != null;
-  //   Event event = eventData ?? Event.defaultData();
-  //   String? formattedDate;
-  //
-  //   if (!await ConnectivityUtils.checkConnection()) {
-  //     if (!context.mounted) return;
-  //
-  //     Toastification().show(
-  //       context: context,
-  //       title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-  //       description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
-  //       type: ToastificationType.info,
-  //       style: ToastificationStyle.flat,
-  //       alignment: Alignment.bottomCenter,
-  //       autoCloseDuration: Duration(seconds: 2),
-  //       animationDuration: Duration(milliseconds: 500),
-  //     );
-  //     return;
-  //   }
-  //
-  //   if (hasEventData) {
-  //     DateTime rawDateTime = DateTime.parse(event.eventDate);
-  //     formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(rawDateTime);
-  //   }
-  //
-  //   eventNameController.text = hasEventData ? event.name : "";
-  //   eventDescController.text = hasEventData ? event.description : "";
-  //   eventLocController.text = hasEventData ? event.location : "";
-  //   eventDateTimeController.text = (hasEventData ? formattedDate : "")!;
-  //
-  //   if (!context.mounted) return;
-  //   var eventAddEditForm = AlertDialog(
-  //     title: Text(
-  //       hasEventData
-  //           ? LocaleKeys.event_page_dialog_edit_title.tr(context: context)
-  //           : LocaleKeys.event_page_dialog_add_title.tr(context: context),
-  //       textAlign: TextAlign.center,
-  //     ),
-  //     content: Form(
-  //       key: formKey,
-  //       canPop: false,
-  //       child: SingleChildScrollView(
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: <Widget>[
-  //             SizedBox(height: 8.0),
-  //             TextFormField(
-  //               controller: eventNameController,
-  //               decoration: InputDecoration(
-  //                 isDense: true,
-  //                 labelText: LocaleKeys.event_page_dialog_field_name.tr(context: context),
-  //                 hintText: "Event FOSTI 202X",
-  //                 icon: Icon(Icons.event_note, size: 24.0),
-  //                 border: OutlineInputBorder(),
-  //                 errorMaxLines: 2,
-  //               ),
-  //               keyboardType: TextInputType.name,
-  //               textInputAction: TextInputAction.next,
-  //               autovalidateMode: AutovalidateMode.onUserInteraction,
-  //               validator: (String? value) {
-  //                 if (value.toString().isEmpty) {
-  //                   return LocaleKeys.event_page_dialog_validation_name_required.tr(
-  //                     context: context,
-  //                   );
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             SizedBox(height: 14.0),
-  //             TextFormField(
-  //               controller: eventDescController,
-  //               decoration: InputDecoration(
-  //                 isDense: true,
-  //                 labelText: LocaleKeys.event_page_dialog_field_description.tr(context: context),
-  //                 hintText: "FOSTI event held once a year",
-  //                 icon: Icon(Icons.description, size: 24.0),
-  //                 border: OutlineInputBorder(),
-  //                 errorMaxLines: 2,
-  //               ),
-  //               maxLines: null,
-  //               keyboardType: TextInputType.multiline,
-  //               textInputAction: TextInputAction.next,
-  //               autovalidateMode: AutovalidateMode.onUserInteraction,
-  //               validator: (String? value) {
-  //                 if (value.toString().isEmpty) {
-  //                   return LocaleKeys.event_page_dialog_validation_description_required.tr(
-  //                     context: context,
-  //                   );
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             SizedBox(height: 14.0),
-  //             TextFormField(
-  //               controller: eventLocController,
-  //               decoration: InputDecoration(
-  //                 isDense: true,
-  //                 labelText: LocaleKeys.event_page_dialog_field_location.tr(context: context),
-  //                 hintText: "Gedung J, Kampus 2, UMS",
-  //                 icon: Icon(Icons.location_city, size: 24.0),
-  //                 border: OutlineInputBorder(),
-  //                 errorMaxLines: 2,
-  //               ),
-  //               maxLines: null,
-  //               keyboardType: TextInputType.streetAddress,
-  //               textInputAction: TextInputAction.next,
-  //               autovalidateMode: AutovalidateMode.onUserInteraction,
-  //               validator: (String? value) {
-  //                 if (value.toString().isEmpty) {
-  //                   return LocaleKeys.event_page_dialog_validation_location_required.tr(
-  //                     context: context,
-  //                   );
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             SizedBox(height: 14.0),
-  //             TextFormField(
-  //               controller: eventDateTimeController,
-  //               readOnly: true,
-  //               decoration: InputDecoration(
-  //                 isDense: true,
-  //                 labelText: LocaleKeys.event_page_dialog_field_date_label.tr(context: context),
-  //                 hintText: LocaleKeys.event_page_dialog_field_date_hint.tr(context: context),
-  //                 icon: Icon(Icons.date_range, size: 24.0),
-  //                 border: OutlineInputBorder(),
-  //                 errorMaxLines: 2,
-  //               ),
-  //               onTap: () async {
-  //                 final DateTime? pickedDate = await showDatePicker(
-  //                   context: context,
-  //                   initialDate: selectedDateTime ?? DateTime.now(),
-  //                   firstDate: DateTime(2000),
-  //                   lastDate: DateTime(2030),
-  //                 );
-  //
-  //                 if (pickedDate != null) {
-  //                   final TimeOfDay? pickedTime = await showTimePicker(
-  //                     context: !mounted ? this.context : context,
-  //                     initialTime: TimeOfDay.fromDateTime(selectedDateTime ?? DateTime.now()),
-  //                     builder: (BuildContext context, Widget? child) {
-  //                       return MediaQuery(
-  //                         data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-  //                         child: child!,
-  //                       );
-  //                     },
-  //                   );
-  //
-  //                   if (pickedTime != null) {
-  //                     DateTime? rawDateTime;
-  //                     int seconds = DateTime.now().second;
-  //                     setState(() {
-  //                       rawDateTime = DateTime(
-  //                         pickedDate.year,
-  //                         pickedDate.month,
-  //                         pickedDate.day,
-  //                         pickedTime.hour,
-  //                         pickedTime.minute,
-  //                         seconds,
-  //                       );
-  //                     });
-  //
-  //                     String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(rawDateTime!);
-  //                     eventDateTimeController.text = formattedDate;
-  //                   }
-  //                 }
-  //               },
-  //               validator: (String? value) {
-  //                 if (value.toString().isEmpty) {
-  //                   return LocaleKeys.event_page_dialog_validation_date_required.tr(
-  //                     context: context,
-  //                   );
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //     actions: <Widget>[
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: <Widget>[
-  //           ElevatedButton(
-  //             onPressed: () => validateFormInput(hasEventData, event.id),
-  //             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-  //             child: hasEventData
-  //                 ? Text(
-  //                     LocaleKeys.event_page_dialog_button_update.tr(context: context),
-  //                     style: TextStyle(color: Colors.black),
-  //                   )
-  //                 : Text(
-  //                     LocaleKeys.event_page_dialog_button_create.tr(context: context),
-  //                     style: TextStyle(color: Colors.black),
-  //                   ),
-  //           ),
-  //           SizedBox(width: 24.0),
-  //           ElevatedButton(
-  //             onPressed: () {
-  //               if (eventDateTimeController.text.isEmpty) {
-  //                 eventDateTimeController.text = "";
-  //               }
-  //               Navigator.of(context).pop();
-  //             },
-  //             style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
-  //             child: Text(
-  //               LocaleKeys.event_page_dialog_button_cancel.tr(context: context),
-  //               style: TextStyle(color: Colors.black),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   );
-  //
-  //   if (!context.mounted) return;
-  //
-  //   showDialog(
-  //     context: context,
-  //     animationStyle: AnimationStyle(curve: Curves.easeIn, reverseCurve: Curves.easeOut, duration: Duration(milliseconds: 300)),
-  //     builder: (BuildContext context) {
-  //       return eventAddEditForm;
-  //     },
-  //   );
-  // }
-
-  void validateFormInput(bool isEditMode, String eventId) async {
+  void validateFormInput(EventModel eventData) async {
     FormState? form = formKey.currentState;
 
     if (form != null) {
@@ -623,14 +266,13 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
           if (!mounted) return;
 
           Toastification().show(
-            context: context,
             title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
             description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
             type: ToastificationType.info,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
-            autoCloseDuration: Duration(seconds: 2),
-            animationDuration: Duration(milliseconds: 500),
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
           );
           return;
         }
@@ -640,314 +282,186 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
           rawDateTime.year,
           rawDateTime.month,
           rawDateTime.day,
-          rawDateTime.hour + 7, // Adjusting for UTC+7 timezone
+          rawDateTime.hour,
           rawDateTime.minute,
           rawDateTime.second,
         );
-        DateTime rawUTCDateTime = dateTime.toUtc();
-        String isoFormattedDate = rawUTCDateTime.toIso8601String();
 
-        Map<String, dynamic> jsonData = {
-          'judul': eventNameController.text,
-          'deskripsi': eventDescController.text,
-          'tanggal': isoFormattedDate,
-          'lokasi': eventLocController.text,
-        };
+        if (!mounted) return;
+        final updatedEvent = eventData.copyWith(
+          title: eventNameController.text,
+          description: eventDescController.text,
+          eventDate: dateTime,
+          location: eventLocController.text,
+        );
+
+        bool isSuccess = await ref.read(eventsProvider.notifier).updateEvent(updatedEvent);
 
         if (!mounted) return;
 
-        isEditMode
-            ? database
-                  .updateData(
-                    urlPath: 'api/event',
-                    dataId: eventId,
-                    jsonData: jsonData,
-                    httpHeaders: {'Content-Type': 'application/json'},
-                  )
-                  .then((isSuccess) {
-                    if (!mounted) return;
-
-                    if (isSuccess) {
-                      fetchAllEvents(path: 'api/event');
-
-                      Toastification().show(
-                        context: context,
-                        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-                        description: Text(
-                          LocaleKeys.alert_notify_event_description_update_success.tr(
-                            context: context,
-                          ),
-                        ),
-                        type: ToastificationType.success,
-                        style: ToastificationStyle.flat,
-                        alignment: Alignment.bottomCenter,
-                        autoCloseDuration: Duration(seconds: 2),
-                        animationDuration: Duration(milliseconds: 500),
-                      );
-                    } else {
-                      Toastification().show(
-                        context: context,
-                        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-                        description: Text(
-                          LocaleKeys.alert_notify_event_description_update_failed.tr(
-                            context: context,
-                          ),
-                        ),
-                        type: ToastificationType.error,
-                        style: ToastificationStyle.flat,
-                        alignment: Alignment.bottomCenter,
-                        autoCloseDuration: Duration(seconds: 2),
-                        animationDuration: Duration(milliseconds: 500),
-                      );
-                    }
-                  })
-            : database
-                  .createData(
-                    urlPath: 'api/event',
-                    jsonData: jsonData,
-                    httpHeaders: {'Content-Type': 'application/json'},
-                  )
-                  .then((isSuccess) {
-                    if (!mounted) return;
-
-                    if (isSuccess) {
-                      fetchAllEvents(path: 'api/event');
-
-                      Toastification().show(
-                        context: context,
-                        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-                        description: Text(
-                          LocaleKeys.alert_notify_event_description_create_success.tr(
-                            context: context,
-                          ),
-                        ),
-                        type: ToastificationType.success,
-                        style: ToastificationStyle.flat,
-                        alignment: Alignment.bottomCenter,
-                        autoCloseDuration: Duration(seconds: 2),
-                        animationDuration: Duration(milliseconds: 500),
-                      );
-                    } else {
-                      Toastification().show(
-                        context: context,
-                        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-                        description: Text(
-                          LocaleKeys.alert_notify_event_description_create_failed.tr(
-                            context: context,
-                          ),
-                        ),
-                        type: ToastificationType.error,
-                        style: ToastificationStyle.flat,
-                        alignment: Alignment.bottomCenter,
-                        autoCloseDuration: Duration(seconds: 2),
-                        animationDuration: Duration(milliseconds: 500),
-                      );
-                    }
-                  });
-        Navigator.of(context).pop();
+        if (isSuccess) {
+          Toastification().show(
+            title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.alert_notify_event_description_update_success.tr(context: context),
+            ),
+            type: ToastificationType.success,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+        } else {
+          Toastification().show(
+            title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.alert_notify_event_description_update_failed.tr(context: context),
+            ),
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+        }
+        context.pop();
       }
     }
   }
 
-  Future<Null> onDeleteConfirm(BuildContext context, {required String eventId}) async {
+  Future<void> eventDeleteButton(EventModel eventData) async {
     if (!await ConnectivityUtils.checkConnection()) {
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       Toastification().show(
-        context: context,
         title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
         description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
-        autoCloseDuration: Duration(seconds: 2),
-        animationDuration: Duration(milliseconds: 500),
+        autoCloseDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 500),
       );
       return;
     }
 
-    if (!context.mounted) return;
+    if (!mounted) return;
+
     var eventDeleteConfirm = SimpleDialog(
-      title: Center(
-        child: Text(LocaleKeys.event_page_dialog_delete_confirm_title.tr(context: context)),
+      title: Text(
+        LocaleKeys.event_page_dialog_delete_confirm_title.tr(context: context),
+        textAlign: TextAlign.center,
       ),
       children: <Widget>[
-        Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+          child: Column(
+            children: <Widget>[
+              Text(
                 LocaleKeys.event_page_dialog_delete_confirm_description.tr(context: context),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.justify,
               ),
-            ),
-            SizedBox(height: 25.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, Answer.YES);
-                  },
-                  child: Text(LocaleKeys.event_page_dialog_button_yes.tr(context: context)),
-                ),
-                SizedBox(width: 10.0),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, Answer.NO);
-                  },
-                  child: Text(LocaleKeys.event_page_dialog_button_no.tr(context: context)),
-                ),
-                SizedBox(width: 20.0),
-              ],
-            ),
-          ],
+              const SizedBox(height: 25.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => context.pop(Answer.YES),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                      child: Text(
+                        LocaleKeys.event_page_dialog_button_yes.tr(context: context),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 24.0),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => context.pop(Answer.NO),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.dangerZone,
+                        side: const BorderSide(color: AppColors.dangerZone),
+                      ),
+                      child: Text(LocaleKeys.event_page_dialog_button_no.tr(context: context)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
 
-    if (!context.mounted) return;
-
     if (await showDialog(
           context: context,
-          animationStyle: AnimationStyle(curve: Curves.easeIn, reverseCurve: Curves.easeOut, duration: Duration(milliseconds: 300)),
+          animationStyle: const AnimationStyle(
+            curve: Curves.easeIn,
+            reverseCurve: Curves.easeOut,
+            duration: Duration(milliseconds: 300),
+          ),
           builder: (BuildContext context) {
             return eventDeleteConfirm;
           },
         ) ==
         Answer.YES) {
-      database.deleteData(urlPath: 'api/event', dataId: eventId).then((isSuccess) {
-        if (!context.mounted) return;
+      bool isSuccess = await ref.read(eventsProvider.notifier).deleteEvent(eventData);
 
-        if (isSuccess) {
-          fetchAllEvents(path: 'api/event');
+      if (!mounted) return;
 
-          Toastification().show(
-            context: context,
-            title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-            description: Text(
-              LocaleKeys.alert_notify_event_description_delete_success.tr(context: context),
-            ),
-            type: ToastificationType.success,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: Duration(seconds: 2),
-            animationDuration: Duration(milliseconds: 500),
-          );
-        } else {
-          Toastification().show(
-            context: context,
-            title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-            description: Text(
-              LocaleKeys.alert_notify_event_description_delete_failed.tr(context: context),
-            ),
-            type: ToastificationType.error,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: Duration(seconds: 2),
-            animationDuration: Duration(milliseconds: 500),
-          );
-        }
-      });
-    }
-  }
-
-  void startWiFiChecker() {
-    wifiCheckerTask = Timer.periodic(Duration(seconds: 5), (timer) async {
-      if (!await ConnectivityUtils.checkConnection() && isInternetConnected) {
-        setState(() => isInternetConnected = false);
-
-        if (!mounted) return;
+      if (isSuccess) {
         Toastification().show(
-          context: context,
-          title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-          description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
-          type: ToastificationType.info,
+          title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+          description: Text(
+            LocaleKeys.alert_notify_event_description_delete_success.tr(context: context),
+          ),
+          type: ToastificationType.success,
           style: ToastificationStyle.flat,
           alignment: Alignment.bottomCenter,
-          autoCloseDuration: Duration(seconds: 2),
-          animationDuration: Duration(milliseconds: 500),
+          autoCloseDuration: const Duration(seconds: 2),
+          animationDuration: const Duration(milliseconds: 500),
+        );
+      } else {
+        Toastification().show(
+          title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+          description: Text(
+            LocaleKeys.alert_notify_event_description_delete_failed.tr(context: context),
+          ),
+          type: ToastificationType.error,
+          style: ToastificationStyle.flat,
+          alignment: Alignment.bottomCenter,
+          autoCloseDuration: const Duration(seconds: 2),
+          animationDuration: const Duration(milliseconds: 500),
         );
       }
-
-      if (await ConnectivityUtils.checkConnection() && !isInternetConnected) {
-        setState(() => isInternetConnected = true);
-      }
-    });
-  }
-
-  void cancelWiFiChecker() {
-    if (wifiCheckerTask!.isActive) {
-      wifiCheckerTask?.cancel();
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-
-    database = DatabaseManager();
-    fetchAllEvents(path: 'api/event');
-    startWiFiChecker();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-
-    scrollController.dispose();
-    wifiCheckerTask?.cancel();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    if (state == AppLifecycleState.paused) {
-      cancelWiFiChecker();
-    } else if (state == AppLifecycleState.resumed) {
-      startWiFiChecker();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0.0;
-
-    return Scaffold(
-      floatingActionButton: isKeyboardOpen ? null : FloatingActionButton(
-        onPressed: () => null,
-        tooltip: LocaleKeys.event_page_button_add.tr(context: context),
-        backgroundColor: Theme.of(context).brightness == Brightness.light
-            ? Colors.green.shade400
-            : Colors.green.shade600,
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white,
-        ),
+  Widget loadingData() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ValueListenableBuilder(
+            valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+            builder: (_, mode, child) {
+              return CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  mode == AdaptiveThemeMode.light
+                      ? AppColors.primary
+                      : AppColors.primary.withValues(alpha: 0.6),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            LocaleKeys.event_page_loading_data_process.tr(context: context),
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+        ],
       ),
-      body: isLoadingDone
-          ? isDataLoaded
-                ? hasEvents()
-                : noEvents()
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).brightness == Brightness.light
-                          ? Colors.green.shade300
-                          : Colors.green.shade200,
-                    ),
-                  ),
-                  SizedBox(height: 16.0),
-                  Text(LocaleKeys.event_page_loading_data_process.tr(context: context)),
-                ],
-              ),
-            ),
     );
   }
 
@@ -957,30 +471,33 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-            margin: const EdgeInsets.all(16.0),
+            margin: const EdgeInsets.all(AppSizes.p16),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(AppSizes.p16),
                 child: Column(
                   children: <Widget>[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Icon(Icons.event, size: 40.0),
-                        SizedBox(width: 16.0),
-                        Text(
-                          LocaleKeys.event_page_loading_data_no_data_title.tr(context: context),
-                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                        const Icon(Icons.event, size: 40.0),
+                        const SizedBox(width: 16.0),
+                        Expanded(
+                          child: Text(
+                            LocaleKeys.event_page_loading_data_no_data_title.tr(context: context),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 6.0),
-                    Divider(color: Colors.grey, thickness: 1.5),
-                    SizedBox(height: 8.0),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.5),
+                    const SizedBox(height: 8.0),
                     Text(
                       LocaleKeys.event_page_loading_data_no_data_description.tr(context: context),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16.0),
+                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ],
                 ),
@@ -992,164 +509,197 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
     );
   }
 
-  Widget hasEvents() {
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              height: 50.0,
-              margin: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
-              child: SearchBar(
-                leading: Icon(Icons.search),
-                hintText: LocaleKeys.search_bar_event.tr(context: context),
-                textInputAction: TextInputAction.search,
-                onChanged: (String value) {
-                  setState(() {
-                    // filteredEventsData = eventsData
-                    //     .where((event) => event.name.toLowerCase().contains(value.toLowerCase()))
-                    //     .toList();
-                    //
-                    // int calcLength = (filteredEventsData.length / maxPerPage).ceil();
-                    // if (!(calcLength > currentPage)) currentPage = calcLength;
-                  });
-                },
-              ),
-            ),
-            // ...AnimateList(
-            //   interval: 300.ms,
-            //   effects: [FadeEffect(duration: 300.ms)],
-            //   children: <Widget>[...?getEventList(filteredEventsData)[currentPage]],
-            // ),
-            SizedBox(height: 25.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                previousPageButton(),
-                SizedBox(width: 20.0),
-                // Text(
-                //   LocaleKeys.paginating_page_info.tr(
-                //     context: context,
-                //     namedArgs: {
-                //       'current': '$currentPage',
-                //       'total':
-                //           '${getEventList(filteredEventsData).isEmpty ? 1 : getEventList(filteredEventsData).length}',
-                //     },
-                //   ),
-                // ),
-                SizedBox(width: 20.0),
-                nextPageButton(),
-              ],
-            ),
-            SizedBox(height: 30.0),
-          ],
+  Widget hasEvents(List<EventModel> events) {
+    List<EventModel> filteredEvents = events.where((event) {
+      return event.title.toLowerCase().contains(searchQuery.toLowerCase());
+    }).toList();
+
+    final totalPages = (filteredEvents.length / maxEventPerPage).ceil();
+    if (totalPages > 0 && currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    final startIndex = (currentPage - 1) * maxEventPerPage;
+    final endIndex = (startIndex + maxEventPerPage).clamp(0, filteredEvents.length);
+    final currentEvents = filteredEvents.sublist(startIndex, endIndex);
+
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 50.0,
+          margin: const EdgeInsets.all(AppSizes.p16),
+          child: SearchBar(
+            controller: searchBarController,
+            leading: const Icon(Icons.search),
+            trailing: <Widget>[
+              if (searchQuery.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    searchBarController.clear();
+                    setState(() => searchQuery = "");
+                  },
+                ),
+            ],
+            hintText: LocaleKeys.search_bar_event.tr(context: context),
+            textInputAction: TextInputAction.search,
+            onChanged: (String value) {
+              setState(() {
+                searchQuery = value;
+                currentPage = 1;
+              });
+            },
+          ),
         ),
-      ),
+
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraint) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(AppSizes.p16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraint.maxHeight - (AppSizes.p16 * 2)),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: <Widget>[
+                        AnimationLimiter(
+                          child: Column(
+                            children: List<Widget>.generate(currentEvents.length, (index) {
+                              final eventData = currentEvents[index];
+
+                              return Column(
+                                children: <Widget>[
+                                  AnimationConfiguration.staggeredList(
+                                    position: index,
+                                    delay: const Duration(milliseconds: 300),
+                                    duration: const Duration(milliseconds: 800),
+                                    child: SlideAnimation(
+                                      verticalOffset: 50.0,
+                                      child: FadeInAnimation(
+                                        child: EventCardWidget(
+                                          title: eventData.title,
+                                          description: eventData.description,
+                                          location: eventData.location,
+                                          date: eventData.eventDate,
+                                          editButton: () => eventEditButton(
+                                            eventsData: events,
+                                            eventData: eventData,
+                                          ),
+                                          deleteButton: () => eventDeleteButton(eventData),
+                                          downloadButton: () => (),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  if (index < currentEvents.length - 1)
+                                    const SizedBox(height: 16.0),
+                                ],
+                              );
+                            }),
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
+                        const Spacer(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            previousPageButton(),
+                            const SizedBox(width: 20.0),
+                            Text(
+                              LocaleKeys.paginating_page_info.tr(
+                                context: context,
+                                namedArgs: {'current': '$currentPage', 'total': '$totalPages'},
+                              ),
+                            ),
+                            const SizedBox(width: 20.0),
+                            nextPageButton(totalPages: totalPages),
+                          ],
+                        ),
+                        SizedBox(height: MediaQuery.of(context).padding.bottom),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget previousPageButton() {
-    final orientation = MediaQuery.of(context).orientation;
+    return IconButton(
+      icon: const Icon(Icons.arrow_back_ios),
+      color: Colors.white,
+      style: IconButton.styleFrom(
+        minimumSize: const Size(50, 40),
+        backgroundColor: currentPage > 1 ? AppColors.primary : Colors.grey,
+      ),
+      onPressed: currentPage > 1
+          ? () {
+              setState(() {
+                currentPage--;
+              });
 
-    if (orientation == Orientation.landscape) {
-      return ElevatedButton(
-        onPressed: currentPage > 1
-            ? () {
-                setState(() {
-                  currentPage--;
-                  scrollController.animateTo(
-                    0.0,
-                    duration: Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                  );
-                });
-              }
-            : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: currentPage > 1 ? Colors.blue.shade600 : Colors.grey,
-        ),
-        child: Text(
-          LocaleKeys.paginating_page_previous.tr(context: context),
-          style: TextStyle(color: currentPage > 1 ? Colors.black : Colors.grey),
-        ),
-      );
-    } else {
-      return ElevatedButton.icon(
-        label: Icon(Icons.arrow_back_ios),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: currentPage > 1 ? Colors.blue.shade600 : Colors.grey,
-        ),
-        onPressed: currentPage > 1
-            ? () {
-                setState(() {
-                  currentPage--;
-                  scrollController.animateTo(
-                    0.0,
-                    duration: Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                  );
-                });
-              }
-            : null,
-      );
-    }
+              scrollController.animateTo(
+                0.0,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              );
+            }
+          : null,
+    );
   }
 
-  Widget nextPageButton() {
-    final orientation = MediaQuery.of(context).orientation;
+  Widget nextPageButton({required int totalPages}) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_forward_ios),
+      color: Colors.white,
+      style: IconButton.styleFrom(
+        minimumSize: const Size(50, 40),
+        backgroundColor: currentPage < totalPages ? AppColors.primary : Colors.grey,
+      ),
+      onPressed: currentPage < totalPages
+          ? () {
+              setState(() {
+                currentPage++;
+              });
 
-    // if (orientation == Orientation.landscape) {
-    //   return ElevatedButton(
-    //     onPressed: getEventList(filteredEventsData).length > currentPage
-    //         ? () {
-    //             setState(() {
-    //               currentPage++;
-    //               scrollController.animateTo(
-    //                 0.0,
-    //                 duration: Duration(milliseconds: 500),
-    //                 curve: Curves.easeInOut,
-    //               );
-    //             });
-    //           }
-    //         : null,
-    //     style: ElevatedButton.styleFrom(
-    //       backgroundColor: getEventList(filteredEventsData).length > currentPage
-    //           ? Colors.blue.shade600
-    //           : Colors.grey,
-    //     ),
-    //     child: Text(
-    //       LocaleKeys.paginating_page_next.tr(context: context),
-    //       style: TextStyle(
-    //         color: getEventList(filteredEventsData).length > currentPage
-    //             ? Colors.black
-    //             : Colors.grey,
-    //       ),
-    //     ),
-    //   );
-    // } else {
-    //   return ElevatedButton.icon(
-    //     label: Icon(Icons.arrow_forward_ios),
-    //     style: ElevatedButton.styleFrom(
-    //       backgroundColor: getEventList(filteredEventsData).length > currentPage
-    //           ? Colors.blue.shade600
-    //           : Colors.grey,
-    //     ),
-    //     onPressed: getEventList(filteredEventsData).length > currentPage
-    //         ? () {
-    //             setState(() {
-    //               currentPage++;
-    //               scrollController.animateTo(
-    //                 0.0,
-    //                 duration: Duration(milliseconds: 500),
-    //                 curve: Curves.easeInOut,
-    //               );
-    //             });
-    //           }
-    //         : null,
-    //   );
-    // }
-    return Container();
+              scrollController.animateTo(
+                0.0,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              );
+            }
+          : null,
+    );
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final eventsAsync = ref.watch(eventsProvider);
+
+    return Scaffold(
+      body: eventsAsync.when(
+        loading: () => loadingData(),
+        error: (error, stackTrace) => noEvents(),
+        data: (events) {
+          if (events.isEmpty) {
+            return noEvents();
+          }
+
+          return hasEvents(events);
+        },
+      ),
+    );
   }
 }
