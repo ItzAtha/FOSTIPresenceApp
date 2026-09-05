@@ -55,7 +55,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                   ),
                   Container(
-                    height: 150.0,
+                    constraints: const BoxConstraints(minHeight: 150.0),
                     padding: const EdgeInsets.all(AppSizes.p16),
                     child: Center(
                       child: eventsAsync.when(
@@ -75,9 +75,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Text(
-                                activeEvent.eventName,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(color: Colors.white),
+                                activeEvent.title,
+                                style: Theme.of(context).textTheme.titleMedium,
                                 textAlign: TextAlign.center,
                               ),
                               Text(
@@ -87,11 +86,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(color: Colors.grey),
                               ),
+                              const SizedBox(height: 8.0),
+                              const Divider(thickness: 1.5),
+                              const SizedBox(height: 8.0),
                               Text(
-                                activeEvent.eventDescription,
-                                style: Theme.of(context).textTheme.labelMedium
-                                    ?.copyWith(color: Colors.grey),
-                                textAlign: TextAlign.center,
+                                activeEvent.description,
+                                style: Theme.of(context).textTheme.labelMedium,
+                                textAlign: TextAlign.justify,
                               ),
                             ],
                           );
