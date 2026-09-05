@@ -7,6 +7,8 @@ part 'events_notifier.g.dart';
 
 @riverpod
 class EventsNotifier extends _$EventsNotifier {
+  final DatabaseManager _dbManager = DatabaseManager();
+
   @override
   Future<List<EventModel>> build() async {
     return await _fetchEvents();
@@ -22,19 +24,56 @@ class EventsNotifier extends _$EventsNotifier {
       for (final eventData in eventsList) {
         EventModel event = EventModel.fromJson(eventData);
         events.add(event);
-        print(event.toJson());
       }
     }
     return events;
   }
 
-  void updateEvent(EventModel updatedEvent) {
+  Future<bool> updateEvent(EventModel updatedEvent) async {
     final currentEvents = state.value;
+    bool isUpdateSuccess = false;
 
-    if (currentEvents == null) return;
-    state = AsyncData([
-      for (final event in currentEvents)
-        if (event.eventId == updatedEvent.eventId) updatedEvent else event,
-    ]);
+    if (currentEvents == null) return isUpdateSuccess;
+
+    Map<String, dynamic> payload = updatedEvent.toJson();
+    payload.remove('id');
+    payload.remove('isActive');
+    payload.remove('createdAt');
+
+    isUpdateSuccess = await _dbManager.updateData(
+      endpoint: 'api/event',
+      dataId: updatedEvent.eventId,
+      jsonData: payload,
+    );
+
+    if (isUpdateSuccess) {
+      state = AsyncData([
+        for (final event in currentEvents)
+          if (event.eventId == updatedEvent.eventId) updatedEvent else event,
+      ]);
+    }
+
+    return isUpdateSuccess;
+  }
+
+  Future<bool> deleteEvent(EventModel deletedEvent) async {
+    final currentEvents = state.value;
+    bool isUpdateSuccess = false;
+
+    if (currentEvents == null) return isUpdateSuccess;
+
+    isUpdateSuccess = await _dbManager.deleteData(
+      endpoint: 'api/event',
+      dataId: deletedEvent.eventId,
+    );
+
+    if (isUpdateSuccess) {
+      state = AsyncData([
+        for (final event in currentEvents)
+          if (event.eventId != deletedEvent.eventId) event,
+      ]);
+    }
+
+    return isUpdateSuccess;
   }
 }
