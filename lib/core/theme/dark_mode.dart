@@ -1,5 +1,5 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_constants.dart' show AppColors, AppSizes;
 
@@ -18,9 +18,8 @@ class DarkMode {
       iconTheme: const IconThemeData(color: AppColors.iconDark),
       radioTheme: const RadioThemeData(fillColor: WidgetStatePropertyAll(Color(0x80F5F6FA))),
       textTheme: (() {
-        final textBase = Typography(
-          platform: TargetPlatform.android,
-        ).black.apply(bodyColor: AppColors.textDark, displayColor: AppColors.textDark);
+        final textBase = Typography(platform: TargetPlatform.android).black
+            .apply(bodyColor: AppColors.textDark, displayColor: AppColors.textDark);
 
         return textBase.copyWith(
           displaySmall: textBase.displaySmall?.copyWith(
@@ -135,6 +134,61 @@ class DarkMode {
         elevation: 12.0,
         showDragHandle: true,
         modalBackgroundColor: AppColors.bgDark,
+      ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: AppColors.cardDark,
+        headerBackgroundColor: AppColors.primary,
+        headerForegroundColor: AppColors.textDark,
+        dayStyle: const TextStyle(color: AppColors.textDark),
+        dayOverlayColor: WidgetStatePropertyAll(AppColors.secondary.withValues(alpha: 0.5)),
+        todayBorder: const BorderSide(color: AppColors.secondary, width: 2.0),
+        todayBackgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.secondary;
+          }
+          return null;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.secondary;
+          }
+          return null;
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.secondary;
+          }
+          return null;
+        }),
+        cancelButtonStyle: TextButton.styleFrom(foregroundColor: AppColors.secondary),
+        confirmButtonStyle: TextButton.styleFrom(foregroundColor: AppColors.secondary),
+      ),
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: AppColors.cardDark,
+        helpTextStyle: const TextStyle(color: AppColors.textDark, fontSize: 16.0),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppSizes.largeRounded)),
+        ),
+        hourMinuteColor: WidgetStateColor.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.secondary.withValues(alpha: 0.6)
+              : const Color(0xFF2C2C30),
+        ),
+        hourMinuteTextColor: AppColors.textDark,
+        hourMinuteShape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppSizes.mediumRounded)),
+        ),
+        dialBackgroundColor: const Color(0xFF2C2C30),
+        dialHandColor: AppColors.secondary.withValues(alpha: 0.9),
+        dialTextColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.textLight;
+          }
+          return AppColors.textDark;
+        }),
+        entryModeIconColor: AppColors.secondary,
+        cancelButtonStyle: TextButton.styleFrom(foregroundColor: AppColors.secondary),
+        confirmButtonStyle: TextButton.styleFrom(foregroundColor: AppColors.secondary),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
