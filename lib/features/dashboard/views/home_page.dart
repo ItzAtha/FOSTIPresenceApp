@@ -80,9 +80,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 textAlign: TextAlign.center,
                               ),
                               Text(
-                                DateFormat(
-                                  'dd MMMM yyyy, HH:mm',
-                                ).format(DateTime.parse(activeEvent.eventDate.toIso8601String())),
+                                DateFormat('dd MMMM yyyy, HH:mm').format(activeEvent.eventDate),
                                 style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(color: Colors.grey),
                               ),
