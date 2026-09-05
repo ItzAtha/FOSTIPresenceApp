@@ -76,8 +76,7 @@ class _EventCardWidgetState extends State<EventCardWidget> {
                             children: [
                               Text(widget._title, style: Theme.of(context).textTheme.titleSmall),
                               Text(
-                                DateFormat('dd MMM yyyy, HH:mm')
-                                    .format(DateTime.parse(widget._date.toIso8601String())),
+                                DateFormat('dd MMM yyyy, HH:mm').format(widget._date),
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(color: Colors.grey),
