@@ -6,6 +6,7 @@ import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -84,6 +85,8 @@ class _MemberPageState extends ConsumerState<MemberPage> {
     memberNIMController.text = member.nim;
     setState(() => selectedDivision = member.division);
 
+    if (!mounted) return;
+
     var memberEditDialog = StatefulBuilder(
       builder: (context, dialogSetState) {
         return AlertDialog(
@@ -102,10 +105,9 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   TextFormField(
                     controller: memberNameController,
                     decoration: InputDecoration(
-                      isDense: true,
                       labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
                       hintText: "Andi Setya Budi",
-                      icon: const Icon(Icons.person, size: 24.0),
+                      icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
                       border: const OutlineInputBorder(),
                       errorMaxLines: 2,
                     ),
@@ -128,7 +130,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                       isDense: true,
                       labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
                       hintText: "L200250001",
-                      icon: const Icon(Icons.perm_identity, size: 24.0),
+                      icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
                       border: const OutlineInputBorder(),
                       errorMaxLines: 2,
                     ),
@@ -160,7 +162,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   const SizedBox(height: 16.0),
                   Row(
                     children: <Widget>[
-                      const Icon(Icons.category, size: 24.0),
+                      const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
                       const SizedBox(width: 16.0),
                       DropdownButton<Divisions>(
                         value: selectedDivision,
@@ -188,26 +190,26 @@ class _MemberPageState extends ConsumerState<MemberPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                ElevatedButton(
-                  onPressed: () => validateFormInput(member),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    minimumSize: const Size(120, 40),
-                  ),
-                  child: Text(
-                    LocaleKeys.member_page_dialog_button_update.tr(context: context),
-                    style: const TextStyle(color: Colors.white),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => validateFormInput(member),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                    child: Text(
+                      LocaleKeys.member_page_dialog_button_update.tr(context: context),
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 24.0),
-                OutlinedButton(
-                  onPressed: () => context.pop(),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(120, 40),
-                    foregroundColor: AppColors.dangerZone,
-                    side: const BorderSide(color: AppColors.dangerZone),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => context.pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.dangerZone,
+                      side: const BorderSide(color: AppColors.dangerZone),
+                    ),
+                    child: Text(LocaleKeys.member_page_dialog_button_cancel.tr(context: context)),
                   ),
-                  child: Text(LocaleKeys.member_page_dialog_button_cancel.tr(context: context)),
                 ),
               ],
             ),
@@ -215,8 +217,6 @@ class _MemberPageState extends ConsumerState<MemberPage> {
         );
       },
     );
-
-    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -258,7 +258,35 @@ class _MemberPageState extends ConsumerState<MemberPage> {
           division: selectedDivision!,
         );
 
-        ref.read(membersProvider.notifier).updateMember(updatedMember);
+        bool isSuccess = await ref.read(membersProvider.notifier).updateMember(updatedMember);
+
+        if (!mounted) return;
+
+        if (isSuccess) {
+          Toastification().show(
+            title: Text(LocaleKeys.alert_notify_member_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.alert_notify_member_description_update_success.tr(context: context),
+            ),
+            type: ToastificationType.success,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+        } else {
+          Toastification().show(
+            title: Text(LocaleKeys.alert_notify_member_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.alert_notify_member_description_update_failed.tr(context: context),
+            ),
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+        }
         context.pop();
       }
     }
@@ -317,8 +345,8 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6.0),
-                    const Divider(color: Colors.grey, thickness: 1.5),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
                       LocaleKeys.member_page_loading_data_no_data_description.tr(context: context),
