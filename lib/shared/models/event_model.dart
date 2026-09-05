@@ -1,3 +1,4 @@
+import 'package:attendance_management/shared/provider/datetime_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'event_model.freezed.dart';
@@ -12,7 +13,7 @@ abstract class EventModel with _$EventModel {
     @JsonKey(name: 'judul') required String title,
     @JsonKey(name: 'deskripsi') required String description,
     @JsonKey(name: 'lokasi') required String location,
-    @JsonKey(name: 'tanggal') required DateTime eventDate,
+    @JsonKey(name: 'tanggal') @DateTimeConverter() required DateTime eventDate,
     @Default(false) bool isActive,
     required DateTime createdAt,
   }) = _EventModel;
