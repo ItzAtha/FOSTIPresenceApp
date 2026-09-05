@@ -8,13 +8,13 @@ abstract class EventModel with _$EventModel {
   const EventModel._();
 
   const factory EventModel({
-    required String eventId,
-    required String eventName,
-    required String eventDescription,
-    required String eventLocation,
-    required DateTime eventDate,
-
+    @JsonKey(name: 'id') required String eventId,
+    @JsonKey(name: 'judul') required String title,
+    @JsonKey(name: 'deskripsi') required String description,
+    @JsonKey(name: 'lokasi') required String location,
+    @JsonKey(name: 'tanggal') required DateTime eventDate,
     @Default(false) bool isActive,
+    required DateTime createdAt,
   }) = _EventModel;
 
   factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
