@@ -429,63 +429,74 @@ class _MemberPageState extends ConsumerState<MemberPage> {
         ),
 
         Expanded(
-          child: SingleChildScrollView(
-            controller: scrollController,
-            padding: const EdgeInsets.all(AppSizes.p16),
-            child: Column(
-              children: <Widget>[
-                AnimationLimiter(
-                  child: Column(
-                    children: List<Widget>.generate(currentMembers.length, (index) {
-                      final memberData = currentMembers[index];
+          child: LayoutBuilder(
+            builder: (context, constraint) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(AppSizes.p16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraint.maxHeight - (AppSizes.p16 * 2)),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: <Widget>[
+                        AnimationLimiter(
+                          child: Column(
+                            children: List<Widget>.generate(currentMembers.length, (index) {
+                              final memberData = currentMembers[index];
 
-                      return Column(
-                        children: <Widget>[
-                          AnimationConfiguration.staggeredList(
-                            position: index,
-                            delay: const Duration(milliseconds: 500),
-                            duration: const Duration(milliseconds: 800),
-                            child: SlideAnimation(
-                              verticalOffset: 50.0,
-                              child: FadeInAnimation(
-                                child: MemberCardWidget(
-                                  name: memberData.name,
-                                  nim: memberData.nim,
-                                  division: memberData.division,
-                                  editButton: () => memberEditButton(
-                                    membersData: members,
-                                    memberData: memberData,
+                              return Column(
+                                children: <Widget>[
+                                  AnimationConfiguration.staggeredList(
+                                    position: index,
+                                    delay: const Duration(milliseconds: 300),
+                                    duration: const Duration(milliseconds: 800),
+                                    child: SlideAnimation(
+                                      verticalOffset: 50.0,
+                                      child: FadeInAnimation(
+                                        child: MemberCardWidget(
+                                          name: memberData.name,
+                                          nim: memberData.nim,
+                                          division: memberData.division,
+                                          editButton: () => memberEditButton(
+                                            membersData: members,
+                                            memberData: memberData,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+
+                                  if (index < currentMembers.length - 1)
+                                    const SizedBox(height: 16.0),
+                                ],
+                              );
+                            }),
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
+                        const Spacer(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            previousPageButton(),
+                            const SizedBox(width: 20.0),
+                            Text(
+                              LocaleKeys.paginating_page_info.tr(
+                                context: context,
+                                namedArgs: {'current': '$currentPage', 'total': '$totalPages'},
                               ),
                             ),
-                          ),
-
-                          if (index < currentMembers.length - 1) const SizedBox(height: 16.0),
-                        ],
-                      );
-                    }),
+                            const SizedBox(width: 20.0),
+                            nextPageButton(totalPages: totalPages),
+                          ],
+                        ),
+                        SizedBox(height: MediaQuery.of(context).padding.bottom),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    previousPageButton(),
-                    const SizedBox(width: 20.0),
-                    Text(
-                      LocaleKeys.paginating_page_info.tr(
-                        context: context,
-                        namedArgs: {'current': '$currentPage', 'total': '$totalPages'},
-                      ),
-                    ),
-                    const SizedBox(width: 20.0),
-                    nextPageButton(totalPages: totalPages),
-                  ],
-                ),
-                SizedBox(height: MediaQuery.of(context).padding.bottom),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ],
