@@ -1,3 +1,4 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_constants.dart';
@@ -24,7 +25,7 @@ class MemberCardWidget extends StatefulWidget {
 class _MemberCardWidgetState extends State<MemberCardWidget> {
   bool showEditButton = false;
   double editButtonWidth = 0.0;
-  static const double maxEditButtonWidth = 56.0;
+  static const double maxEditButtonWidth = 48.0;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +100,11 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
                             child: const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(AppSizes.p8),
-                                child: Icon(Icons.edit, color: Colors.white),
+                                child: FaIcon(
+                                  FontAwesomeIcons.pen,
+                                  color: Colors.white,
+                                  size: 20.0,
+                                ),
                               ),
                             ),
                           ),
