@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class DatabaseManager {
   final String _baseURL = "https://fostipresensiapi.vercel.app";
@@ -9,26 +9,28 @@ class DatabaseManager {
   final Dio _dio;
   final Duration _timeLimit;
 
-  String _databaseStatus = 'Idle';
+  String _databaseStatus = '';
 
   DatabaseManager({this._timeLimit = const Duration(seconds: 10)}) : _dio = Dio();
 
   Future<bool> createData({
-    required String urlPath,
+    required String endpoint,
     required Map<String, dynamic> jsonData,
     Map<String, String>? httpHeaders,
     bool showLogs = false,
   }) async {
-    Uri url = Uri.parse("$_baseURL/$urlPath");
+    Uri url = Uri.parse("$_baseURL/$endpoint");
     bool isSuccess = false;
 
     try {
       String httpBody = jsonEncode(jsonData);
-      final response = await _dio.post(
-        url.path,
-        options: Options(headers: httpHeaders),
-        data: httpBody,
-      ).timeout(_timeLimit);
+      final response = await _dio
+          .post(
+            url.toString(),
+            options: Options(headers: httpHeaders),
+            data: httpBody,
+          )
+          .timeout(_timeLimit);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _databaseStatus = 'POST ${url.toString()} -> OK (${response.statusCode})';
@@ -50,22 +52,24 @@ class DatabaseManager {
   }
 
   Future<bool> updateData({
-    required String urlPath,
+    required String endpoint,
     required String dataId,
     required Map<String, dynamic> jsonData,
     Map<String, String>? httpHeaders,
     bool showLogs = false,
   }) async {
-    Uri url = Uri.parse("$_baseURL/$urlPath/$dataId");
+    Uri url = Uri.parse("$_baseURL/$endpoint/$dataId");
     bool isSuccess = false;
 
     try {
       String httpBody = jsonEncode(jsonData);
-      final response = await _dio.put(
-        url.path,
-        options: Options(headers: httpHeaders),
-        data: httpBody,
-      ).timeout(_timeLimit);
+      final response = await _dio
+          .put(
+            url.toString(),
+            options: Options(headers: httpHeaders),
+            data: httpBody,
+          )
+          .timeout(_timeLimit);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _databaseStatus = 'UPDATE ${url.toString()} -> OK (200)';
@@ -87,15 +91,15 @@ class DatabaseManager {
   }
 
   Future<bool> deleteData({
-    required String urlPath,
+    required String endpoint,
     required String dataId,
     bool showLogs = false,
   }) async {
-    Uri url = Uri.parse("$_baseURL/$urlPath/$dataId");
+    Uri url = Uri.parse("$_baseURL/$endpoint/$dataId");
     bool isSuccess = false;
 
     try {
-      final response = await _dio.delete(url.path).timeout(_timeLimit);
+      final response = await _dio.delete(url.toString()).timeout(_timeLimit);
       if (response.statusCode == 200) {
         _databaseStatus = 'DELETE ${url.toString()} -> OK (200)';
         isSuccess = true;
@@ -118,7 +122,6 @@ class DatabaseManager {
   Future<Map<String, dynamic>> readData({
     required String endpoint,
     String? dataId,
-    bool onlyReadLogs = false,
     bool showLogs = false,
   }) async {
     Uri url = Uri.parse("$_baseURL/$endpoint/${dataId ?? ''}");
