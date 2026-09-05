@@ -59,7 +59,7 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
                     padding: const EdgeInsets.all(AppSizes.p16),
                     child: Row(
                       children: <Widget>[
-                        const Icon(Icons.person, size: 40.0),
+                        const FaIcon(FontAwesomeIcons.solidUser, size: 36.0),
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Column(
