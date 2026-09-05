@@ -6,6 +6,8 @@ part 'members_notifier.g.dart';
 
 @riverpod
 class MembersNotifier extends _$MembersNotifier {
+  final DatabaseManager _dbManager = DatabaseManager();
+
   @override
   Future<List<MemberModel>> build() async {
     return await _fetchMembers();
@@ -21,19 +23,35 @@ class MembersNotifier extends _$MembersNotifier {
       for (final memberData in membersList) {
         MemberModel member = MemberModel.fromJson(memberData);
         members.add(member);
-        print(member.toJson());
       }
     }
     return members;
   }
 
-  void updateMember(MemberModel updatedMember) {
+  Future<bool> updateMember(MemberModel updatedMember) async {
     final currentMembers = state.value;
+    bool isUpdateSuccess = false;
 
-    if (currentMembers == null) return;
-    state = AsyncData([
-      for (final member in currentMembers)
-        if (member.memberId == updatedMember.memberId) updatedMember else member,
-    ]);
+    if (currentMembers == null) return isUpdateSuccess;
+
+    Map<String, dynamic> payload = updatedMember.toJson();
+    payload.remove('id');
+    payload.remove('kartu');
+    payload.remove('createdAt');
+
+    isUpdateSuccess = await _dbManager.updateData(
+      endpoint: 'api/mahasiswa',
+      dataId: updatedMember.memberId,
+      jsonData: payload,
+    );
+
+    if (isUpdateSuccess) {
+      state = AsyncData([
+        for (final member in currentMembers)
+          if (member.memberId == updatedMember.memberId) updatedMember else member,
+      ]);
+    }
+
+    return isUpdateSuccess;
   }
 }
