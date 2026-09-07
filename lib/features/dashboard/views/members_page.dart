@@ -47,13 +47,6 @@ class _MemberPageState extends ConsumerState<MemberPage> {
   MemberFilterQuery? filterQuery;
   FilterIndexSelection selectedFilterIndex = const FilterIndexSelection();
 
-  final List<Divisions> divisionList = [
-    Divisions.ristek,
-    Divisions.hubpub,
-    Divisions.keor,
-    Divisions.bphi,
-  ];
-
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final ScrollController scrollController = ScrollController();
   final TextEditingController memberNameController = TextEditingController();
@@ -169,7 +162,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                         hint: Text(
                           LocaleKeys.member_page_dialog_field_division.tr(context: context),
                         ),
-                        items: divisionList.map((item) {
+                        items: Divisions.values.map((item) {
                           return DropdownMenuItem<Divisions>(
                             value: item,
                             child: Text(item.aliases),
