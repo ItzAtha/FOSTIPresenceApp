@@ -15,10 +15,9 @@ class EventsNotifier extends _$EventsNotifier {
   }
 
   Future<List<EventModel>> _fetchEvents() async {
-    DatabaseManager manager = DatabaseManager();
     List<EventModel> events = [];
 
-    Map<String, dynamic> responseJson = await manager.readData(endpoint: 'api/event');
+    Map<String, dynamic> responseJson = await _dbManager.readData(endpoint: 'api/event');
     if (responseJson.isNotEmpty) {
       List<dynamic> eventsList = responseJson['data'] as List<dynamic>;
       for (final eventData in eventsList) {
