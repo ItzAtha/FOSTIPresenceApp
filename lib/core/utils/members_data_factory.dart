@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:attendance_management/core/utils/string_similar.dart';
-import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:excel_plus/excel_plus.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 class MembersData {
   final List<Excel> _workbooks = [];
@@ -74,7 +74,7 @@ class MembersData {
             if (cell == null) continue;
 
             bool hasMatch = divisionList.any(
-                  (division) => StringSimilar.jaccardSimilarity(cell.value.toString(), division) >= 0.8,
+              (division) => StringSimilar.jaccardSimilarity(cell.value.toString(), division) >= 0.8,
             );
 
             if (hasMatch) {
@@ -88,16 +88,18 @@ class MembersData {
         for (var startIdColumn in startIdColumns) {
           String divName = worksheet
               .cell(
-            CellIndex.indexByColumnRow(
-              columnIndex: startIdColumn.columnIndex,
-              rowIndex: startIdColumn.rowIndex,
-            ),
-          )
+                CellIndex.indexByColumnRow(
+                  columnIndex: startIdColumn.columnIndex,
+                  rowIndex: startIdColumn.rowIndex,
+                ),
+              )
               .value
               .toString();
           List<List<String>> studentsData = [];
 
-          print("$divName Start ID Column: ${startIdColumn.columnIndex}, Row: ${startIdColumn.rowIndex}");
+          print(
+            "$divName Start ID Column: ${startIdColumn.columnIndex}, Row: ${startIdColumn.rowIndex}",
+          );
           int columnIndex = startIdColumn.columnIndex;
           int rowIndex = startIdColumn.rowIndex;
 
@@ -105,7 +107,9 @@ class MembersData {
             List<String> tempStudentsData = [];
 
             for (int column = columnIndex + 1; column < worksheet.maxColumns; column++) {
-              var cell = worksheet.cell(CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row));
+              var cell = worksheet.cell(
+                CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row),
+              );
 
               if (cell.value == null || row == rowIndex + 1) continue;
               print("Cell at Row: $row, Col: $column has value: ${cell.value}");
@@ -153,7 +157,7 @@ class MembersData {
         });
       }
     }
-    
+
     String encodedData = jsonEncode(studentsDataMap);
     print("Encoded Students Data: $encodedData");
     return studentsDataMap;
