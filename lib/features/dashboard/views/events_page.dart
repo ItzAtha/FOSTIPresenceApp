@@ -1,5 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/shared/models/event_model.dart';
+import 'package:attendance_management/shared/models/member_model.dart';
+import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
 import 'package:attendance_management/shared/provider/events_notifier.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,11 +9,15 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/connectivity_utils.dart';
 import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart';
+import '../../../core/utils/events_recap_factory.dart';
+import '../../../shared/models/event_log_model.dart';
+import '../../../shared/provider/members_notifier.dart';
 import '../widgets/event_card_widget.dart';
 
 class EventPage extends ConsumerStatefulWidget {
@@ -329,6 +335,139 @@ class _EventPageState extends ConsumerState<EventPage> {
     }
   }
 
+  Future<void> eventDownloadButton(EventModel eventData) async {
+    Toastification().show(
+      title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+      description: Text(
+        LocaleKeys.alert_notify_event_description_saving_recap_process.tr(context: context),
+      ),
+      type: ToastificationType.info,
+      style: ToastificationStyle.flat,
+      alignment: Alignment.bottomCenter,
+      autoCloseDuration: const Duration(seconds: 2),
+      animationDuration: const Duration(milliseconds: 500),
+    );
+
+    List<EventLogModel> logsList = await ref
+        .read(eventsLogsProvider.notifier)
+        .getEventLogs(eventData.eventId);
+    List<MemberModel> membersList = await ref.read(membersProvider.future);
+
+    List<MemberModel> membersData = [];
+
+    for (final log in logsList) {
+      final member = membersList.firstWhere((member) => member.cardId == log.cardId);
+      membersData.add(member);
+    }
+
+    membersData.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    final isCreated = await RecapFactory(
+      eventData: eventData,
+      membersData: membersData,
+      logsData: logsList,
+    ).createExcel();
+
+    final recapResult = await isCreated?.saveAndOpenExcel();
+
+    if (!mounted) return;
+
+    if (recapResult?.result == SaveResult.success) {
+      Toastification().show(
+        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+        description: Text(
+          LocaleKeys.alert_notify_event_description_saving_recap_success.tr(context: context),
+        ),
+        type: ToastificationType.success,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 500),
+      );
+
+      var openFileConfirm = SimpleDialog(
+        title: const Text("Open File Confirmation", textAlign: TextAlign.center),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+            child: Column(
+              children: <Widget>[
+                const Text(
+                  "Do you want to open this excel file recap?",
+                  textAlign: TextAlign.justify,
+                ),
+                const SizedBox(height: 25.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => context.pop(Answer.YES),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                        child: Text(
+                          LocaleKeys.event_page_dialog_button_yes.tr(context: context),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 24.0),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => context.pop(Answer.NO),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.dangerZone,
+                          side: const BorderSide(color: AppColors.dangerZone),
+                        ),
+                        child: Text(LocaleKeys.event_page_dialog_button_no.tr(context: context)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+
+      if (await showDialog(
+            context: context,
+            animationStyle: const AnimationStyle(
+              curve: Curves.easeIn,
+              reverseCurve: Curves.easeOut,
+              duration: Duration(milliseconds: 300),
+            ),
+            builder: (BuildContext context) {
+              return openFileConfirm;
+            },
+          ) ==
+          Answer.YES) {
+        final OpenResult result = await OpenFilex.open(
+          recapResult!.data!,
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          uti: "com.microsoft.excel.xls",
+        );
+
+        if (result.type == ResultType.done) {
+          print("Successfully opened recap excel file at ${recapResult.data}");
+        } else {
+          print("Failed to open recap excel file at ${recapResult.data}");
+        }
+      }
+    } else if (recapResult?.result == SaveResult.failed) {
+      Toastification().show(
+        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+        description: Text(
+          LocaleKeys.alert_notify_event_description_saving_recap_failed.tr(context: context),
+        ),
+        type: ToastificationType.error,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 500),
+      );
+    }
+  }
+
   Future<void> eventDeleteButton(EventModel eventData) async {
     if (!await ConnectivityUtils.checkConnection()) {
       if (!mounted) return;
@@ -587,7 +726,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                                             eventData: eventData,
                                           ),
                                           deleteButton: () => eventDeleteButton(eventData),
-                                          downloadButton: () => (),
+                                          downloadButton: () => eventDownloadButton(eventData),
                                         ),
                                       ),
                                     ),
