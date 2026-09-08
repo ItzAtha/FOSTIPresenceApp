@@ -1,86 +1,55 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:attendance_management/manager/database_manager.dart';
+import 'package:attendance_management/shared/provider/members_notifier.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/members_data_factory.dart';
 import '../../../../manager/bluetooth_manager.dart';
 import '../../../../translations/locale_keys.g.dart';
+import '../../../core/app_constants.dart';
+import '../../../core/utils/debouncer.dart';
+import '../../../shared/models/member_model.dart';
 
-
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _RegisterPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  String consoleText = "";
-  List<String> consoleTextList = [];
+class _RegisterPageState extends ConsumerState<RegisterPage> {
+  bool isIdCardDetected = false;
+  bool isLoadingToRegister = false;
 
-  Timer? consoleTask;
-  bool isAutoScroll = true;
-  bool isDisconnected = false;
-  bool onRegisterCard = false;
-
-  bool isNIMNotFound = false;
-  bool isExcelFileFound = false;
-
-  final ScrollController consoleScrollController = ScrollController();
-  final TextEditingController consoleChatController = TextEditingController();
+  Divisions? selectedDivision;
+  Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   late MembersData membersData;
   late BluetoothManager bluetoothManager;
 
-  void sendMessage({required String message, bool newLine = true, bool allowEmptyMessage = false}) {
-    if (message.trim().isEmpty && !allowEmptyMessage) return;
-
-    if (consoleTextList.length >= 500) {
-      consoleTextList.removeAt(0);
-    }
-
-    if (!newLine) {
-      consoleTextList[consoleTextList.length - 1] = consoleTextList[consoleTextList.length - 1]
-          .substring(0, consoleTextList.elementAt(consoleTextList.length - 1).length - 2);
-      consoleTextList.add("$message\n");
-    } else {
-      String formattedText = message;
-      if (!message.endsWith("\n")) {
-        formattedText += "\n";
-      }
-      consoleTextList.add(formattedText);
-    }
-
-    setState(() => consoleText = consoleTextList.join(""));
-  }
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final TextEditingController memberCardIdController = TextEditingController();
+  final TextEditingController memberNameController = TextEditingController();
+  final TextEditingController memberNIMController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    bluetoothManager = BluetoothManager(context: context);
     membersData = MembersData();
+    bluetoothManager = BluetoothManager(context: context);
 
-    sendMessage(message: "Load FOSTI members data excel...");
     membersData
         .loadData()
         .then((isSuccess) {
           if (!mounted) return;
-
-          if (isSuccess) {
-            isExcelFileFound = true;
-            sendMessage(message: "FOSTI members data loaded successfully.");
-          } else {
-            sendMessage(message: "Failed to load FOSTI members data. Maybe excel file not set?");
-          }
-          sendMessage(message: "", allowEmptyMessage: true);
-
-          BluetoothManager.clearReceivedMessage();
-          BluetoothManager.clearReceivedData();
 
           BluetoothDevice? device = BluetoothManager.getConnectedDevice;
           if (device != null) {
@@ -89,78 +58,295 @@ class _RegisterPageState extends State<RegisterPage> {
         })
         .catchError((error) {
           print("Error loading FOSTI members data excel: $error");
-          sendMessage(
-            message: "Error loading FOSTI members data excel. Maybe excel file is corrupted?",
-          );
-          sendMessage(message: "", allowEmptyMessage: true);
         });
+  }
 
-    consoleTask = Timer.periodic(500.milliseconds, (timer) {
-      dynamic receivedMessage;
+  Future<void> validateFormInput() async {
+    FormState? form = formKey.currentState;
 
-      List<String> messages = [
-        BluetoothManager.getReceivedData,
-        ...BluetoothManager.getReceivedMessage,
-      ];
-      BluetoothManager.clearReceivedMessage();
+    if (form != null) {
+      if (form.validate()) {
+        setState(() => isLoadingToRegister = true);
 
-      if (!BluetoothManager.isBluetoothConnected) {
-        if (!isDisconnected) {
-          isDisconnected = true;
-          sendMessage(message: "Bluetooth disconnected from ESP32!");
-        }
-        return;
-      } else {
-        isDisconnected = false;
-      }
+        String cardId = memberCardIdController.text.trim();
+        String name = memberNameController.text.trim();
+        String nim = memberNIMController.text.trim();
+        String divisi = selectedDivision?.name ?? '';
 
-      for (String message in messages) {
-        try {
-          receivedMessage = jsonDecode(message) as Map<String, dynamic>;
-        } catch (e) {
-          receivedMessage = message;
-        }
+        Map<String, dynamic> jsonPayload = {
+          "uid": cardId,
+          "nama": name,
+          "nim": nim,
+          "divisi": divisi,
+        };
 
-        if (receivedMessage is String) {
-          sendMessage(message: receivedMessage);
-        } else if (receivedMessage is Map<String, dynamic>) {
-          receivedMessage.forEach((key, value) {
-            if (key == "onRegisterCard" && value is bool) {
-              isNIMNotFound = false;
-              setState(() => onRegisterCard = value);
+        DatabaseManager dbManager = DatabaseManager();
+        bool isSuccess = await dbManager.createData(
+          endpoint: 'api/mahasiswa',
+          jsonData: jsonPayload,
+        );
 
-              if (!onRegisterCard && consoleChatController.text.isNotEmpty) {
-                setState(() => consoleChatController.text = "");
-              }
-            }
-          });
-        }
-      }
-
-      if (isAutoScroll) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-
-          consoleScrollController.animateTo(
-            consoleScrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
+        if (isSuccess) {
+          Toastification().show(
+            title: const Text("Member Register"),
+            description: Text("Successfully register new member with ID: $cardId"),
+            type: ToastificationType.success,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
           );
-        });
+
+          print("Member registered successfully.");
+          ref.invalidate(membersProvider);
+          memberCardIdController.clear();
+          memberNameController.clear();
+          memberNIMController.clear();
+          setState(() => selectedDivision = null);
+        } else {
+          Toastification().show(
+            title: const Text("Member Register"),
+            description: Text(
+              "Failed to register member. Data already exists in database with ID: $cardId",
+            ),
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+        }
+        setState(() => isLoadingToRegister = false);
       }
-    });
+    }
+  }
+
+  Widget noCardDetected() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            margin: const EdgeInsets.all(AppSizes.p16),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSizes.p16),
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const FaIcon(FontAwesomeIcons.userPlus, size: 36.0),
+                        const SizedBox(width: 16.0),
+                        Expanded(
+                          child: Text(
+                            "Register New Member",
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.5),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      "There no Member ID Card detected. Please tap the Member ID Card to RFID sensor to detect it in here.",
+                      textAlign: TextAlign.justify,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget cardDetected() {
+    memberCardIdController.text = "B3 3D F3 2A";
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSizes.p16),
+        child: Column(
+          children: <Widget>[
+            Text("Add New Member", style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 16.0),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(color: Colors.blue, width: 3.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSizes.p16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: Text(
+                        "You can just write a Member NIM to automatically filling the field or, if it doesn't exists, write it manually.",
+                        textAlign: TextAlign.justify,
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 48.0),
+            Form(
+              key: formKey,
+              canPop: false,
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 8.0),
+                  TextFormField(
+                    readOnly: true,
+                    controller: memberCardIdController,
+                    decoration: const InputDecoration(
+                      labelText: "Member Card ID",
+                      icon: FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: memberNameController,
+                    decoration: InputDecoration(
+                      labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
+                      hintText: "Andi Setya Budi",
+                      icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
+                      border: const OutlineInputBorder(),
+                      errorMaxLines: 2,
+                    ),
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? value) {
+                      if (value.toString().isEmpty) {
+                        return LocaleKeys.member_page_dialog_validation_name_required.tr(
+                          context: context,
+                        );
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: memberNIMController,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
+                      hintText: "L200250001",
+                      icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
+                      border: const OutlineInputBorder(),
+                      errorMaxLines: 2,
+                    ),
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    onChanged: (value) async {
+                      debouncer.run(() {
+                        final memberData = membersData.findStudentByNIM(value);
+                        print("Found: $memberData");
+
+                        if (memberData.isEmpty) {
+                          memberNameController.text = "";
+                          setState(() => selectedDivision = null);
+                          return;
+                        }
+
+                        setState(() {
+                          memberNameController.text = memberData[1];
+                          selectedDivision = Divisions.values.firstWhere(
+                            (element) => element.aliases == memberData[0],
+                          );
+                        });
+                      });
+                    },
+                    validator: (String? value) {
+                      bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
+
+                      if (value.toString().isEmpty) {
+                        return LocaleKeys.member_page_dialog_validation_nim_required_empty.tr(
+                          context: context,
+                        );
+                      } else if (!isValidFormat ||
+                          value.toString().length < 10 ||
+                          value.toString().length > 10) {
+                        return LocaleKeys.member_page_dialog_validation_nim_required_invalid.tr(
+                          context: context,
+                        );
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  Row(
+                    children: <Widget>[
+                      const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
+                      const SizedBox(width: 16.0),
+                      DropdownButton<Divisions>(
+                        value: selectedDivision,
+                        hint: Text(
+                          LocaleKeys.member_page_dialog_field_division.tr(context: context),
+                        ),
+                        items: Divisions.values.map((item) {
+                          return DropdownMenuItem<Divisions>(
+                            value: item,
+                            child: Text(item.aliases),
+                          );
+                        }).toList(),
+                        onChanged: (Divisions? value) {
+                          if (value == selectedDivision) return;
+                          setState(() => selectedDivision = value);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () => validateFormInput(),
+                    child: isLoadingToRegister
+                        ? ValueListenableBuilder(
+                            valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+                            builder: (_, mode, child) {
+                              return SizedBox(
+                                width: 24.0,
+                                height: 24.0,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    mode == AdaptiveThemeMode.light
+                                        ? AppColors.secondary
+                                        : AppColors.secondary.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : Text("Register Member", style: Theme.of(context).textTheme.labelLarge),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     super.dispose();
-    consoleTask?.cancel();
 
     BluetoothDevice? device = BluetoothManager.getConnectedDevice;
     if (device != null) {
-      if (onRegisterCard) {
-        bluetoothManager.sendBluetoothData(device, 'cancel');
-      }
       bluetoothManager.sendBluetoothData(device, 'cancel');
     }
   }
@@ -169,153 +355,17 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(LocaleKeys.control_panel_page_title_register.tr(context: context)),
-        ),
-        leading: BackButton(),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green.shade400, Colors.green.shade800],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        title: Text(LocaleKeys.control_panel_page_title_register.tr(context: context)),
+        leading: BackButton(
+          style: const ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll<Color>(Colors.transparent),
           ),
-        ),
-        leadingWidth: 55.0,
-        actions: <Widget>[
-          ValueListenableBuilder<AdaptiveThemeMode?>(
-            valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
-            builder: (context, mode, _) {
-              final isLight = mode == AdaptiveThemeMode.light;
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) {
-                  return RotationTransition(
-                    turns: child.key == ValueKey('icon1')
-                        ? Tween<double>(begin: 1, end: 0.75).animate(animation)
-                        : Tween<double>(begin: 0.75, end: 1).animate(animation),
-                    child: FadeTransition(opacity: animation, child: child),
-                  );
-                },
-                child: IconButton(
-                  key: ValueKey(isLight ? 'icon1' : 'icon2'),
-                  onPressed: () {
-                    if (isLight) {
-                      AdaptiveTheme.of(context).setDark();
-                    } else {
-                      AdaptiveTheme.of(context).setLight();
-                    }
-                  },
-                  icon: Icon(isLight ? Icons.wb_sunny : Icons.nights_stay),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-                padding: EdgeInsets.all(16.0),
-                width: double.infinity,
-                color: Colors.green.shade900.withValues(alpha: 0.2),
-                child: Scrollbar(
-                  child: SingleChildScrollView(
-                    controller: consoleScrollController,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        children: <Widget>[
-                          Text(
-                            consoleText,
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              color: Colors.greenAccent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.all(8.0),
-              padding: EdgeInsets.all(16.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextField(
-                      controller: consoleChatController,
-                      enabled: onRegisterCard,
-                      decoration: InputDecoration(
-                        hintText: LocaleKeys.control_panel_page_input_box.tr(context: context),
-                      ),
-                      onSubmitted: (value) {
-                        String messageValue = value.trim();
-
-                        sendMessage(message: messageValue, newLine: false);
-                        BluetoothDevice? device = BluetoothManager.getConnectedDevice;
-                        if (device == null) return;
-
-                        if (!isNIMNotFound &&
-                            isExcelFileFound &&
-                            messageValue.toLowerCase() != "cancel") {
-                          sendMessage(message: "", allowEmptyMessage: true);
-                          sendMessage(message: "Checking NIM in excel file....");
-                          List<String> data = membersData.findStudentByNIM(
-                            messageValue.toUpperCase(),
-                          );
-
-                          if (data.isNotEmpty) {
-                            sendMessage(message: "NIM found: ${data[2]} - ${data[1]}");
-                            sendMessage(message: "Using automatic presence mode.");
-
-                            String decodedData = jsonEncode(data);
-                            messageValue = decodedData;
-                          } else {
-                            sendMessage(message: "NIM not found in FOSTI members excel data.");
-                            sendMessage(message: "Using manual presence mode.");
-                            isNIMNotFound = true;
-                          }
-                        }
-
-                        bluetoothManager.sendBluetoothData(device, messageValue);
-                        print("Value: $messageValue");
-                        consoleChatController.text = "";
-                      },
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: LocaleKeys.control_panel_page_button_auto_scroll.tr(context: context),
-                    isSelected: isAutoScroll,
-                    onPressed: () => setState(() => isAutoScroll = !isAutoScroll),
-                    selectedIcon: Icon(Icons.play_circle),
-                    icon: Icon(Icons.stop_circle),
-                  ),
-                  IconButton(
-                    tooltip: LocaleKeys.control_panel_page_button_clear_monitor.tr(
-                      context: context,
-                    ),
-                    onPressed: () => setState(() {
-                      consoleTextList.clear();
-                      consoleText = "";
-                    }),
-                    icon: Icon(Icons.clear),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          onPressed: () => context.pop(),
         ),
       ),
+      body: isIdCardDetected ? cardDetected() : noCardDetected(),
     );
   }
 }
