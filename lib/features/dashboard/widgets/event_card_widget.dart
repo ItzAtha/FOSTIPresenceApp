@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_constants.dart';
+import '../../../routes/app_router.dart';
 
 class EventCardWidget extends StatefulWidget {
   final String _title;
@@ -32,6 +33,21 @@ class _EventCardWidgetState extends State<EventCardWidget> {
   bool showOptionButton = false;
   double optionButtonWidth = 0.0;
   static const double maxOptionButtonWidth = 48.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    AppRouter.router.routerDelegate.addListener(() {
+      final String currentRoute = AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
+      if (currentRoute != AppRoutes.eventRoute.path) {
+        setState(() {
+          showOptionButton = false;
+          optionButtonWidth = 0.0;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

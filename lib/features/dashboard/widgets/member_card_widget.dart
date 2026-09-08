@@ -1,3 +1,4 @@
+import 'package:attendance_management/routes/app_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,6 +27,21 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
   bool showEditButton = false;
   double editButtonWidth = 0.0;
   static const double maxEditButtonWidth = 48.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    AppRouter.router.routerDelegate.addListener(() {
+      final String currentRoute = AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
+      if (currentRoute != AppRoutes.memberRoute.path) {
+        setState(() {
+          showEditButton = false;
+          editButtonWidth = 0.0;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
