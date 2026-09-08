@@ -1,4 +1,5 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/manager/database_manager.dart';
 import 'package:attendance_management/shared/models/event_model.dart';
 import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
@@ -43,6 +44,209 @@ class _EventPageState extends ConsumerState<EventPage> {
   final TextEditingController eventLocController = TextEditingController();
   final TextEditingController eventDateTimeController = TextEditingController();
   final TextEditingController searchBarController = TextEditingController();
+
+  Future<void> eventAddButton() async {
+    if (!await ConnectivityUtils.checkConnection()) {
+      if (!mounted) return;
+
+      Toastification().show(
+        title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
+        description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+        type: ToastificationType.info,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 500),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+
+    var eventEditForm = AlertDialog(
+      title: Text(
+        LocaleKeys.event_page_dialog_add_title.tr(context: context),
+        textAlign: TextAlign.center,
+      ),
+      content: Form(
+        key: formKey,
+        canPop: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const SizedBox(height: 8.0),
+              TextFormField(
+                controller: eventNameController,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_name.tr(context: context),
+                  hintText: "Event FOSTI 202X",
+                  icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                keyboardType: TextInputType.name,
+                textInputAction: TextInputAction.next,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_name_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: eventDescController,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_description.tr(context: context),
+                  hintText: "FOSTI event held once a year",
+                  icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.next,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_description_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: eventLocController,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_location.tr(context: context),
+                  hintText: "Gedung J, Kampus 2, UMS",
+                  icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                maxLines: null,
+                keyboardType: TextInputType.streetAddress,
+                textInputAction: TextInputAction.next,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_location_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: eventDateTimeController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.event_page_dialog_field_date_label.tr(context: context),
+                  hintText: LocaleKeys.event_page_dialog_field_date_hint.tr(context: context),
+                  icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
+                  border: const OutlineInputBorder(),
+                  errorMaxLines: 2,
+                ),
+                onTap: () async {
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDateTime ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2030),
+                  );
+
+                  if (pickedDate != null) {
+                    if (!mounted) return;
+
+                    final TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(selectedDateTime ?? DateTime.now()),
+                      builder: (BuildContext context, Widget? child) {
+                        return MediaQuery(
+                          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                          child: child!,
+                        );
+                      },
+                    );
+
+                    if (pickedTime != null) {
+                      int seconds = DateTime.now().second;
+                      DateTime rawDateTime = DateTime(
+                        pickedDate.year,
+                        pickedDate.month,
+                        pickedDate.day,
+                        pickedTime.hour,
+                        pickedTime.minute,
+                        seconds,
+                      );
+
+                      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(rawDateTime);
+                      eventDateTimeController.text = formattedDate;
+                    }
+                  }
+                },
+                validator: (String? value) {
+                  if (value.toString().isEmpty) {
+                    return LocaleKeys.event_page_dialog_validation_date_required.tr(
+                      context: context,
+                    );
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => validateFormInput(),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                child: Text(
+                  LocaleKeys.event_page_dialog_button_create.tr(context: context),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 24.0),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => context.pop(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.dangerZone,
+                  side: const BorderSide(color: AppColors.dangerZone),
+                ),
+                child: Text(LocaleKeys.event_page_dialog_button_cancel.tr(context: context)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    showDialog(
+      context: context,
+      animationStyle: const AnimationStyle(
+        curve: Curves.easeIn,
+        reverseCurve: Curves.easeOut,
+        duration: Duration(milliseconds: 300),
+      ),
+      builder: (BuildContext context) {
+        return eventEditForm;
+      },
+    );
+  }
 
   Future<void> eventEditButton({
     required List<EventModel> eventsData,
@@ -189,20 +393,17 @@ class _EventPageState extends ConsumerState<EventPage> {
                     );
 
                     if (pickedTime != null) {
-                      DateTime? rawDateTime;
                       int seconds = DateTime.now().second;
-                      setState(() {
-                        rawDateTime = DateTime(
-                          pickedDate.year,
-                          pickedDate.month,
-                          pickedDate.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
-                          seconds,
-                        );
-                      });
+                      DateTime rawDateTime = DateTime(
+                        pickedDate.year,
+                        pickedDate.month,
+                        pickedDate.day,
+                        pickedTime.hour,
+                        pickedTime.minute,
+                        seconds,
+                      );
 
-                      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(rawDateTime!);
+                      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(rawDateTime);
                       eventDateTimeController.text = formattedDate;
                     }
                   }
@@ -226,7 +427,7 @@ class _EventPageState extends ConsumerState<EventPage> {
           children: <Widget>[
             Expanded(
               child: ElevatedButton(
-                onPressed: () => validateFormInput(event),
+                onPressed: () => validateFormInput(eventData: event),
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                 child: Text(
                   LocaleKeys.member_page_dialog_button_update.tr(context: context),
@@ -263,7 +464,7 @@ class _EventPageState extends ConsumerState<EventPage> {
     );
   }
 
-  void validateFormInput(EventModel eventData) async {
+  void validateFormInput({EventModel? eventData}) async {
     FormState? form = formKey.currentState;
 
     if (form != null) {
@@ -294,41 +495,91 @@ class _EventPageState extends ConsumerState<EventPage> {
         );
 
         if (!mounted) return;
-        final updatedEvent = eventData.copyWith(
-          title: eventNameController.text,
-          description: eventDescController.text,
-          eventDate: dateTime,
-          location: eventLocController.text,
-        );
 
-        bool isSuccess = await ref.read(eventsProvider.notifier).updateEvent(updatedEvent);
-
-        if (!mounted) return;
-
-        if (isSuccess) {
-          Toastification().show(
-            title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-            description: Text(
-              LocaleKeys.alert_notify_event_description_update_success.tr(context: context),
-            ),
-            type: ToastificationType.success,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: const Duration(seconds: 2),
-            animationDuration: const Duration(milliseconds: 500),
+        if (eventData != null) {
+          final updatedEvent = eventData.copyWith(
+            title: eventNameController.text,
+            description: eventDescController.text,
+            eventDate: dateTime,
+            location: eventLocController.text,
           );
+
+          bool isSuccess = await ref.read(eventsProvider.notifier).updateEvent(updatedEvent);
+
+          if (!mounted) return;
+
+          if (isSuccess) {
+            Toastification().show(
+              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              description: Text(
+                LocaleKeys.alert_notify_event_description_update_success.tr(context: context),
+              ),
+              type: ToastificationType.success,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+          } else {
+            Toastification().show(
+              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              description: Text(
+                LocaleKeys.alert_notify_event_description_update_failed.tr(context: context),
+              ),
+              type: ToastificationType.error,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+          }
         } else {
-          Toastification().show(
-            title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
-            description: Text(
-              LocaleKeys.alert_notify_event_description_update_failed.tr(context: context),
-            ),
-            type: ToastificationType.error,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: const Duration(seconds: 2),
-            animationDuration: const Duration(milliseconds: 500),
-          );
+          DatabaseManager dbManager = DatabaseManager();
+          String eventDate =
+              dateTime.toIso8601String() + (dateTime.toIso8601String().endsWith('Z') ? '' : 'Z');
+
+          Map<String, dynamic> jsonPayload = {
+            "judul": eventNameController.text,
+            "deskripsi": eventDescController.text,
+            "tanggal": eventDate,
+            "lokasi": eventLocController.text,
+          };
+
+          bool isSuccess = await dbManager.createData(endpoint: 'api/event', jsonData: jsonPayload);
+
+          if (!mounted) return;
+
+          if (isSuccess) {
+            Toastification().show(
+              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              description: Text(
+                LocaleKeys.alert_notify_event_description_create_success.tr(context: context),
+              ),
+              type: ToastificationType.success,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+
+            eventNameController.text = "";
+            eventDescController.text = "";
+            eventLocController.text = "";
+            eventDateTimeController.text = "";
+            ref.invalidate(eventsProvider);
+          } else {
+            Toastification().show(
+              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              description: Text(
+                LocaleKeys.alert_notify_event_description_create_failed.tr(context: context),
+              ),
+              type: ToastificationType.error,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+          }
         }
         context.pop();
       }
@@ -667,27 +918,49 @@ class _EventPageState extends ConsumerState<EventPage> {
         Container(
           height: 50.0,
           margin: const EdgeInsets.all(AppSizes.p16),
-          child: SearchBar(
-            controller: searchBarController,
-            leading: const Icon(Icons.search),
-            trailing: <Widget>[
-              if (searchQuery.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    searchBarController.clear();
-                    setState(() => searchQuery = "");
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: SearchBar(
+                  controller: searchBarController,
+                  leading: const Icon(Icons.search),
+                  trailing: <Widget>[
+                    if (searchQuery.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          searchBarController.clear();
+                          setState(() => searchQuery = "");
+                        },
+                      ),
+                  ],
+                  hintText: LocaleKeys.search_bar_member.tr(context: context),
+                  textInputAction: TextInputAction.search,
+                  onChanged: (String value) {
+                    setState(() {
+                      searchQuery = value;
+                      currentPage = 1;
+                    });
                   },
                 ),
+              ),
+              const SizedBox(width: 8.0),
+              SizedBox(
+                width: 45.0,
+                height: 45.0,
+                child: Material(
+                  elevation: Theme.of(context).iconButtonTheme.style?.elevation?.resolve({}) ?? 4.0,
+                  shape: Theme.of(context).iconButtonTheme.style?.shape?.resolve({}),
+                  child: IconButton(
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      eventAddButton();
+                    },
+                    icon: const FaIcon(FontAwesomeIcons.calendarPlus, size: 20.0),
+                  ),
+                ),
+              ),
             ],
-            hintText: LocaleKeys.search_bar_event.tr(context: context),
-            textInputAction: TextInputAction.search,
-            onChanged: (String value) {
-              setState(() {
-                searchQuery = value;
-                currentPage = 1;
-              });
-            },
           ),
         ),
 
