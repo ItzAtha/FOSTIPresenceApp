@@ -6,8 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
+import '../../core/app_constants.dart';
 import '../../translations/locale_keys.g.dart';
 
 class BasePages extends StatefulWidget {
@@ -93,9 +92,7 @@ class _BasePagesState extends State<BasePages> {
                 label: 'Add Member',
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () {
-                  // Handle add action
-                },
+                onTap: () => context.pushNamed(AppRoutes.addMemberRoute.name),
               ),
               SpeedDialChild(
                 child: const FaIcon(FontAwesomeIcons.calendarPlus, size: 25.0),
@@ -105,7 +102,7 @@ class _BasePagesState extends State<BasePages> {
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
                 onTap: () {
-                  // Handle add action
+                  // context.pushNamed(AppRoutes.addEventRoute.name);
                 },
               ),
             ],
