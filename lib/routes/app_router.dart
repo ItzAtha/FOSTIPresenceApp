@@ -1,6 +1,7 @@
 import 'package:attendance_management/core/app_constants.dart';
 import 'package:attendance_management/features/dashboard/views/events_page.dart';
 import 'package:attendance_management/features/dashboard/views/members_page.dart';
+import 'package:attendance_management/features/dashboard/views/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -39,6 +40,14 @@ class AppRouter {
                 name: AppRoutes.memberRoute.name,
                 path: AppRoutes.memberRoute.path,
                 builder: (context, state) => const MemberPage(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    parentNavigatorKey: _navigatorKey,
+                    name: AppRoutes.addMemberRoute.name,
+                    path: AppRoutes.addMemberRoute.path,
+                    builder: (context, state) => const RegisterPage(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -48,6 +57,13 @@ class AppRouter {
                 name: AppRoutes.eventRoute.name,
                 path: AppRoutes.eventRoute.path,
                 builder: (context, state) => const EventPage(),
+                routes: <RouteBase>[
+                  // GoRoute(
+                  //   name: AppRoutes.addEventRoute.name,
+                  //   path: AppRoutes.addEventRoute.path,
+                  //   builder: (context, state) => const AddEventPage(),
+                  // ),
+                ],
               ),
             ],
           ),
