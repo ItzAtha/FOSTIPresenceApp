@@ -169,7 +169,7 @@ class MembersData {
 
     studentsDataMap.forEach((division, studentsList) {
       for (var student in studentsList) {
-        if (student.isNotEmpty && student[1] == nim) {
+        if (student.isNotEmpty && student[1] == nim && nim.length == 10) {
           if (StringSimilar.jaccardSimilarity(division, "Keilmuan dan Riset Teknologi") >= 0.8) {
             division = "RISTEK";
           } else if (StringSimilar.jaccardSimilarity(division, "Hubungan Publik") >= 0.8) {
@@ -190,6 +190,6 @@ class MembersData {
       print("No Student found with NIM: $nim");
     }
 
-    return foundStudent.sublist(0, 3);
+    return foundStudent.isNotEmpty ? foundStudent.sublist(0, 3) : [];
   }
 }
