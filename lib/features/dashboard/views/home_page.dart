@@ -60,7 +60,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Center(
                       child: eventsAsync.when(
                         data: (events) {
-                          if (events.isEmpty) {
+                          EventModel? activeEvent = events.where((event) => event.isActive).firstOrNull;
+
+                          if (events.isEmpty || activeEvent == null) {
                             return Text(
                               LocaleKeys.home_page_no_active_event.tr(context: context),
                               style: Theme.of(context).textTheme.labelMedium
@@ -68,8 +70,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                               textAlign: TextAlign.center,
                             );
                           }
-
-                          EventModel activeEvent = events.where((event) => event.isActive).first;
 
                           return Column(
                             mainAxisSize: MainAxisSize.min,
