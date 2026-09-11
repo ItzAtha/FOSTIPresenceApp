@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_routes.dart';
 import '../features/dashboard/base_pages.dart';
+import '../features/dashboard/views/bluetooth_page.dart';
 import '../features/dashboard/views/home_page.dart';
 import '../features/dashboard/views/settings_page.dart';
 
@@ -31,6 +32,14 @@ class AppRouter {
                 name: AppRoutes.homeRoute.name,
                 path: AppRoutes.homeRoute.path,
                 builder: (context, state) => const HomePage(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    parentNavigatorKey: _navigatorKey,
+                    name: AppRoutes.bluetoothMenuRoute.name,
+                    path: AppRoutes.bluetoothMenuRoute.path,
+                    builder: (context, state) => const BluetoothPage(),
+                  ),
+                ],
               ),
             ],
           ),
