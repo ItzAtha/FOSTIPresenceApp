@@ -75,6 +75,15 @@ class _BasePagesState extends State<BasePages> {
             animationDuration: const Duration(milliseconds: 300),
             children: [
               SpeedDialChild(
+                child: const FaIcon(FontAwesomeIcons.userPlus, size: 20.0),
+                backgroundColor: Colors.cyan,
+                foregroundColor: Colors.white,
+                label: 'Add Member',
+                labelStyle: Theme.of(context).textTheme.labelMedium,
+                labelBackgroundColor: Theme.of(context).cardTheme.color,
+                onTap: () => context.pushNamed(AppRoutes.addMemberRoute.name),
+              ),
+              SpeedDialChild(
                 child: const FaIcon(FontAwesomeIcons.creditCard, size: 25.0),
                 backgroundColor: Colors.blueAccent,
                 foregroundColor: Colors.white,
@@ -86,24 +95,13 @@ class _BasePagesState extends State<BasePages> {
                 },
               ),
               SpeedDialChild(
-                child: const FaIcon(FontAwesomeIcons.userPlus, size: 20.0),
-                backgroundColor: Colors.cyan,
-                foregroundColor: Colors.white,
-                label: 'Add Member',
-                labelStyle: Theme.of(context).textTheme.labelMedium,
-                labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () => context.pushNamed(AppRoutes.addMemberRoute.name),
-              ),
-              SpeedDialChild(
-                child: const FaIcon(FontAwesomeIcons.calendarPlus, size: 25.0),
+                child: const FaIcon(FontAwesomeIcons.bluetoothB, size: 25.0),
                 backgroundColor: Colors.orangeAccent,
                 foregroundColor: Colors.white,
-                label: 'Add Event',
+                label: 'Bluetooth',
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () {
-                  // context.pushNamed(AppRoutes.addEventRoute.name);
-                },
+                onTap: () => context.pushNamed(AppRoutes.bluetoothMenuRoute.name),
               ),
             ],
           ),
