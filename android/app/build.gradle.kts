@@ -37,6 +37,7 @@ android {
             resValue("string", "app_name", "Presence Management")
         }
         debug {
+            applicationIdSuffix = ".debug"
             resValue("string", "app_name", "Presence Management (Debug)")
         }
     }
