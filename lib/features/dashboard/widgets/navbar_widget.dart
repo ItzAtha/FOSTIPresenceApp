@@ -138,7 +138,7 @@ class DestinationNavbarWidget extends StatelessWidget {
     bool isDestinationSelected = navbarScope.selectedIndex == destinationScope.index;
 
     return SizedBox(
-      width: 72.0,
+      width: 64.0,
       child: Material(
         clipBehavior: Clip.antiAlias,
         shape: const RoundedRectangleBorder(
@@ -151,7 +151,7 @@ class DestinationNavbarWidget extends StatelessWidget {
             children: <Widget>[
               icon,
               const SizedBox(height: 4.0),
-              Text(label, style: Theme.of(context).textTheme.labelMedium),
+              Text(label, style: Theme.of(context).textTheme.labelSmall),
             ],
           ),
           onTap: () {
