@@ -13,6 +13,8 @@ import 'package:toastification/toastification.dart';
 
 import '../translations/locale_keys.g.dart';
 
+enum BTConnectionState { disconnected, disconnecting, connecting, connected }
+
 class BluetoothManager {
   final BuildContext _context;
   static final Queue<String> _receivedData = Queue<String>();
@@ -27,8 +29,8 @@ class BluetoothManager {
     "a29d643b-4fda-446d-b9fd-118f540a902d",
   ); // Notify char uuid from ESP32 to app
 
-  static final ValueNotifier<Map<BluetoothDevice, BluetoothConnectionState>> _foundDevicesList =
-      ValueNotifier<Map<BluetoothDevice, BluetoothConnectionState>>({});
+  static final ValueNotifier<Map<BluetoothDevice, BTConnectionState>> _foundDevicesList =
+      ValueNotifier<Map<BluetoothDevice, BTConnectionState>>({});
 
   BluetoothManager({required this._context});
 
@@ -150,10 +152,6 @@ class BluetoothManager {
     return true;
   }
 
-  void reinitialize() {
-    _startScanning();
-  }
-
   Future<void> _startScanning() async {
     await _requestPermissions();
 
@@ -166,7 +164,7 @@ class BluetoothManager {
           BluetoothDevice device = result.device;
 
           if (!_foundDevicesList.value.containsKey(device)) {
-            _foundDevicesList.value[device] = BluetoothConnectionState.disconnected;
+            _foundDevicesList.value[device] = BTConnectionState.disconnected;
             print(
               "Found device: ${device.remoteId} - ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}",
             );
@@ -186,66 +184,29 @@ class BluetoothManager {
 
     if (getConnectedDevice != null) {
       BluetoothDevice device = getConnectedDevice!;
-      _foundDevicesList.value[device] = BluetoothConnectionState.connected;
+      _foundDevicesList.value[device] = BTConnectionState.connected;
       print(
         "Found connected device: ${device.remoteId} - ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}",
       );
     }
   }
 
-  Future<void> connectToDevice(BluetoothDevice device) async {
+  Future<bool> connectToDevice(BluetoothDevice device) async {
     print("Connecting to device ${device.remoteId}");
 
     try {
       await device.connect(license: License.nonprofit, mtu: 517);
-      if (!_context.mounted) return;
+      if (!_context.mounted) return true;
 
-      Toastification().show(
-        context: _context,
-        title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: _context)),
-        description: Text(
-          LocaleKeys.alert_notify_bluetooth_description_bt_success_connect.tr(
-            context: _context,
-            namedArgs: {
-              'device': device.platformName.isEmpty
-                  ? LocaleKeys.bluetooth_page_unknown_device.tr(context: _context)
-                  : device.platformName,
-            },
-          ),
-        ),
-        type: ToastificationType.success,
-        style: ToastificationStyle.flat,
-        alignment: Alignment.bottomCenter,
-        autoCloseDuration: const Duration(seconds: 2),
-        animationDuration: const Duration(milliseconds: 500),
-      );
       print(
         'Connected to device ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}',
       );
       _startBluetoothListener(device);
+      return true;
     } catch (e) {
-      _foundDevicesList.value[device] = BluetoothConnectionState.disconnected;
-      Toastification().show(
-        context: _context,
-        title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: _context)),
-        description: Text(
-          LocaleKeys.alert_notify_bluetooth_description_bt_fail_connect.tr(
-            context: _context,
-            namedArgs: {
-              'device': device.platformName.isEmpty
-                  ? LocaleKeys.bluetooth_page_unknown_device.tr(context: _context)
-                  : device.platformName,
-            },
-          ),
-        ),
-        type: ToastificationType.error,
-        style: ToastificationStyle.flat,
-        alignment: Alignment.bottomCenter,
-        autoCloseDuration: const Duration(seconds: 2),
-        animationDuration: const Duration(milliseconds: 500),
-      );
-      throw Exception('Connection failed: $e');
+      print("Connection failed: $e");
     }
+    return false;
   }
 
   Future<void> disconnectFromDevice(BluetoothDevice device) async {
@@ -330,12 +291,12 @@ class BluetoothManager {
     connectedBTListenerSub = device.connectionState.listen(
       (state) async {
         if (state == BluetoothConnectionState.disconnected) {
-          _foundDevicesList.value[device] = BluetoothConnectionState.disconnected;
+          _foundDevicesList.value[device] = BTConnectionState.disconnected;
           print(
             "Disconnected from device ${device.platformName} | ${_foundDevicesList.value[device]}",
           );
         } else if (state == BluetoothConnectionState.connected) {
-          _foundDevicesList.value[device] = BluetoothConnectionState.connected;
+          _foundDevicesList.value[device] = BTConnectionState.connected;
           print("Connected to device ${device.platformName} | ${_foundDevicesList.value[device]}");
 
           BluetoothCharacteristic deviceReceiverChar = await _getCharacteristic(
@@ -440,7 +401,7 @@ class BluetoothManager {
 
   static List<BluetoothDevice> get getDevicesList => _foundDevicesList.value.keys.toList();
 
-  static ValueNotifier<Map<BluetoothDevice, BluetoothConnectionState>> get getDeviceStatus =>
+  static ValueNotifier<Map<BluetoothDevice, BTConnectionState>> get getDeviceStatus =>
       _foundDevicesList;
 
   static String get getReceivedData {
