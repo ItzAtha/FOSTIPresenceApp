@@ -197,7 +197,7 @@ class BluetoothManager {
     print("Connecting to device ${device.remoteId}");
 
     try {
-      await device.connect(license: License.nonprofit);
+      await device.connect(license: License.nonprofit, mtu: 517);
       if (!_context.mounted) return;
 
       Toastification().show(
@@ -342,27 +342,30 @@ class BluetoothManager {
             device,
             _charUUIDReceiver,
           );
-          deviceReceiverChar.onValueReceived.listen((value) async {
-            String decodedData = "";
 
-            try {
-              decodedData = utf8.decode(value, allowMalformed: false);
-            } catch (e) {
-              print("Invalid decoded data! Skipping...");
-              return;
-            }
-
-            if (decodedData.trim().isEmpty) return;
-
-            print("Received data from ESP32: ${decodedData.trim()}");
-            _receivedData.addFirst(decodedData.trim());
-          });
-
-          device.cancelWhenDisconnected(
-            deviceReceiverChar as StreamSubscription<List<int>>,
-            delayed: true,
-          );
           await deviceReceiverChar.setNotifyValue(true);
+
+          final StreamSubscription<List<int>> notifySub = deviceReceiverChar.onValueReceived.listen(
+            (value) async {
+              String decodedData = "";
+
+              print("A");
+
+              try {
+                decodedData = utf8.decode(value, allowMalformed: false);
+              } catch (e) {
+                print("Invalid decoded data! Skipping...");
+                return;
+              }
+
+              if (decodedData.trim().isEmpty) return;
+
+              print("Received data from ESP32: ${decodedData.trim()}");
+              _receivedData.addFirst(decodedData.trim());
+            },
+          );
+
+          device.cancelWhenDisconnected(notifySub, delayed: true);
         }
       },
       onError: (e) {
@@ -443,6 +446,8 @@ class BluetoothManager {
   static String get getReceivedData {
     return _receivedData.isEmpty ? "" : _receivedData.removeFirst();
   }
+
+  static bool get hasReceivedData => _receivedData.isNotEmpty;
 
   static bool get isBluetoothConnected =>
       FlutterBluePlus.connectedDevices.any((device) => device.isConnected);
