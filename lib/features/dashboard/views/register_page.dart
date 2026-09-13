@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:attendance_management/manager/database_manager.dart';
 import 'package:attendance_management/shared/provider/members_notifier.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -29,37 +29,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   bool isIdCardDetected = false;
   bool isLoadingToRegister = false;
 
+  Timer? btTimerChecker;
+
   Divisions? selectedDivision;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   late MembersData membersData;
-  late BluetoothManager bluetoothManager;
+  late BluetoothManager btManager;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController memberCardIdController = TextEditingController();
   final TextEditingController memberNameController = TextEditingController();
   final TextEditingController memberNIMController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    membersData = MembersData();
-    bluetoothManager = BluetoothManager(context: context);
-
-    membersData
-        .loadData()
-        .then((isSuccess) {
-          if (!mounted) return;
-
-          BluetoothDevice? device = BluetoothManager.getConnectedDevice;
-          if (device != null) {
-            bluetoothManager.sendBluetoothData(device, '1');
-          }
-        })
-        .catchError((error) {
-          print("Error loading FOSTI members data excel: $error");
-        });
-  }
 
   Future<void> validateFormInput() async {
     FormState? form = formKey.currentState;
@@ -71,7 +52,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         String cardId = memberCardIdController.text.trim();
         String name = memberNameController.text.trim();
         String nim = memberNIMController.text.trim();
-        String divisi = selectedDivision?.name ?? '';
+        String divisi = selectedDivision?.aliases ?? '';
 
         Map<String, dynamic> jsonPayload = {
           "uid": cardId,
@@ -80,12 +61,75 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           "divisi": divisi,
         };
 
-        DatabaseManager dbManager = DatabaseManager();
-        bool isSuccess = await dbManager.createData(
-          endpoint: 'api/mahasiswa',
-          jsonData: jsonPayload,
-        );
+        BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+        if (device == null) {
+          Toastification().show(
+            title: const Text("Bluetooth Device"),
+            description: const Text("No Bluetooth device connected. Cannot send data."),
+            type: ToastificationType.success,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+          print("No Bluetooth device connected. Cannot send data.");
+          setState(() {
+            isIdCardDetected = false;
+            isLoadingToRegister = false;
+          });
+          return;
+        }
 
+        String encodeData = jsonEncode(jsonPayload);
+        btManager.sendBluetoothData(device, encodeData);
+
+        Timer? checkTimer;
+        final completer = Completer<bool>();
+
+        final timeoutTimer = Timer(const Duration(seconds: 30), () {
+          if (!completer.isCompleted) {
+            setState(() {
+              isIdCardDetected = false;
+              isLoadingToRegister = false;
+            });
+            checkTimer?.cancel();
+            completer.completeError(TimeoutException("Request timeout"));
+          }
+        });
+
+        checkTimer = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
+          if (BluetoothManager.hasReceivedData) {
+            String receivedData = BluetoothManager.getReceivedData;
+
+            Map<String, dynamic> decodeData = {};
+            Map<String, dynamic> data = {};
+
+            try {
+              decodeData = jsonDecode(receivedData);
+              data = decodeData['data'];
+            } catch (e) {
+              print("Error decoding received data: $e");
+            }
+
+            if (data['status'] == "REGISTER_CARD_SUCCESS") {
+              checkTimer.cancel();
+              timeoutTimer.cancel();
+
+              if (!completer.isCompleted) {
+                completer.complete(true);
+              }
+            } else if (data['status'] == "REGISTER_CARD_FAILED") {
+              checkTimer.cancel();
+              timeoutTimer.cancel();
+
+              if (!completer.isCompleted) {
+                completer.complete(false);
+              }
+            }
+          }
+        });
+
+        bool isSuccess = await completer.future;
         if (isSuccess) {
           Toastification().show(
             title: const Text("Member Register"),
@@ -116,9 +160,57 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             animationDuration: const Duration(milliseconds: 500),
           );
         }
-        setState(() => isLoadingToRegister = false);
+
+        setState(() {
+          isIdCardDetected = false;
+          isLoadingToRegister = false;
+        });
       }
     }
+  }
+
+  Widget noBTConnected() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            margin: const EdgeInsets.all(AppSizes.p16),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSizes.p16),
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const FaIcon(FontAwesomeIcons.bluetooth, size: 36.0),
+                        const SizedBox(width: 16.0),
+                        Expanded(
+                          child: Text(
+                            "Bluetooth Device",
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.5),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before register new member.",
+                      textAlign: TextAlign.justify,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget noCardDetected() {
@@ -166,8 +258,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Widget cardDetected() {
-    memberCardIdController.text = "B3 3D F3 2A";
-
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSizes.p16),
@@ -179,7 +269,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               decoration: BoxDecoration(
                 color: Colors.blue.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: Colors.blue, width: 3.0),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.8), width: 2.5),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(AppSizes.p16),
@@ -203,6 +293,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             Form(
               key: formKey,
               canPop: false,
+              autovalidateMode: AutovalidateMode.onUnfocus,
               child: Column(
                 children: <Widget>[
                   const SizedBox(height: 8.0),
@@ -212,7 +303,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     decoration: const InputDecoration(
                       labelText: "Member Card ID",
                       icon: FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
-                      border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16.0),
@@ -220,14 +310,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     controller: memberNameController,
                     decoration: InputDecoration(
                       labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
-                      hintText: "Andi Setya Budi",
                       icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
-                      border: const OutlineInputBorder(),
                       errorMaxLines: 2,
                     ),
                     keyboardType: TextInputType.name,
                     textInputAction: TextInputAction.next,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (String? value) {
                       if (value.toString().isEmpty) {
                         return LocaleKeys.member_page_dialog_validation_name_required.tr(
@@ -241,16 +328,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   TextFormField(
                     controller: memberNIMController,
                     decoration: InputDecoration(
-                      isDense: true,
                       labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
                       hintText: "L200250001",
                       icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
-                      border: const OutlineInputBorder(),
                       errorMaxLines: 2,
                     ),
                     keyboardType: TextInputType.name,
                     textInputAction: TextInputAction.next,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     onChanged: (value) async {
                       debouncer.run(() {
                         final memberData = membersData.findStudentByNIM(value);
@@ -342,13 +426,60 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void initState() {
+    super.initState();
+    membersData = MembersData();
+    btManager = BluetoothManager(context: context);
 
+    membersData
+        .loadData()
+        .then((isSuccess) {
+          if (!mounted) return;
+
+          BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+          if (device != null) {
+            btManager.sendBluetoothData(device, '1');
+          }
+        })
+        .catchError((error) {
+          print("Error loading FOSTI members data excel: $error");
+        });
+
+    btTimerChecker = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
+      if (isLoadingToRegister) return;
+
+      if (BluetoothManager.hasReceivedData) {
+        String receivedData = BluetoothManager.getReceivedData;
+
+        Map<String, dynamic> decodeData = {};
+        Map<String, dynamic> data = {};
+
+        try {
+          decodeData = jsonDecode(receivedData);
+          data = decodeData['data'];
+        } catch (e) {
+          print("Error decoding received data: $e");
+        }
+
+        if (!isIdCardDetected && data['status'] == "CARD_DETECTED") {
+          setState(() => isIdCardDetected = true);
+          memberCardIdController.text = data['card_uid'];
+        } else if (data['status'] == "TIMEOUT_NO_DATA") {
+          setState(() => isIdCardDetected = false);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
     BluetoothDevice? device = BluetoothManager.getConnectedDevice;
     if (device != null) {
-      bluetoothManager.sendBluetoothData(device, 'cancel');
+      btManager.sendBluetoothData(device, 'cancel');
     }
+
+    btTimerChecker?.cancel();
+    super.dispose();
   }
 
   @override
@@ -365,7 +496,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: isIdCardDetected ? cardDetected() : noCardDetected(),
+      body: BluetoothManager.getConnectedDevice == null
+          ? noBTConnected()
+          : isIdCardDetected
+          ? cardDetected()
+          : noCardDetected(),
     );
   }
 }
