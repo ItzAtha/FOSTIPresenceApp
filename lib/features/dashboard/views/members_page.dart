@@ -583,16 +583,19 @@ class _MemberPageState extends ConsumerState<MemberPage> {
     final membersAsync = ref.watch(membersProvider);
 
     return Scaffold(
-      body: membersAsync.when(
-        loading: () => loadingData(),
-        error: (error, stackTrace) => noMembers(),
-        data: (members) {
-          if (members.isEmpty) {
-            return noMembers();
-          }
+      body: SafeArea(
+        bottom: false,
+        child: membersAsync.when(
+          loading: () => loadingData(),
+          error: (error, stackTrace) => noMembers(),
+          data: (members) {
+            if (members.isEmpty) {
+              return noMembers();
+            }
 
-          return hasMembers(members);
-        },
+            return hasMembers(members);
+          },
+        ),
       ),
     );
   }

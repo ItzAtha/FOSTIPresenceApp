@@ -1101,16 +1101,19 @@ class _EventPageState extends ConsumerState<EventPage> {
     final eventsAsync = ref.watch(eventsProvider);
 
     return Scaffold(
-      body: eventsAsync.when(
-        loading: () => loadingData(),
-        error: (error, stackTrace) => noEvents(),
-        data: (events) {
-          if (events.isEmpty) {
-            return noEvents();
-          }
+      body: SafeArea(
+        bottom: false,
+        child: eventsAsync.when(
+          loading: () => loadingData(),
+          error: (error, stackTrace) => noEvents(),
+          data: (events) {
+            if (events.isEmpty) {
+              return noEvents();
+            }
 
-          return hasEvents(events);
-        },
+            return hasEvents(events);
+          },
+        ),
       ),
     );
   }

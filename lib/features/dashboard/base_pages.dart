@@ -115,7 +115,7 @@ class _BasePagesState extends State<BasePages> {
             const DestinationNavbarWidget(label: 'Settings', icon: FaIcon(FontAwesomeIcons.gear, size: 20.0)),
           ],
         ),
-        body: SafeArea(bottom: false, child: widget._navigationShell),
+        body: widget._navigationShell,
       ),
     );
   }
