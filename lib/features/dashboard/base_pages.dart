@@ -106,13 +106,13 @@ class _BasePagesState extends State<BasePages> {
             ],
           ),
           destinations: [
-            const DestinationNavbarWidget(label: 'Home', icon: FaIcon(FontAwesomeIcons.solidHouse)),
-            const DestinationNavbarWidget(label: 'Members', icon: FaIcon(FontAwesomeIcons.users)),
+            const DestinationNavbarWidget(label: 'Home', icon: FaIcon(FontAwesomeIcons.solidHouse, size: 20.0)),
+            const DestinationNavbarWidget(label: 'Members', icon: FaIcon(FontAwesomeIcons.users, size: 20.0)),
             const DestinationNavbarWidget(
               label: 'Events',
-              icon: FaIcon(FontAwesomeIcons.calendarDays),
+              icon: FaIcon(FontAwesomeIcons.calendarDays, size: 20.0),
             ),
-            const DestinationNavbarWidget(label: 'Settings', icon: FaIcon(FontAwesomeIcons.gear)),
+            const DestinationNavbarWidget(label: 'Settings', icon: FaIcon(FontAwesomeIcons.gear, size: 20.0)),
           ],
         ),
         body: SafeArea(bottom: false, child: widget._navigationShell),
