@@ -79,6 +79,7 @@ class DarkMode {
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         border: const OutlineInputBorder(),
+        labelStyle: TextStyle(color: AppColors.textDark.withValues(alpha: 0.8)),
         hintStyle: TextStyle(color: AppColors.textDark.withValues(alpha: 0.8)),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.6), width: 1.0),
