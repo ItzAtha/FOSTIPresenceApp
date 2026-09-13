@@ -146,8 +146,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   LocaleKeys.home_page_stats_title_total_members.tr(
                                     context: context,
                                   ),
-                                  style: Theme.of(context).textTheme.titleSmall
-                                      ?.copyWith(color: Colors.white),
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -221,8 +221,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   LocaleKeys.home_page_stats_title_total_events.tr(
                                     context: context,
                                   ),
-                                  style: Theme.of(context).textTheme.titleSmall
-                                      ?.copyWith(color: Colors.white),
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
