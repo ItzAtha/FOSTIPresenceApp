@@ -1,6 +1,7 @@
 import 'package:attendance_management/core/app_constants.dart';
 import 'package:attendance_management/features/dashboard/views/events_page.dart';
 import 'package:attendance_management/features/dashboard/views/members_page.dart';
+import 'package:attendance_management/features/dashboard/views/presence_menu_page.dart';
 import 'package:attendance_management/features/dashboard/views/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +40,12 @@ class AppRouter {
                     path: AppRoutes.bluetoothMenuRoute.path,
                     builder: (context, state) => const BluetoothPage(),
                   ),
+                  GoRoute(
+                    parentNavigatorKey: _navigatorKey,
+                    name: AppRoutes.memberAttendanceRoute.name,
+                    path: AppRoutes.memberAttendanceRoute.path,
+                    builder: (context, state) => const PresencePage(),
+                  ),
                 ],
               ),
             ],
@@ -66,13 +73,6 @@ class AppRouter {
                 name: AppRoutes.eventRoute.name,
                 path: AppRoutes.eventRoute.path,
                 builder: (context, state) => const EventPage(),
-                routes: <RouteBase>[
-                  // GoRoute(
-                  //   name: AppRoutes.addEventRoute.name,
-                  //   path: AppRoutes.addEventRoute.path,
-                  //   builder: (context, state) => const AddEventPage(),
-                  // ),
-                ],
               ),
             ],
           ),
