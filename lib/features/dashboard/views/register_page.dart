@@ -340,12 +340,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         final memberData = membersData.findStudentByNIM(value);
                         print("Found: $memberData");
 
-                        if (memberData.isEmpty) {
-                          memberNameController.text = "";
-                          setState(() => selectedDivision = null);
-                          return;
-                        }
-
                         setState(() {
                           memberNameController.text = memberData[1];
                           selectedDivision = Divisions.values.firstWhere(
