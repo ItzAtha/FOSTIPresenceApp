@@ -8,7 +8,20 @@ class AppRoutes {
   static const ({String name, String path}) settingRoute = (path: '/setting', name: "settings");
 
   // ============[ Action button routes ]============
-  static const ({String name, String path}) addMemberRoute = (path: 'add-member', name: "add-member");
-  static const ({String name, String path}) bluetoothMenuRoute = (path: 'bluetooth-menu', name: "bluetooth-menu");
-  static const ({String name, String path}) memberAttendanceRoute = (path: 'member-presence', name: "member-presence");
+  static const ({String name, String path}) addMemberRoute = (
+    path: 'add-member',
+    name: "add-member",
+  );
+  static const ({String name, String path}) bluetoothMenuRoute = (
+    path: 'bluetooth-menu',
+    name: "bluetooth-menu",
+  );
+  static const ({String name, String path}) memberAttendanceRoute = (
+    path: 'member-presence',
+    name: "member-presence",
+  );
+  static const ({String name, String path}) memberAttendanceModeRoute = (
+    path: ':presenceMode',
+    name: "member-presence-mode",
+  );
 }
