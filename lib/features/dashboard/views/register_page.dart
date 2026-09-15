@@ -38,7 +38,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   late BluetoothManager btManager;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController memberCardIdController = TextEditingController();
+  final TextEditingController memberIdCardController = TextEditingController();
   final TextEditingController memberNameController = TextEditingController();
   final TextEditingController memberNIMController = TextEditingController();
 
@@ -49,7 +49,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       if (form.validate()) {
         setState(() => isLoadingToRegister = true);
 
-        String cardId = memberCardIdController.text.trim();
+        String cardId = memberIdCardController.text.trim();
         String name = memberNameController.text.trim();
         String nim = memberNIMController.text.trim();
         String divisi = selectedDivision?.aliases ?? '';
@@ -143,7 +143,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
           print("Member registered successfully.");
           ref.invalidate(membersProvider);
-          memberCardIdController.clear();
+          memberIdCardController.clear();
           memberNameController.clear();
           memberNIMController.clear();
           setState(() => selectedDivision = null);
@@ -299,7 +299,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   const SizedBox(height: 8.0),
                   TextFormField(
                     readOnly: true,
-                    controller: memberCardIdController,
+                    controller: memberIdCardController,
                     decoration: const InputDecoration(
                       labelText: "Member Card ID",
                       icon: FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
@@ -457,7 +457,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
         if (!isIdCardDetected && data['status'] == "CARD_DETECTED") {
           setState(() => isIdCardDetected = true);
-          memberCardIdController.text = data['card_uid'];
+          memberIdCardController.text = data['card_uid'];
         } else if (data['status'] == "TIMEOUT_NO_DATA") {
           setState(() => isIdCardDetected = false);
         }
@@ -467,12 +467,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   void dispose() {
+    btTimerChecker?.cancel();
+
     BluetoothDevice? device = BluetoothManager.getConnectedDevice;
     if (device != null) {
       btManager.sendBluetoothData(device, 'cancel');
     }
 
-    btTimerChecker?.cancel();
+    memberIdCardController.dispose();
+    memberNameController.dispose();
+    memberNIMController.dispose();
     super.dispose();
   }
 
