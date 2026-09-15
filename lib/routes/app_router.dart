@@ -45,6 +45,19 @@ class AppRouter {
                     name: AppRoutes.memberAttendanceRoute.name,
                     path: AppRoutes.memberAttendanceRoute.path,
                     builder: (context, state) => const PresencePage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        parentNavigatorKey: _navigatorKey,
+                        name: AppRoutes.memberAttendanceModeRoute.name,
+                        path: AppRoutes.memberAttendanceModeRoute.path,
+                        builder: (context, state) {
+                          String path = AppRoutes.memberAttendanceModeRoute.path.substring(1);
+                          final presenceMode = state.pathParameters[path] ?? "";
+
+                          return PresenceModePage(attendanceMode: presenceMode);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
