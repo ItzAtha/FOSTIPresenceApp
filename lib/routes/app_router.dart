@@ -44,7 +44,7 @@ class AppRouter {
                     parentNavigatorKey: _navigatorKey,
                     name: AppRoutes.memberAttendanceRoute.name,
                     path: AppRoutes.memberAttendanceRoute.path,
-                    builder: (context, state) => const PresencePage(),
+                    builder: (context, state) => const PresenceMenuPage(),
                     routes: <RouteBase>[
                       GoRoute(
                         parentNavigatorKey: _navigatorKey,
