@@ -34,9 +34,9 @@ abstract class EventLogModel with _$EventLogModel {
   const factory EventLogModel({
     required String eventId,
     required String cardId,
-    required Roles role,
-    required DateTime loginDate,
-    required DateTime logoutDate,
+    Roles? role,
+    DateTime? loginDate,
+    DateTime? logoutDate,
     required Information information,
   }) = _EventLogModel;
 
