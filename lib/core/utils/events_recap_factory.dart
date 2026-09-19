@@ -97,20 +97,26 @@ class RecapFactory {
       String formattedLoginDate = "";
       String formattedLogoutDate = "";
 
-      try {
-        formattedLoginDate = DateFormat("dd MMMM yyyy, HH:mm:ss")
-            .format(eventLog.loginDate.toLocal());
-      } on FormatException {
-        print("Warning: Invalid login date format for member ${member.nim}: ${eventLog.loginDate}");
+      if (eventLog.loginDate != null) {
+        try {
+          formattedLoginDate = DateFormat("dd MMMM yyyy, HH:mm:ss")
+              .format(eventLog.loginDate!.toLocal());
+        } on FormatException {
+          print("Warning: Invalid login date format for member ${member
+              .nim}: ${eventLog.loginDate}");
+        }
       }
 
-      try {
-        formattedLogoutDate = DateFormat("dd MMMM yyyy, HH:mm:ss")
-            .format(eventLog.logoutDate.toLocal());
-      } on FormatException {
-        print(
-          "Warning: Invalid logout date format for member ${member.nim}: ${eventLog.logoutDate}",
-        );
+      if (eventLog.logoutDate != null) {
+        try {
+          formattedLogoutDate = DateFormat("dd MMMM yyyy, HH:mm:ss")
+              .format(eventLog.logoutDate!.toLocal());
+        } on FormatException {
+          print(
+            "Warning: Invalid logout date format for member ${member
+                .nim}: ${eventLog.logoutDate}",
+          );
+        }
       }
 
       worksheet.cell(CellIndex.indexByString('A${i + 3}')).value = TextCellValue(member.nim);
@@ -129,7 +135,7 @@ class RecapFactory {
         formattedLogoutDate,
       );
       worksheet.cell(CellIndex.indexByString('F${i + 3}')).value = TextCellValue(
-        eventLog.role.name,
+        eventLog.role?.name ?? "",
       );
       worksheet.cell(CellIndex.indexByString('G${i + 3}')).value = TextCellValue(
         eventLog.information.name,
