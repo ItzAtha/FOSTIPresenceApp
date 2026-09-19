@@ -34,19 +34,31 @@ class _EventCardWidgetState extends State<EventCardWidget> {
   double optionButtonWidth = 0.0;
   static const double maxOptionButtonWidth = 48.0;
 
+  void handleRouteChange() {
+    if (!mounted) return;
+
+    final String currentRoute =
+        AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
+
+    if (currentRoute != AppRoutes.eventRoute.path) {
+      setState(() {
+        showOptionButton = false;
+        optionButtonWidth = 0.0;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    AppRouter.router.routerDelegate.addListener(handleRouteChange);
+  }
 
-    AppRouter.router.routerDelegate.addListener(() {
-      final String currentRoute = AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
-      if (currentRoute != AppRoutes.eventRoute.path) {
-        setState(() {
-          showOptionButton = false;
-          optionButtonWidth = 0.0;
-        });
-      }
-    });
+
+  @override
+  void dispose() {
+    AppRouter.router.routerDelegate.removeListener(handleRouteChange);
+    super.dispose();
   }
 
   @override
