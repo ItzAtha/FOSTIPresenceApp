@@ -28,9 +28,16 @@ class EventsLogsNotifier extends _$EventsLogsNotifier {
         for (final logData in eventLogs) {
           Map<String, dynamic> logJson = logData['log'] as Map<String, dynamic>;
           String cardId = logJson['uid_kartu'];
-          Roles role = Roles.values.firstWhere((r) => r.name == logJson['role']);
-          DateTime loginDate = DateTime.parse(logJson['tanggal_masuk']);
-          DateTime logoutDate = DateTime.parse(logJson['tanggal_keluar']);
+          Roles? role = Roles.values.where((r) => r.name == logJson['role']).firstOrNull;
+          DateTime? loginDate;
+          try {
+            loginDate = DateTime.tryParse(logJson['tanggal_masuk']);
+          } catch (_) {}
+
+          DateTime? logoutDate;
+          try {
+            logoutDate = DateTime.tryParse(logJson['tanggal_keluar']);
+          } catch (_) {}
           Information information = Information.values.firstWhere(
             (i) => i.name == logJson['keterangan'],
           );
