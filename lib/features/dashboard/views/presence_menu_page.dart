@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
 import 'package:attendance_management/shared/provider/events_notifier.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -282,6 +283,13 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
   }
 }
 
+enum ValidateStatus {
+  member_not_yet_attendance,
+  member_already_attendance,
+  member_not_exists,
+  event_not_exists,
+}
+
 class PresenceModePage extends ConsumerStatefulWidget {
   const PresenceModePage({super.key, required this._attendanceMode});
 
@@ -307,6 +315,35 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   final TextEditingController memberNameController = TextEditingController();
   final TextEditingController memberNIMController = TextEditingController();
   final TextEditingController memberDivisionController = TextEditingController();
+
+  Future<({ValidateStatus status, MemberModel? data})> validateMemberData(String memberId) async {
+    final membersList = await ref.read(membersProvider.future);
+    final eventsList = await ref.read(eventsProvider.future);
+    final eventsLogsList = await ref.read(eventsLogsProvider.future);
+    final activeEvent = eventsList.where((e) => e.isActive).firstOrNull;
+
+    if (activeEvent != null) {
+      final activeEventLogs = eventsLogsList[activeEvent.eventId] ?? [];
+      final member = membersList
+          .where((m) => m.cardId == memberId || m.nim == memberId)
+          .firstOrNull;
+
+      if (member != null) {
+        final isMemberAlreadyAttendance = activeEventLogs.any((log) => log.cardId == member.cardId);
+        print(isMemberAlreadyAttendance);
+        return (
+        status: isMemberAlreadyAttendance
+            ? ValidateStatus.member_already_attendance
+            : ValidateStatus.member_not_yet_attendance,
+        data: member,
+        );
+      }
+
+      return (status: ValidateStatus.member_not_exists, data: null);
+    }
+
+    return (status: ValidateStatus.event_not_exists, data: null);
+  }
 
   Future<void> validateFormInput() async {
     FormState? form = formKey.currentState;
@@ -819,21 +856,6 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
     );
   }
 
-  Future<bool> checkMemberData(String cardUID) async {
-    final eventsList = await ref.read(eventsProvider.future);
-    final eventsLogsList = await ref.read(eventsLogsProvider.future);
-    final activeEvent = eventsList.where((e) => e.isActive).firstOrNull;
-
-    if (activeEvent != null) {
-      final activeEventLogs = eventsLogsList[activeEvent.eventId] ?? [];
-      bool isUserNotAttendance = activeEventLogs.any((log) => log.cardId == cardUID);
-      return !isUserNotAttendance;
-    }
-
-    print("No active event found.");
-    return false;
-  }
-
   String getModeIndex(String mode) {
     switch (mode) {
       case 'PARTICIPANT':
@@ -885,93 +907,136 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
         final membersList = await ref.read(membersProvider.future);
 
-        if (data['status'] == "CARD_DETECTED") {
+        if (decodeData['status'] == "CARD_DETECTED") {
           String cardUID = data['card_uid'];
-          bool isValid = await checkMemberData(cardUID);
+          final validation = await validateMemberData(cardUID);
 
           BluetoothDevice? device = BluetoothManager.getConnectedDevice;
           if (device != null) {
-            final member = membersList.where((m) => m.cardId == cardUID).firstOrNull;
-
             String encodeData = '';
             Map<String, dynamic> jsonPayload = {};
-            if (member != null) {
-              if (isValid) {
+
+            MemberModel? member = validation.data;
+            switch (validation.status) {
+              case ValidateStatus.member_not_yet_attendance:
                 jsonPayload = {
                   "message":
-                      "User with card UID $cardUID is valid and has attended the active event.",
+                      "Member with Card Id ${member?.cardId} is not yet attended the active event.",
+                  "status": "MEMBER_NOT_YET_ATTENDANCE",
                   "data": {
-                    "status": "USER_VALID_AND_NOT_ATTENDANCE",
-                    "memberId": member.memberId,
-                    "nama": member.name,
-                    "nim": member.nim,
-                    "divisi": member.division.aliases,
+                    "memberId": member?.memberId,
+                    "nama": member?.name,
+                    "nim": member?.nim,
+                    "divisi": member?.division.aliases,
                   },
                 };
-                print("User with card UID $cardUID is valid and has attended the active event.");
-              } else {
+
+                print(
+                  "Member with Card Id ${member?.cardId} is not yet attended the active event.",
+                );
+                break;
+              case ValidateStatus.member_already_attendance:
                 jsonPayload = {
                   "message":
-                      "User with card UID $cardUID has already attended the active event or event not exists.",
-                  "data": {"status": "USER_ALREADY_ATTENDANCE_OR_EVENT_NOT_EXISTS"},
+                      "Member with Card Id ${member?.cardId} has already attended the active event.",
+                  "status": "MEMBER_ALREADY_ATTENDANCE",
                 };
-                print(
-                  "User with card UID $cardUID has already attended the active event or no active event.",
+
+                Toastification().show(
+                  title: const Text("Member Attendance"),
+                  description: Text(
+                    "Member with Card Id ${member?.cardId} has already attended the active event.",
+                  ),
+                  type: ToastificationType.error,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
                 );
-              }
-              encodeData = jsonEncode(jsonPayload);
-              btManager.sendBluetoothData(device, encodeData);
-              return;
+
+                print(
+                  "Member with Card Id ${member?.cardId} has already attended the active event.",
+                );
+                break;
+              case ValidateStatus.member_not_exists:
+                jsonPayload = {
+                  "message": "No member found with Card Id $cardUID.",
+                  "status": "MEMBER_NOT_EXISTS",
+                };
+
+                Toastification().show(
+                  title: const Text("Member Attendance"),
+                  description: Text("Member with Card Id ${member?.cardId} is not exists."),
+                  type: ToastificationType.error,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+
+                print("No member found with Card Id $cardUID.");
+                break;
+              case ValidateStatus.event_not_exists:
+                jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
+
+                Toastification().show(
+                  title: const Text("Member Attendance"),
+                  description: const Text("No active event found."),
+                  type: ToastificationType.error,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+
+                print("No active event found.");
+                break;
             }
-            jsonPayload = {
-              "message": "No member found with card UID $cardUID.",
-              "data": {"status": "USER_NOT_EXISTS"},
-            };
 
             encodeData = jsonEncode(jsonPayload);
             btManager.sendBluetoothData(device, encodeData);
-            print("No member found with card UID $cardUID.");
           } else {
-            print("No Bluetooth device connected.");
+            Toastification().show(
+              title: const Text("Bluetooth Device"),
+              description: const Text("No Bluetooth device connected. Cannot send data."),
+              type: ToastificationType.warning,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+            print("No Bluetooth device connected. Cannot send data.");
           }
-        } else if (data['status'] == "USER_SUCCESS_ATTENDANCE") {
-          String cardUID = data['card_uid'];
-          final member = membersList.firstWhere((m) => m.cardId == cardUID);
+        } else {
+          ToastificationType notificationType = ToastificationType.error;
+          if (decodeData['status'] == "MEMBER_SUCCESS_ATTENDANCE") {
+            String cardUID = data['card_uid'];
+            final member = membersList.firstWhere((m) => m.cardId == cardUID);
 
-          setState(() => isIdCardDetected = true);
-          memberIdCardController.text = member.cardId;
-          memberNameController.text = member.name;
-          memberNIMController.text = member.nim;
-          memberDivisionController.text = member.division.aliases;
+            memberIdCardController.text = member.cardId;
+            memberNameController.text = member.name;
+            memberNIMController.text = member.nim;
+            memberDivisionController.text = member.division.aliases;
+            setState(() => isIdCardDetected = true);
 
-          Toastification().show(
-            title: const Text("Member Attendance"),
-            description: Text(
-              "Member with Card Id $cardUID successfully to attend on active event.",
-            ),
-            type: ToastificationType.success,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: const Duration(seconds: 2),
-            animationDuration: const Duration(milliseconds: 500),
-          );
+            ref.invalidate(eventsLogsProvider);
+            notificationType = ToastificationType.success;
 
-          ref.invalidate(eventsLogsProvider);
+            Future.delayed(const Duration(seconds: 5), () {
+              if (!mounted) return;
 
-          Future.delayed(const Duration(seconds: 5), () {
-            setState(() => isIdCardDetected = false);
-            memberIdCardController.clear();
-            memberNameController.clear();
-            memberNIMController.clear();
-            memberDivisionController.clear();
-          });
-        } else if (data['status'] == "USER_FAILED_ATTENDANCE") {
-          String cardUID = data['card_uid'];
+              setState(() => isIdCardDetected = false);
+              memberIdCardController.clear();
+              memberNameController.clear();
+              memberNIMController.clear();
+              memberDivisionController.clear();
+            });
+          }
 
           Toastification().show(
             title: const Text("Member Attendance"),
-            description: Text("Member with Card Id $cardUID failed to attend on active event."),
-            type: ToastificationType.success,
+            description: Text(decodeData['message']),
+            type: notificationType,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
             autoCloseDuration: const Duration(seconds: 2),
