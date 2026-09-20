@@ -472,6 +472,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     BluetoothDevice? device = BluetoothManager.getConnectedDevice;
     if (device != null) {
       btManager.sendBluetoothData(device, 'cancel');
+
+      if (isIdCardDetected) {
+        btManager.sendBluetoothData(device, 'cancel');
+      }
     }
 
     memberIdCardController.dispose();
