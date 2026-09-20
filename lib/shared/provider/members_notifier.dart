@@ -23,6 +23,10 @@ class MembersNotifier extends _$MembersNotifier {
         MemberModel member = MemberModel.fromJson(memberData);
         members.add(member);
       }
+
+      members.sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
     }
     return members;
   }
