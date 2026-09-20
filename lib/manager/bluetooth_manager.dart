@@ -310,8 +310,6 @@ class BluetoothManager {
             (value) async {
               String decodedData = "";
 
-              print("A");
-
               try {
                 decodedData = utf8.decode(value, allowMalformed: false);
               } catch (e) {
