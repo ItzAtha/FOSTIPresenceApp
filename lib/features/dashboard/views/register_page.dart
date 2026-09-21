@@ -366,27 +366,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     },
                   ),
                   const SizedBox(height: 16.0),
-                  Row(
-                    children: <Widget>[
-                      const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
-                      const SizedBox(width: 16.0),
-                      DropdownButton<Divisions>(
-                        value: selectedDivision,
-                        hint: Text(
-                          LocaleKeys.member_page_dialog_field_division.tr(context: context),
-                        ),
-                        items: Divisions.values.map((item) {
-                          return DropdownMenuItem<Divisions>(
-                            value: item,
-                            child: Text(item.aliases),
-                          );
-                        }).toList(),
-                        onChanged: (Divisions? value) {
-                          if (value == selectedDivision) return;
-                          setState(() => selectedDivision = value);
-                        },
-                      ),
-                    ],
+                  DropdownButtonFormField<Divisions>(
+                    initialValue: selectedDivision,
+                    decoration: InputDecoration(
+                      labelText: "Member Division",
+                      hintText: LocaleKeys.member_page_dialog_field_division.tr(context: context),
+                      icon: const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
+                    ),
+                    items: Divisions.values.map((item) {
+                      return DropdownMenuItem<Divisions>(value: item, child: Text(item.aliases));
+                    }).toList(),
+                    onChanged: (Divisions? value) {
+                      if (value == selectedDivision) return;
+                      setState(() => selectedDivision = value);
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
