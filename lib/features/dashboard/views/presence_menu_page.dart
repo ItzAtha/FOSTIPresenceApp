@@ -64,7 +64,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before register new member.",
+                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before pick a mode for attendance.",
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -301,6 +301,7 @@ class PresenceModePage extends ConsumerStatefulWidget {
 
 class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   bool isIdCardDetected = false;
+  bool isSuccessAttendance = false;
   bool isManualAttendance = false;
   bool isLoadingToAttendance = false;
 
@@ -330,12 +331,11 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
       if (member != null) {
         final isMemberAlreadyAttendance = activeEventLogs.any((log) => log.cardId == member.cardId);
-        print(isMemberAlreadyAttendance);
         return (
-        status: isMemberAlreadyAttendance
-            ? ValidateStatus.member_already_attendance
-            : ValidateStatus.member_not_yet_attendance,
-        data: member,
+          status: isMemberAlreadyAttendance
+              ? ValidateStatus.member_already_attendance
+              : ValidateStatus.member_not_yet_attendance,
+          data: member,
         );
       }
 
@@ -352,192 +352,159 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
       if (form.validate()) {
         setState(() => isLoadingToAttendance = true);
 
-        final membersList = await ref.read(membersProvider.future);
-        final eventsList = await ref.read(eventsProvider.future);
-        final eventsLogsList = await ref.read(eventsLogsProvider.future);
-        final activeEvent = eventsList.where((e) => e.isActive).firstOrNull;
-
-        String name = memberNameController.text.trim();
         String nim = memberNIMController.text.trim();
 
-        String encodeData = '';
-        Map<String, dynamic> jsonPayload = {};
-
+        final validation = await validateMemberData(nim);
         BluetoothDevice? device = BluetoothManager.getConnectedDevice;
-        if (device == null) {
+        if (device != null) {
+          String encodeData = '';
+          Map<String, dynamic> jsonPayload = {};
+
+          MemberModel? member = validation.data;
+          switch (validation.status) {
+            case ValidateStatus.member_not_yet_attendance:
+              jsonPayload = {
+                "message": "Member with NIM ${member?.nim} is not yet attended the active event.",
+                "status": "MEMBER_NOT_YET_ATTENDANCE",
+                "data": {
+                  "memberId": member?.memberId,
+                  "nama": member?.name,
+                  "nim": member?.nim,
+                  "divisi": member?.division.aliases,
+                },
+              };
+
+              print("Member with NIM ${member?.nim} is not yet attended the active event.");
+              break;
+            case ValidateStatus.member_already_attendance:
+              jsonPayload = {
+                "message": "Member with NIM ${member?.nim} has already attended the active event.",
+                "status": "MEMBER_ALREADY_ATTENDANCE",
+              };
+
+              Toastification().show(
+                title: const Text("Member Manual Attendance"),
+                description: Text(
+                  "Member with NIM ${member?.nim} has already attended the active event.",
+                ),
+                type: ToastificationType.error,
+                style: ToastificationStyle.flat,
+                alignment: Alignment.bottomCenter,
+                autoCloseDuration: const Duration(seconds: 2),
+                animationDuration: const Duration(milliseconds: 500),
+              );
+
+              print("Member with NIM ${member?.nim} has already attended the active event.");
+              break;
+            case ValidateStatus.member_not_exists:
+              jsonPayload = {
+                "message": "No member found with NIM $nim.",
+                "status": "MEMBER_NOT_EXISTS",
+              };
+
+              Toastification().show(
+                title: const Text("Member Manual Attendance"),
+                description: Text("Member with NIM $nim is not exists."),
+                type: ToastificationType.error,
+                style: ToastificationStyle.flat,
+                alignment: Alignment.bottomCenter,
+                autoCloseDuration: const Duration(seconds: 2),
+                animationDuration: const Duration(milliseconds: 500),
+              );
+
+              print("No member found with NIM $nim.");
+              break;
+            case ValidateStatus.event_not_exists:
+              jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
+
+              Toastification().show(
+                title: const Text("Member Manual Attendance"),
+                description: const Text("No active event found."),
+                type: ToastificationType.error,
+                style: ToastificationStyle.flat,
+                alignment: Alignment.bottomCenter,
+                autoCloseDuration: const Duration(seconds: 2),
+                animationDuration: const Duration(milliseconds: 500),
+              );
+
+              print("No active event found.");
+              break;
+          }
+
+          encodeData = jsonEncode(jsonPayload);
+          btManager.sendBluetoothData(device, encodeData);
+
+          Timer? checkTimer;
+          final completer = Completer<bool>();
+          Map<String, dynamic> decodeData = {};
+
+          final timeoutTimer = Timer(const Duration(seconds: 30), () {
+            if (!completer.isCompleted) {
+              setState(() => isLoadingToAttendance = false);
+
+              checkTimer?.cancel();
+              completer.completeError(TimeoutException("Request timeout"));
+            }
+          });
+
+          checkTimer = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
+            if (BluetoothManager.hasReceivedData) {
+              String receivedData = BluetoothManager.getReceivedData;
+
+              try {
+                decodeData = jsonDecode(receivedData);
+              } catch (e) {
+                print("Error decoding received data: $e");
+              }
+
+              if (decodeData['status'] == "MEMBER_SUCCESS_MANUAL_ATTENDANCE") {
+                checkTimer.cancel();
+                timeoutTimer.cancel();
+
+                if (!completer.isCompleted) {
+                  completer.complete(true);
+                }
+              } else if (decodeData['status'] == "MEMBER_FAILED_MANUAL_ATTENDANCE") {
+                checkTimer.cancel();
+                timeoutTimer.cancel();
+
+                if (!completer.isCompleted) {
+                  completer.complete(false);
+                }
+              }
+            }
+          });
+
+          bool isSuccess = await completer.future;
+          ToastificationType notificationType = isSuccess
+              ? ToastificationType.success
+              : ToastificationType.error;
+
+          Toastification().show(
+            title: const Text("Member Manual Attendance"),
+            description: Text(decodeData['message']),
+            type: notificationType,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
+
+          if (isSuccess) memberNIMController.clear();
+        } else {
           Toastification().show(
             title: const Text("Bluetooth Device"),
             description: const Text("No Bluetooth device connected. Cannot send data."),
-            type: ToastificationType.success,
+            type: ToastificationType.warning,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
             autoCloseDuration: const Duration(seconds: 2),
             animationDuration: const Duration(milliseconds: 500),
           );
           print("No Bluetooth device connected. Cannot send data.");
-          setState(() => isLoadingToAttendance = false);
-          return;
         }
 
-        if (activeEvent != null) {
-          print(activeEvent);
-          final member = membersList.where((m) => m.nim == nim).firstOrNull;
-          print(member);
-          if (member != null) {
-            final activeEventLogs = eventsLogsList[activeEvent.eventId] ?? [];
-            print(activeEventLogs);
-            bool isMemberNotYetAttendance = activeEventLogs.any((log) {
-              print(log.cardId);
-              print(member.cardId);
-              return log.cardId == member.cardId;
-            });
-
-            if (isMemberNotYetAttendance) {
-              jsonPayload = {
-                "message":
-                    "Member with card UID ${member.cardId} is valid and hasn't attend to active event.",
-                "data": {
-                  "status": "MEMBER_NOT_YET_ATTENDANCE",
-                  "memberId": member.memberId,
-                  "cardUID": member.cardId,
-                  "nama": member.name,
-                  "nim": member.nim,
-                },
-              };
-
-              encodeData = jsonEncode(jsonPayload);
-              btManager.sendBluetoothData(device, encodeData);
-              print(
-                "Member with card UID ${member.cardId} is valid and hasn't attend to active event.",
-              );
-
-              Timer? checkTimer;
-              final completer = Completer<bool>();
-
-              final timeoutTimer = Timer(const Duration(seconds: 30), () {
-                if (!completer.isCompleted) {
-                  setState(() => isLoadingToAttendance = false);
-                  checkTimer?.cancel();
-                  completer.completeError(TimeoutException("Request timeout"));
-                }
-              });
-
-              checkTimer = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
-                if (BluetoothManager.hasReceivedData) {
-                  String receivedData = BluetoothManager.getReceivedData;
-
-                  Map<String, dynamic> decodeData = {};
-
-                  try {
-                    decodeData = jsonDecode(receivedData);
-                  } catch (e) {
-                    print("Error decoding received data: $e");
-                  }
-
-                  if (decodeData['status'] == "MEMBER_SUCCESS_MANUAL_ATTENDANCE") {
-                    checkTimer.cancel();
-                    timeoutTimer.cancel();
-
-                    if (!completer.isCompleted) {
-                      completer.complete(true);
-                    }
-                  } else if (decodeData['status'] == "MEMBER_FAILED_MANUAL_ATTENDANCE") {
-                    checkTimer.cancel();
-                    timeoutTimer.cancel();
-
-                    if (!completer.isCompleted) {
-                      completer.complete(false);
-                    }
-                  }
-                }
-              });
-
-              bool isSuccess = await completer.future;
-              if (isSuccess) {
-                Toastification().show(
-                  title: const Text("Member Manual Attendance"),
-                  description: Text(
-                    "Successfully force member to attendance with Card ID: ${member.cardId}",
-                  ),
-                  type: ToastificationType.success,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: const Duration(seconds: 2),
-                  animationDuration: const Duration(milliseconds: 500),
-                );
-
-                memberNameController.clear();
-                memberNIMController.clear();
-              } else {
-                Toastification().show(
-                  title: const Text("Member Manual Attendance"),
-                  description: Text(
-                    "Failed to force member to attendance. Member already attendance with Card ID: ${member.cardId}",
-                  ),
-                  type: ToastificationType.error,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: const Duration(seconds: 2),
-                  animationDuration: const Duration(milliseconds: 500),
-                );
-              }
-
-              setState(() => isLoadingToAttendance = false);
-              return;
-            } else {
-              jsonPayload = {
-                "message":
-                    "Member with card UID ${member.cardId} has already attended the active event.",
-                "data": {"status": "MEMBER_ALREADY_ATTENDANCE"},
-              };
-
-              Toastification().show(
-                title: const Text("Member Manual Attendance"),
-                description: Text(
-                  "Member with card UID ${member.cardId} has already attended the active event.",
-                ),
-                type: ToastificationType.success,
-                style: ToastificationStyle.flat,
-                alignment: Alignment.bottomCenter,
-                autoCloseDuration: const Duration(seconds: 2),
-                animationDuration: const Duration(milliseconds: 500),
-              );
-            }
-          } else {
-            jsonPayload = {
-              "message": "No member found with NIM $nim.",
-              "data": {"status": "MEMBER_NOT_EXISTS"},
-            };
-
-            Toastification().show(
-              title: const Text("Member Manual Attendance"),
-              description: Text("Member with NIM $nim is not found."),
-              type: ToastificationType.success,
-              style: ToastificationStyle.flat,
-              alignment: Alignment.bottomCenter,
-              autoCloseDuration: const Duration(seconds: 2),
-              animationDuration: const Duration(milliseconds: 500),
-            );
-          }
-        } else {
-          jsonPayload = {
-            "message": "No active event available.",
-            "data": {"status": "NO_ACTIVE_EVENT"},
-          };
-
-          Toastification().show(
-            title: const Text("Member Manual Attendance"),
-            description: const Text("No active event available."),
-            type: ToastificationType.success,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: const Duration(seconds: 2),
-            animationDuration: const Duration(milliseconds: 500),
-          );
-        }
-
-        encodeData = jsonEncode(jsonPayload);
-        btManager.sendBluetoothData(device, encodeData);
+        setState(() => isLoadingToAttendance = false);
       }
     }
   }
@@ -572,7 +539,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before register new member.",
+                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before attendance.",
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -586,17 +553,17 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
     );
   }
 
-  Widget noCardDetected() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
+  Widget noMemberAttendance() {
+    return Stack(
+      children: <Widget>[
+        Center(
+          child: Container(
             margin: const EdgeInsets.all(AppSizes.p16),
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSizes.p16),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -616,7 +583,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Member ID Card detected. Please tap the Member ID Card to RFID sensor to attendance and show data in here.",
+                      "No Member attend the active event. Please tap the Member Card Id to RFID sensor to attend and show data in here.",
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -625,12 +592,49 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+
+        if (isIdCardDetected)
+          ValueListenableBuilder(
+            valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+            builder: (_, mode, child) {
+              return Positioned.fill(
+                child: Container(
+                  color: mode == AdaptiveThemeMode.light
+                      ? Colors.black.withValues(alpha: 0.8)
+                      : Colors.white.withValues(alpha: 0.5),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            mode == AdaptiveThemeMode.light
+                                ? AppColors.secondary
+                                : AppColors.secondary,
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
+                        Text(
+                          "Member card detected! Validating data....",
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: mode == AdaptiveThemeMode.light
+                                ? AppColors.textDark
+                                : AppColors.textLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
     );
   }
 
-  Widget cardDetected() {
+  Widget showMemberProfile() {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSizes.p16),
@@ -754,7 +758,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     const SizedBox(width: 16.0),
                     Expanded(
                       child: Text(
-                        "You can just write a Member NIM to automatically filling the field or, if it doesn't exists, write it manually.",
+                        "Write a Member NIM below to manually attend on current active event.",
                         textAlign: TextAlign.justify,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
@@ -772,25 +776,6 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 children: <Widget>[
                   const SizedBox(height: 8.0),
                   TextFormField(
-                    controller: memberNameController,
-                    decoration: InputDecoration(
-                      labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
-                      icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
-                      errorMaxLines: 2,
-                    ),
-                    keyboardType: TextInputType.name,
-                    textInputAction: TextInputAction.next,
-                    validator: (String? value) {
-                      if (value.toString().isEmpty) {
-                        return LocaleKeys.member_page_dialog_validation_name_required.tr(
-                          context: context,
-                        );
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  TextFormField(
                     controller: memberNIMController,
                     decoration: InputDecoration(
                       labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
@@ -800,14 +785,6 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     ),
                     keyboardType: TextInputType.name,
                     textInputAction: TextInputAction.next,
-                    onChanged: (value) async {
-                      debouncer.run(() {
-                        final memberData = membersData.findStudentByNIM(value);
-                        print("Found: $memberData");
-
-                        setState(() => memberNameController.text = memberData[1]);
-                      });
-                    },
                     validator: (String? value) {
                       bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
 
@@ -845,7 +822,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                               );
                             },
                           )
-                        : Text("Attendance Member", style: Theme.of(context).textTheme.labelLarge),
+                        : Text("Attend Member", style: Theme.of(context).textTheme.labelLarge),
                   ),
                 ],
               ),
@@ -909,10 +886,12 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
         if (decodeData['status'] == "CARD_DETECTED") {
           String cardUID = data['card_uid'];
-          final validation = await validateMemberData(cardUID);
 
           BluetoothDevice? device = BluetoothManager.getConnectedDevice;
           if (device != null) {
+            setState(() => isIdCardDetected = true);
+            final validation = await validateMemberData(cardUID);
+
             String encodeData = '';
             Map<String, dynamic> jsonPayload = {};
 
@@ -936,6 +915,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 );
                 break;
               case ValidateStatus.member_already_attendance:
+                setState(() => isIdCardDetected = false);
+
                 jsonPayload = {
                   "message":
                       "Member with Card Id ${member?.cardId} has already attended the active event.",
@@ -959,6 +940,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 );
                 break;
               case ValidateStatus.member_not_exists:
+                setState(() => isIdCardDetected = false);
+
                 jsonPayload = {
                   "message": "No member found with Card Id $cardUID.",
                   "status": "MEMBER_NOT_EXISTS",
@@ -977,6 +960,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 print("No member found with Card Id $cardUID.");
                 break;
               case ValidateStatus.event_not_exists:
+                setState(() => isIdCardDetected = false);
+
                 jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
 
                 Toastification().show(
@@ -1017,7 +1002,11 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             memberNameController.text = member.name;
             memberNIMController.text = member.nim;
             memberDivisionController.text = member.division.aliases;
-            setState(() => isIdCardDetected = true);
+
+            setState(() {
+              isIdCardDetected = false;
+              isSuccessAttendance = true;
+            });
 
             ref.invalidate(eventsLogsProvider);
             notificationType = ToastificationType.success;
@@ -1025,7 +1014,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             Future.delayed(const Duration(seconds: 5), () {
               if (!mounted) return;
 
-              setState(() => isIdCardDetected = false);
+              setState(() => isSuccessAttendance = false);
               memberIdCardController.clear();
               memberNameController.clear();
               memberNIMController.clear();
@@ -1051,9 +1040,11 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   void dispose() {
     btTimerChecker?.cancel();
 
-    BluetoothDevice? device = BluetoothManager.getConnectedDevice;
-    if (device != null) {
-      btManager.sendBluetoothData(device, 'cancel');
+    if (getModeIndex(widget._attendanceMode) != '4') {
+      BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+      if (device != null) {
+        btManager.sendBluetoothData(device, 'cancel');
+      }
     }
 
     memberIdCardController.dispose();
@@ -1073,9 +1064,9 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 ? noBTConnected()
                 : isManualAttendance
                 ? showManualAttendance()
-                : isIdCardDetected
-                ? cardDetected()
-                : noCardDetected(),
+                : isSuccessAttendance
+                ? showMemberProfile()
+                : noMemberAttendance(),
             Align(
               alignment: Alignment.topLeft,
               child: Padding(
