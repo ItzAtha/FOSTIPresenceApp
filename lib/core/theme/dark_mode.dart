@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:toastification/toastification.dart';
 
 import '../app_constants.dart' show AppColors, AppSizes;
 
