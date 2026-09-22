@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:toastification/toastification.dart';
 
 import '../app_constants.dart' show AppColors, AppSizes;
 
@@ -16,7 +17,7 @@ class DarkMode {
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       iconTheme: const IconThemeData(color: AppColors.iconDark),
-      radioTheme: const RadioThemeData(fillColor: WidgetStatePropertyAll(Color(0x80F5F6FA))),
+      radioTheme: const RadioThemeData(fillColor: WidgetStatePropertyAll(AppColors.secondary)),
       textTheme: (() {
         final textBase = Typography(platform: TargetPlatform.android).black
             .apply(bodyColor: AppColors.textDark, displayColor: AppColors.textDark);
@@ -96,6 +97,22 @@ class DarkMode {
           }
           return null;
         }),
+      ),
+      switchTheme: SwitchThemeData(
+        overlayColor: WidgetStatePropertyAll(AppColors.secondary.withValues(alpha: 0.1)),
+        thumbColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color(0xFF005E5B);
+          }
+          return AppColors.secondary;
+        }),
+        trackColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.secondary;
+          }
+          return AppColors.secondary.withValues(alpha: 0.3);
+        }),
+        trackOutlineColor: const WidgetStatePropertyAll(AppColors.secondary),
       ),
       cardTheme: const CardThemeData(
         elevation: 4.0,

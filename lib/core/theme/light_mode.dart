@@ -16,7 +16,7 @@ class LightMode {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       iconTheme: const IconThemeData(color: AppColors.iconLight),
-      radioTheme: const RadioThemeData(fillColor: WidgetStatePropertyAll(Colors.grey)),
+      radioTheme: RadioThemeData(fillColor: WidgetStatePropertyAll(AppColors.secondary.withValues(alpha: 0.8))),
       textTheme: (() {
         final textBase = Typography(platform: TargetPlatform.android).black
             .apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight);
@@ -96,6 +96,22 @@ class LightMode {
           }
           return null;
         }),
+      ),
+      switchTheme: SwitchThemeData(
+        overlayColor: WidgetStatePropertyAll(AppColors.secondary.withValues(alpha: 0.1)),
+        thumbColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color(0xFF005E5B);
+          }
+          return AppColors.secondary;
+        }),
+        trackColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.secondary;
+          }
+          return AppColors.secondary.withValues(alpha: 0.3);
+        }),
+        trackOutlineColor: const WidgetStatePropertyAll(AppColors.secondary),
       ),
       cardTheme: const CardThemeData(
         elevation: 2.0,
