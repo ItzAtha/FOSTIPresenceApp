@@ -196,7 +196,6 @@ class BluetoothManager {
 
     try {
       await device.connect(license: License.nonprofit, mtu: 517);
-      if (!_context.mounted) return true;
 
       print(
         'Connected to device ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}',
