@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/shared/provider/members_notifier.dart';
+import 'package:attendance_management/shared/service/stream_listener.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,11 +13,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/members_data_factory.dart';
-import '../../../../manager/bluetooth_manager.dart';
 import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart';
 import '../../../core/utils/debouncer.dart';
 import '../../../shared/models/member_model.dart';
+import '../../../shared/service/ble_service.dart';
+
+enum RegisterStatus { success, failed, timeout, none }
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -28,14 +31,13 @@ class RegisterPage extends ConsumerStatefulWidget {
 class _RegisterPageState extends ConsumerState<RegisterPage> {
   bool isIdCardDetected = false;
   bool isLoadingToRegister = false;
-
-  Timer? btTimerChecker;
+  RegisterStatus registerStatus = RegisterStatus.none;
 
   Divisions? selectedDivision;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   late MembersData membersData;
-  late BluetoothManager btManager;
+  late BleService bleService;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController memberIdCardController = TextEditingController();
@@ -61,7 +63,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           "divisi": divisi,
         };
 
-        BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+        BluetoothDevice? device = bleService.connectedDevice;
         if (device == null) {
           Toastification().show(
             title: const Text("Bluetooth Device"),
@@ -81,90 +83,94 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         }
 
         String encodeData = jsonEncode(jsonPayload);
-        btManager.sendBluetoothData(device, encodeData);
+        bleService.sendBluetoothData(device, encodeData);
 
         Timer? checkTimer;
         final completer = Completer<bool>();
 
-        final timeoutTimer = Timer(const Duration(seconds: 30), () {
+        final timeoutTimer = Timer(const Duration(minutes: 1), () {
           if (!completer.isCompleted) {
-            setState(() {
-              isIdCardDetected = false;
-              isLoadingToRegister = false;
-            });
             checkTimer?.cancel();
             completer.completeError(TimeoutException("Request timeout"));
           }
         });
 
         checkTimer = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
-          if (BluetoothManager.hasReceivedData) {
-            String receivedData = BluetoothManager.getReceivedData;
+          print("Active check timer");
+          if (registerStatus == RegisterStatus.success) {
+            checkTimer.cancel();
+            timeoutTimer.cancel();
 
-            Map<String, dynamic> decodeData = {};
-            Map<String, dynamic> data = {};
-
-            try {
-              decodeData = jsonDecode(receivedData);
-              data = decodeData['data'];
-            } catch (e) {
-              print("Error decoding received data: $e");
+            if (!completer.isCompleted) {
+              completer.complete(true);
             }
+          } else if (registerStatus == RegisterStatus.failed) {
+            checkTimer.cancel();
+            timeoutTimer.cancel();
 
-            if (data['status'] == "REGISTER_CARD_SUCCESS") {
-              checkTimer.cancel();
-              timeoutTimer.cancel();
+            if (!completer.isCompleted) {
+              completer.complete(false);
+            }
+          } else if (registerStatus == RegisterStatus.timeout) {
+            checkTimer.cancel();
+            timeoutTimer.cancel();
 
-              if (!completer.isCompleted) {
-                completer.complete(true);
-              }
-            } else if (data['status'] == "REGISTER_CARD_FAILED") {
-              checkTimer.cancel();
-              timeoutTimer.cancel();
-
-              if (!completer.isCompleted) {
-                completer.complete(false);
-              }
+            if (!completer.isCompleted) {
+              completer.completeError(TimeoutException("Request timeout"));
             }
           }
         });
 
-        bool isSuccess = await completer.future;
-        if (isSuccess) {
-          Toastification().show(
-            title: const Text("Member Register"),
-            description: Text("Successfully register new member with ID: $cardId"),
-            type: ToastificationType.success,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: const Duration(seconds: 2),
-            animationDuration: const Duration(milliseconds: 500),
-          );
+        try {
+          bool isSuccess = await completer.future;
+          if (isSuccess) {
+            Toastification().show(
+              title: const Text("Member Register"),
+              description: Text("Successfully register new member with ID: $cardId"),
+              type: ToastificationType.success,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
 
-          print("Member registered successfully.");
-          ref.invalidate(membersProvider);
-          memberIdCardController.clear();
-          memberNameController.clear();
-          memberNIMController.clear();
-          setState(() => selectedDivision = null);
-        } else {
+            print("Member registered successfully.");
+            ref.invalidate(membersProvider);
+          } else {
+            Toastification().show(
+              title: const Text("Member Register"),
+              description: Text(
+                "Failed to register member. Data already exists in database with ID: $cardId",
+              ),
+              type: ToastificationType.error,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+          }
+        } on TimeoutException {
           Toastification().show(
             title: const Text("Member Register"),
-            description: Text(
-              "Failed to register member. Data already exists in database with ID: $cardId",
-            ),
+            description: const Text("Request timeout. Please try again."),
             type: ToastificationType.error,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
             autoCloseDuration: const Duration(seconds: 2),
             animationDuration: const Duration(milliseconds: 500),
           );
-        }
+        } finally {
+          memberIdCardController.clear();
+          memberNameController.clear();
+          memberNIMController.clear();
 
-        setState(() {
-          isIdCardDetected = false;
-          isLoadingToRegister = false;
-        });
+          setState(() {
+            selectedDivision = null;
+            isIdCardDetected = false;
+            isLoadingToRegister = false;
+            registerStatus = RegisterStatus.none;
+          });
+        }
       }
     }
   }
@@ -340,12 +346,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         final memberData = membersData.findStudentByNIM(value);
                         print("Found: $memberData");
 
-                        setState(() {
-                          memberNameController.text = memberData[1];
-                          selectedDivision = Divisions.values.firstWhere(
-                            (element) => element.aliases == memberData[0],
-                          );
-                        });
+                        if (memberData.isNotEmpty) {
+                          setState(() {
+                            memberNameController.text = memberData[1];
+                            selectedDivision = Divisions.values.firstWhere(
+                              (element) => element.aliases == memberData[0],
+                            );
+                          });
+                        }
                       });
                     },
                     validator: (String? value) {
@@ -416,58 +424,31 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   void initState() {
     super.initState();
     membersData = MembersData();
-    btManager = BluetoothManager(context: context);
+    bleService = BleService();
 
     membersData
         .loadData()
         .then((isSuccess) {
           if (!mounted) return;
 
-          BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+          BluetoothDevice? device = bleService.connectedDevice;
           if (device != null) {
-            btManager.sendBluetoothData(device, '1');
+            bleService.sendBluetoothData(device, '1');
           }
         })
         .catchError((error) {
           print("Error loading FOSTI members data excel: $error");
         });
-
-    btTimerChecker = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
-      if (isLoadingToRegister) return;
-
-      if (BluetoothManager.hasReceivedData) {
-        String receivedData = BluetoothManager.getReceivedData;
-
-        Map<String, dynamic> decodeData = {};
-        Map<String, dynamic> data = {};
-
-        try {
-          decodeData = jsonDecode(receivedData);
-          data = decodeData['data'];
-        } catch (e) {
-          print("Error decoding received data: $e");
-        }
-
-        if (!isIdCardDetected && data['status'] == "CARD_DETECTED") {
-          setState(() => isIdCardDetected = true);
-          memberIdCardController.text = data['card_uid'];
-        } else if (data['status'] == "TIMEOUT_NO_DATA") {
-          setState(() => isIdCardDetected = false);
-        }
-      }
-    });
   }
 
   @override
   void dispose() {
-    btTimerChecker?.cancel();
-
-    BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+    BluetoothDevice? device = bleService.connectedDevice;
     if (device != null) {
-      btManager.sendBluetoothData(device, 'cancel');
+      bleService.sendBluetoothData(device, 'cancel');
 
       if (isIdCardDetected) {
-        btManager.sendBluetoothData(device, 'cancel');
+        bleService.sendBluetoothData(device, 'cancel');
       }
     }
 
@@ -479,23 +460,72 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: Text(LocaleKeys.control_panel_page_title_register.tr(context: context)),
-        leading: BackButton(
-          style: const ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll<Color>(Colors.transparent),
+    return StreamListener<String>(
+      stream: bleService.dataStream,
+      onData: (context, receivedData) {
+        Map<String, dynamic> decodedData = {};
+        Map<String, dynamic> data = {};
+
+        print("Received data: $receivedData");
+
+        try {
+          decodedData = jsonDecode(receivedData);
+          data = decodedData['data'];
+        } catch (e) {
+          print("Error decoding received data: $e");
+        }
+
+        if (decodedData['status'] == "CARD_DETECTED") {
+          setState(() => isIdCardDetected = true);
+          memberIdCardController.text = data['cardId'];
+        } else if (decodedData['status'] == "REGISTER_CARD_SUCCESS") {
+          registerStatus = RegisterStatus.success;
+        } else if (decodedData['status'] == "REGISTER_CARD_FAILED") {
+          registerStatus = RegisterStatus.failed;
+        } else if (decodedData['status'] == "TIMEOUT_NO_DATA") {
+          registerStatus = RegisterStatus.timeout;
+
+          if (!isLoadingToRegister) {
+            Toastification().show(
+              title: const Text("Member Register"),
+              description: const Text("Request timeout. Please try again."),
+              type: ToastificationType.error,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+
+            memberIdCardController.clear();
+            memberNameController.clear();
+            memberNIMController.clear();
+
+            setState(() {
+              selectedDivision = null;
+              isIdCardDetected = false;
+              registerStatus = RegisterStatus.none;
+            });
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+          title: Text(LocaleKeys.control_panel_page_title_register.tr(context: context)),
+          leading: BackButton(
+            style: const ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll<Color>(Colors.transparent),
+            ),
+            onPressed: () => context.pop(),
           ),
-          onPressed: () => context.pop(),
         ),
+        body: bleService.connectedDevice == null
+            ? noBTConnected()
+            : isIdCardDetected
+            ? cardDetected()
+            : noCardDetected(),
       ),
-      body: BluetoothManager.getConnectedDevice == null
-          ? noBTConnected()
-          : isIdCardDetected
-          ? cardDetected()
-          : noCardDetected(),
     );
   }
 }
