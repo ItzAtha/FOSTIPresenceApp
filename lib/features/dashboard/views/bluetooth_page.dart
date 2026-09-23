@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:attendance_management/manager/bluetooth_manager.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,7 @@ import 'package:toastification/toastification.dart';
 
 import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart' show AppSizes, AppColors;
+import '../../../shared/service/ble_service.dart';
 
 class BluetoothPage extends StatefulWidget {
   const BluetoothPage({super.key});
@@ -20,53 +20,111 @@ class BluetoothPage extends StatefulWidget {
 
 class _BluetoothPageState extends State<BluetoothPage> {
   bool isScanning = true;
-  late BluetoothManager btManager;
+  late BleService bleService;
 
   Future<void> initializeBluetooth() async {
     setState(() => isScanning = true);
 
-    btManager.initialize().then((isSuccess) {
-      if (!mounted) return;
+    bleService
+        .requestPermissions()
+        .then((value) async {
+          final status = value.status;
+          final permission = value.permission;
 
-      if (isSuccess) {
-        setState(() => isScanning = false);
+          switch (status) {
+            case BlePermissionStatus.request_success:
+              final bleStatus = await bleService.startScanning();
 
-        Toastification().show(
-          context: context,
-          title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: context)),
-          description: Text(
-            LocaleKeys.alert_notify_bluetooth_description_success_discover.tr(context: context),
-          ),
-          type: ToastificationType.info,
-          style: ToastificationStyle.flat,
-          alignment: Alignment.bottomCenter,
-          autoCloseDuration: const Duration(seconds: 2),
-          animationDuration: const Duration(milliseconds: 500),
-        );
-        print('Bluetooth initialization success');
-      } else {
-        Toastification().show(
-          context: context,
-          title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: context)),
-          description: Text(
-            LocaleKeys.alert_notify_bluetooth_description_fail_discover.tr(context: context),
-          ),
-          type: ToastificationType.info,
-          style: ToastificationStyle.flat,
-          alignment: Alignment.bottomCenter,
-          autoCloseDuration: const Duration(seconds: 2),
-          animationDuration: const Duration(milliseconds: 500),
-        );
-        print('Bluetooth initialization failed');
-      }
-    });
+              if (!mounted) return;
+
+              if (bleStatus == BleStatus.scanning_success) {
+                Toastification().show(
+                  title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.alert_notify_bluetooth_description_success_discover.tr(
+                      context: context,
+                    ),
+                  ),
+                  type: ToastificationType.info,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+              } else if (bleStatus == BleStatus.ble_stream_sub_error) {
+                Toastification().show(
+                  title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.alert_notify_bluetooth_description_fail_discover.tr(
+                      context: context,
+                    ),
+                  ),
+                  type: ToastificationType.info,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+              }
+              break;
+            case BlePermissionStatus.request_failed:
+              if (!mounted) return;
+
+              Toastification().show(
+                title: Text(LocaleKeys.alert_notify_permission_title.tr(context: context)),
+                description: Text(
+                  LocaleKeys.alert_notify_permission_description_request_fail.tr(context: context),
+                ),
+                type: ToastificationType.info,
+                style: ToastificationStyle.flat,
+                alignment: Alignment.bottomCenter,
+                autoCloseDuration: const Duration(seconds: 2),
+                animationDuration: const Duration(milliseconds: 500),
+              );
+              break;
+            case BlePermissionStatus.request_denied:
+              if (!mounted) return;
+
+              Toastification().show(
+                title: Text(LocaleKeys.alert_notify_permission_title.tr(context: context)),
+                description: Text(
+                  LocaleKeys.alert_notify_permission_description_not_granted.tr(
+                    context: context,
+                    namedArgs: {'permission': permission.toString()},
+                  ),
+                ),
+                type: ToastificationType.info,
+                style: ToastificationStyle.flat,
+                alignment: Alignment.bottomCenter,
+                autoCloseDuration: const Duration(seconds: 2),
+                animationDuration: const Duration(milliseconds: 500),
+              );
+              break;
+            case BlePermissionStatus.not_support:
+              if (!mounted) return;
+
+              Toastification().show(
+                title: Text(LocaleKeys.alert_notify_permission_title.tr(context: context)),
+                description: const Text(
+                  "Bluetooth request permission is not support on this device.",
+                ),
+                type: ToastificationType.info,
+                style: ToastificationStyle.flat,
+                alignment: Alignment.bottomCenter,
+                autoCloseDuration: const Duration(seconds: 2),
+                animationDuration: const Duration(milliseconds: 500),
+              );
+              break;
+          }
+        })
+        .whenComplete(() => setState(() => isScanning = false));
   }
 
   @override
   void initState() {
     super.initState();
 
-    btManager = BluetoothManager(context: context);
+    bleService = BleService();
     initializeBluetooth();
   }
 
@@ -77,227 +135,40 @@ class _BluetoothPageState extends State<BluetoothPage> {
         bottom: false,
         child: Stack(
           children: <Widget>[
-            isScanning
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        ValueListenableBuilder(
-                          valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
-                          builder: (_, mode, child) {
-                            return CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                mode == AdaptiveThemeMode.light
-                                    ? AppColors.primary
-                                    : AppColors.primary.withValues(alpha: 0.6),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16.0),
-                        Text(LocaleKeys.bluetooth_page_loading_data_process.tr(context: context)),
-                      ],
-                    ),
-                  )
-                : BluetoothManager.getDevicesList.isNotEmpty
-                ? RefreshIndicator(
-                    onRefresh: initializeBluetooth,
-                    color: AppColors.primary,
-                    child: ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: BluetoothManager.getDevicesList.length,
-                      itemBuilder: (context, index) {
-                        BluetoothDevice device = BluetoothManager.getDevicesList[index];
+            RefreshIndicator(
+              onRefresh: initializeBluetooth,
+              color: AppColors.primary,
+              child: ValueListenableBuilder<Map<BluetoothDevice, BleConnectionState>>(
+                valueListenable: bleService.foundDevicesList,
+                builder: (context, devices, _) {
+                  if (isScanning && devices.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          ValueListenableBuilder(
+                            valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+                            builder: (_, mode, child) {
+                              return CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  mode == AdaptiveThemeMode.light
+                                      ? AppColors.primary
+                                      : AppColors.primary.withValues(alpha: 0.6),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16.0),
+                          Text(LocaleKeys.bluetooth_page_loading_data_process.tr(context: context)),
+                        ],
+                      ),
+                    );
+                  }
 
-                        return ValueListenableBuilder<Map<BluetoothDevice, BTConnectionState>>(
-                          valueListenable: BluetoothManager.getDeviceStatus,
-                          builder: (context, value, _) {
-                            return ListTile(
-                              title: Text(
-                                device.platformName.isEmpty
-                                    ? LocaleKeys.bluetooth_page_unknown_device.tr(context: context)
-                                    : device.platformName,
-                              ),
-                              subtitle: Text(device.remoteId.str),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ElevatedButton(
-                                    onPressed:
-                                        (value[device] != BTConnectionState.connecting &&
-                                            value[device] != BTConnectionState.disconnecting)
-                                        ? () async {
-                                            if (!device.isConnected) {
-                                              if (BluetoothManager.isBluetoothConnected) {
-                                                Toastification().show(
-                                                  context: context,
-                                                  title: Text(
-                                                    LocaleKeys.alert_notify_bluetooth_title.tr(
-                                                      context: context,
-                                                    ),
-                                                  ),
-                                                  description: Text(
-                                                    LocaleKeys
-                                                        .alert_notify_bluetooth_description_already_connected
-                                                        .tr(context: context),
-                                                  ),
-                                                  type: ToastificationType.warning,
-                                                  style: ToastificationStyle.flat,
-                                                  alignment: Alignment.bottomCenter,
-                                                  autoCloseDuration: const Duration(seconds: 2),
-                                                  animationDuration: const Duration(
-                                                    milliseconds: 500,
-                                                  ),
-                                                );
-                                                return;
-                                              }
-
-                                              setState(
-                                                () => value[device] = BTConnectionState.connecting,
-                                              );
-
-                                              bool isSuccess = await btManager.connectToDevice(
-                                                device,
-                                              );
-                                              if (isSuccess) {
-                                                setState(
-                                                  () => value[device] = BTConnectionState.connected,
-                                                );
-                                                if (!context.mounted) return;
-
-                                                Toastification().show(
-                                                  context: context,
-                                                  title: Text(
-                                                    LocaleKeys.alert_notify_bluetooth_title.tr(
-                                                      context: context,
-                                                    ),
-                                                  ),
-                                                  description: Text(
-                                                    LocaleKeys
-                                                        .alert_notify_bluetooth_description_bt_success_connect
-                                                        .tr(
-                                                          context: context,
-                                                          namedArgs: {
-                                                            'device': device.platformName.isEmpty
-                                                                ? LocaleKeys
-                                                                      .bluetooth_page_unknown_device
-                                                                      .tr(context: context)
-                                                                : device.platformName,
-                                                          },
-                                                        ),
-                                                  ),
-                                                  type: ToastificationType.success,
-                                                  style: ToastificationStyle.flat,
-                                                  alignment: Alignment.bottomCenter,
-                                                  autoCloseDuration: const Duration(seconds: 2),
-                                                  animationDuration: const Duration(
-                                                    milliseconds: 500,
-                                                  ),
-                                                );
-                                              } else {
-                                                setState(
-                                                  () => value[device] =
-                                                      BTConnectionState.disconnected,
-                                                );
-                                                if (!context.mounted) return;
-
-                                                Toastification().show(
-                                                  context: context,
-                                                  title: Text(
-                                                    LocaleKeys.alert_notify_bluetooth_title.tr(
-                                                      context: context,
-                                                    ),
-                                                  ),
-                                                  description: Text(
-                                                    LocaleKeys
-                                                        .alert_notify_bluetooth_description_bt_fail_connect
-                                                        .tr(
-                                                          context: context,
-                                                          namedArgs: {
-                                                            'device': device.platformName.isEmpty
-                                                                ? LocaleKeys
-                                                                      .bluetooth_page_unknown_device
-                                                                      .tr(context: context)
-                                                                : device.platformName,
-                                                          },
-                                                        ),
-                                                  ),
-                                                  type: ToastificationType.error,
-                                                  style: ToastificationStyle.flat,
-                                                  alignment: Alignment.bottomCenter,
-                                                  autoCloseDuration: const Duration(seconds: 2),
-                                                  animationDuration: const Duration(
-                                                    milliseconds: 500,
-                                                  ),
-                                                );
-                                              }
-                                            } else {
-                                              try {
-                                                setState(
-                                                  () => value[device] =
-                                                      BTConnectionState.disconnecting,
-                                                );
-                                                await btManager.disconnectFromDevice(device);
-                                                setState(
-                                                  () => value[device] =
-                                                      BTConnectionState.disconnected,
-                                                );
-                                              } catch (e) {
-                                                print('Disconnection failed: $e');
-                                              }
-                                            }
-                                          }
-                                        : null,
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: const Size(120.0, 40.0),
-                                    ),
-                                    child: switch (value[device]) {
-                                      BTConnectionState.connected => Text(
-                                        "Disconnect",
-                                        style: Theme.of(context).textTheme.labelMedium,
-                                      ),
-                                      BTConnectionState.disconnected => Text(
-                                        "Connect",
-                                        style: Theme.of(context).textTheme.labelMedium,
-                                      ),
-                                      BTConnectionState.connecting ||
-                                      BTConnectionState.disconnecting => SizedBox(
-                                        width: 16.0,
-                                        height: 16.0,
-                                        child: ValueListenableBuilder(
-                                          valueListenable: AdaptiveTheme.of(context)
-                                              .modeChangeNotifier,
-                                          builder: (_, mode, child) {
-                                            return CircularProgressIndicator(
-                                              valueColor: AlwaysStoppedAnimation<Color>(
-                                                mode == AdaptiveThemeMode.light
-                                                    ? AppColors.secondary
-                                                    : AppColors.secondary.withValues(alpha: 0.6),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      _ => Text(
-                                        "Unknown",
-                                        style: Theme.of(context).textTheme.labelMedium,
-                                      ),
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  )
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      return RefreshIndicator(
-                        onRefresh: initializeBluetooth,
-                        color: AppColors.primary,
-                        child: SingleChildScrollView(
+                  if (devices.isEmpty) {
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: ConstrainedBox(
                             constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -311,10 +182,191 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               ),
                             ),
                           ),
+                        );
+                      },
+                    );
+                  }
+
+                  final devicesList = devices.entries.toList();
+
+                  return ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: devicesList.length,
+                    itemBuilder: (context, index) {
+                      final device = devicesList[index].key;
+                      final state = devicesList[index].value;
+
+                      return ListTile(
+                        title: Text(
+                          device.platformName.isNotEmpty
+                              ? device.platformName
+                              : LocaleKeys.bluetooth_page_unknown_device.tr(context: context),
                         ),
+                        subtitle: Text("${device.remoteId} • $state"),
+                        trailing: switch (state) {
+                          BleConnectionState.connected => ElevatedButton(
+                            onPressed: () async {
+                              final status = await bleService.disconnectFromDevice();
+
+                              if (!context.mounted) return;
+
+                              if (status == BleConnectionStatus.success_disconnect) {
+                                Toastification().show(
+                                  title: Text(
+                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                  ),
+                                  description: Text(
+                                    LocaleKeys
+                                        .alert_notify_bluetooth_description_bt_success_disconnect
+                                        .tr(
+                                          context: context,
+                                          namedArgs: {
+                                            'device': device.platformName.isEmpty
+                                                ? LocaleKeys.bluetooth_page_unknown_device.tr(
+                                                    context: context,
+                                                  )
+                                                : device.platformName,
+                                          },
+                                        ),
+                                  ),
+                                  type: ToastificationType.success,
+                                  style: ToastificationStyle.flat,
+                                  alignment: Alignment.bottomCenter,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                  animationDuration: const Duration(milliseconds: 500),
+                                );
+                              } else if (status == BleConnectionStatus.no_device_connected) {
+                                Toastification().show(
+                                  title: Text(
+                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                  ),
+                                  description: const Text("This device already disconnected!"),
+                                  type: ToastificationType.success,
+                                  style: ToastificationStyle.flat,
+                                  alignment: Alignment.bottomCenter,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                  animationDuration: const Duration(milliseconds: 500),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(minimumSize: const Size(120.0, 40.0)),
+                            child: Text(
+                              LocaleKeys.device_button_state_disconnect.tr(context: context),
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                          ),
+
+                          BleConnectionState.disconnected => ElevatedButton(
+                            onPressed: () async {
+                              if (bleService.isConnected) {
+                                Toastification().show(
+                                  context: context,
+                                  title: Text(
+                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                  ),
+                                  description: Text(
+                                    LocaleKeys.alert_notify_bluetooth_description_already_connected
+                                        .tr(context: context),
+                                  ),
+                                  type: ToastificationType.warning,
+                                  style: ToastificationStyle.flat,
+                                  alignment: Alignment.bottomCenter,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                  animationDuration: const Duration(milliseconds: 500),
+                                );
+                                return;
+                              }
+
+                              final status = await bleService.connectToDevice(device);
+
+                              if (!context.mounted) return;
+
+                              if (status == BleConnectionStatus.success_connect) {
+                                Toastification().show(
+                                  title: Text(
+                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                  ),
+                                  description: Text(
+                                    LocaleKeys.alert_notify_bluetooth_description_bt_success_connect
+                                        .tr(
+                                          context: context,
+                                          namedArgs: {
+                                            'device': device.platformName.isEmpty
+                                                ? LocaleKeys.bluetooth_page_unknown_device.tr(
+                                                    context: context,
+                                                  )
+                                                : device.platformName,
+                                          },
+                                        ),
+                                  ),
+                                  type: ToastificationType.success,
+                                  style: ToastificationStyle.flat,
+                                  alignment: Alignment.bottomCenter,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                  animationDuration: const Duration(milliseconds: 500),
+                                );
+                              } else if (status == BleConnectionStatus.failed_connect) {
+                                Toastification().show(
+                                  title: Text(
+                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                  ),
+                                  description: Text(
+                                    LocaleKeys.alert_notify_bluetooth_description_bt_fail_connect
+                                        .tr(
+                                          context: context,
+                                          namedArgs: {
+                                            'device': device.platformName.isEmpty
+                                                ? LocaleKeys.bluetooth_page_unknown_device.tr(
+                                                    context: context,
+                                                  )
+                                                : device.platformName,
+                                          },
+                                        ),
+                                  ),
+                                  type: ToastificationType.error,
+                                  style: ToastificationStyle.flat,
+                                  alignment: Alignment.bottomCenter,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                  animationDuration: const Duration(milliseconds: 500),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(minimumSize: const Size(120.0, 40.0)),
+                            child: Text(
+                              LocaleKeys.device_button_state_connect.tr(context: context),
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                          ),
+
+                          BleConnectionState.connecting ||
+                          BleConnectionState.disconnecting => ElevatedButton(
+                            onPressed: null,
+                            style: ElevatedButton.styleFrom(minimumSize: const Size(120.0, 40.0)),
+                            child: SizedBox(
+                              width: 16.0,
+                              height: 16.0,
+                              child: ValueListenableBuilder(
+                                valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+                                builder: (_, mode, child) {
+                                  return CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      mode == AdaptiveThemeMode.light
+                                          ? AppColors.secondary
+                                          : AppColors.secondary.withValues(alpha: 0.6),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        },
                       );
                     },
-                  ),
+                  );
+                },
+              ),
+            ),
             Align(
               alignment: Alignment.topLeft,
               child: Padding(
