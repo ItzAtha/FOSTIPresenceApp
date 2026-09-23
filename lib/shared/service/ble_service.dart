@@ -48,7 +48,11 @@ class BleService {
     "a29d643b-4fda-446d-b9fd-118f540a902d",
   ); // Notify char uuid from ESP32 to app
 
+  final Guid _gapServiceUUID = Guid("1800");
+  final Guid _gapDeviceNameUUID = Guid("2A00");
+
   static const String _prefLastDeviceId = 'last_connected_device_id';
+  static const String _prefLastDeviceName = 'last_connected_device_name';
 
   BluetoothDevice? _activeDevice;
   BluetoothCharacteristic? _writeCharacteristic;
@@ -57,6 +61,7 @@ class BleService {
 
   bool _isManualDisconnect = false;
   bool _isAutoReconnectEnable = false;
+  final Map<String, String> _deviceNames = {};
 
   final ValueNotifier<Map<BluetoothDevice, BleConnectionState>> foundDevicesList =
       ValueNotifier<Map<BluetoothDevice, BleConnectionState>>({});
@@ -69,11 +74,32 @@ class BleService {
 
   late SharedPreferencesAsync _settingPrefs;
 
+  Future<void> _loadBluetoothSetting() async {
+    final prefsOption = const SharedPreferencesAsyncAndroidOptions(
+      backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
+      originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
+        fileName: 'settings_data',
+      ),
+    );
+    _settingPrefs = SharedPreferencesAsync(options: prefsOption);
+
+    final savedId = await _settingPrefs.getString(_prefLastDeviceId);
+    final savedName = await _settingPrefs.getString(_prefLastDeviceName);
+    if (savedId != null && savedName != null) {
+      _deviceNames[savedId] = savedName;
+    }
+
+    bool? autoReconnectBT = await _settingPrefs.getBool('autoReconnectBT');
+    _isAutoReconnectEnable = autoReconnectBT ?? false;
+  }
+
   Future<BleStatus> initialize() async {
     if (!await FlutterBluePlus.isSupported) {
       print("Bluetooth isn't support in this device!");
       return BleStatus.bt_not_support;
     }
+
+    await _loadBluetoothSetting();
 
     _btAdapterStateSub?.cancel();
     _btAdapterStateSub = FlutterBluePlus.adapterState.listen(
@@ -82,7 +108,7 @@ class BleService {
 
         if (state == BluetoothAdapterState.on) {
           print("Bluetooth is on.");
-          if (_activeDevice == null || !_activeDevice!.isConnected) {
+          if (_isAutoReconnectEnable && (_activeDevice == null || !_activeDevice!.isConnected)) {
             _reconnectLastDevice();
           }
         } else if (state == BluetoothAdapterState.off) {
@@ -102,17 +128,6 @@ class BleService {
         print("Error during bluetooth turn on: $e");
       }
     }
-
-    final prefsOption = const SharedPreferencesAsyncAndroidOptions(
-      backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
-      originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
-        fileName: 'settings_data',
-      ),
-    );
-    _settingPrefs = SharedPreferencesAsync(options: prefsOption);
-
-    bool? autoReconnectBT = await _settingPrefs.getBool('autoReconnectBT');
-    _isAutoReconnectEnable = autoReconnectBT ?? false;
     return BleStatus.initialize_success;
   }
 
@@ -151,15 +166,22 @@ class BleService {
     final btScanResultSub = FlutterBluePlus.onScanResults.listen(
       (results) {
         if (results.isNotEmpty) {
-          ScanResult result = results.last;
-          BluetoothDevice device = result.device;
+          for (final result in results) {
+            BluetoothDevice device = result.device;
 
-          if (!foundDevicesList.value.containsKey(device)) {
-            foundDevicesList.value = Map.from(foundDevicesList.value)
-              ..[device] = BleConnectionState.disconnected;
-            print(
-              "Found device: ${device.remoteId} - ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}",
-            );
+            if (result.advertisementData.advName.isNotEmpty) {
+              _deviceNames[device.remoteId.str] = result.advertisementData.advName;
+            } else if (device.platformName.isNotEmpty) {
+              _deviceNames[device.remoteId.str] = device.platformName;
+            }
+
+            if (!foundDevicesList.value.containsKey(device)) {
+              foundDevicesList.value = Map.from(foundDevicesList.value)
+                ..[device] = BleConnectionState.disconnected;
+              print(
+                "Found device: ${device.remoteId} - ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}",
+              );
+            }
           }
         }
       },
@@ -185,7 +207,11 @@ class BleService {
       await device.connect(license: License.nonprofit, mtu: 517);
       _activeDevice = device;
 
-      await _settingPrefs.setString('last_connected_device_id', device.remoteId.str);
+      String deviceName = getDeviceName(device);
+      await _settingPrefs.setString(_prefLastDeviceId, device.remoteId.str);
+      if (deviceName.isNotEmpty) {
+        await _settingPrefs.setString(_prefLastDeviceName, deviceName);
+      }
 
       await _setupServicesAndCharacteristics(device);
       _listenToConnectionChanges(device);
@@ -299,7 +325,7 @@ class BleService {
 
   Future<bool> sendBluetoothData(BluetoothDevice device, String data) async {
     if (_activeDevice == null || !_activeDevice!.isConnected || _writeCharacteristic == null) {
-      debugPrint("No active connection to send data.");
+      print("No active connection to send data.");
       return false;
     }
 
@@ -318,6 +344,23 @@ class BleService {
     final services = await device.discoverServices();
 
     for (final service in services) {
+      if (service.uuid == _gapServiceUUID) {
+        for (final character in service.characteristics) {
+          if (character.uuid == _gapDeviceNameUUID) {
+            try {
+              final bytes = await character.read();
+              final gapName = utf8.decode(bytes).trim();
+              if (gapName.isNotEmpty) {
+                _deviceNames[device.remoteId.str] = gapName;
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString(_prefLastDeviceName, gapName);
+                foundDevicesList.value = Map.from(foundDevicesList.value);
+              }
+            } catch (_) {}
+          }
+        }
+      }
+
       if (service.uuid == _serviceUUID) {
         for (final character in service.characteristics) {
           if (character.uuid == _charUUIDWrite) {
@@ -345,6 +388,23 @@ class BleService {
 
   void _updateDeviceState(BluetoothDevice device, BleConnectionState state) {
     foundDevicesList.value = Map.from(foundDevicesList.value)..[device] = state;
+  }
+
+  String getDeviceName(BluetoothDevice device) {
+    if (device.platformName.isNotEmpty) {
+      _deviceNames[device.remoteId.str] = device.platformName;
+      return device.platformName;
+    }
+
+    if (device.advName.isNotEmpty) {
+      _deviceNames[device.remoteId.str] = device.advName;
+      return device.advName;
+    }
+
+    if (_deviceNames.containsKey(device.remoteId.str)) {
+      return _deviceNames[device.remoteId.str]!;
+    }
+    return "";
   }
 
   void dispose() {
