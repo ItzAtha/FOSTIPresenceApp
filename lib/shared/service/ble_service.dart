@@ -311,6 +311,8 @@ class BleService {
     _deviceConnectionSub?.cancel();
     _deviceConnectionSub = device.connectionState.listen((state) {
       if (state == BluetoothConnectionState.disconnected) {
+        print("Device ${getDeviceName(device)} disconnected.");
+
         _updateDeviceState(device, BleConnectionState.disconnected);
         _btValueReceiverSub?.cancel();
         _writeCharacteristic = null;
@@ -387,6 +389,7 @@ class BleService {
   }
 
   void _updateDeviceState(BluetoothDevice device, BleConnectionState state) {
+    activeConnectionState.value = state;
     foundDevicesList.value = Map.from(foundDevicesList.value)..[device] = state;
   }
 
