@@ -1,16 +1,18 @@
-import 'dart:async';
-
+import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/features/dashboard/widgets/scaled_switch_list_tile.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_android/shared_preferences_android.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/language.dart';
-import '../../../../manager/bluetooth_manager.dart';
+import '../../../core/app_constants.dart';
+import '../../../core/utils/debouncer.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -20,296 +22,321 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  late bool isDeviceConnect;
-  late Language selectedLanguage;
-  late SharedPreferencesAsync preferences;
-  late SharedPreferencesAsyncAndroidOptions prefsOption;
+  bool isThemeOptionOpened = false;
+  bool isLanguageOptionOpened = false;
 
-  Timer? btCheckerTask;
-  bool autoReconnectBTEnable = true;
-  bool autoReconnectWiFiEnable = true;
+  bool autoReconnectBTEnable = false;
+  bool notifySIMExpiredEnable = true;
+  Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  late Language selectedLanguage;
+  late SharedPreferencesAsync settingPrefs;
 
   Future<void> loadSettingsData() async {
-    bool? autoReconnectBT = await preferences.getBool('autoReconnectBT');
-    bool? autoReconnectWiFi = await preferences.getBool('autoReconnectWiFi');
+    bool? autoReconnectBT = await settingPrefs.getBool('autoReconnectBT');
+    bool? notifySIMExpired = await settingPrefs.getBool('notifySIMExpired');
 
     setState(() {
       autoReconnectBTEnable = autoReconnectBT ?? false;
-      autoReconnectWiFiEnable = autoReconnectWiFi ?? true;
+      notifySIMExpiredEnable = notifySIMExpired ?? true;
     });
-
-    print(autoReconnectBTEnable);
-    print(autoReconnectWiFiEnable);
   }
 
   @override
   void initState() {
     super.initState();
 
-    prefsOption = SharedPreferencesAsyncAndroidOptions(
+    final prefsOption = const SharedPreferencesAsyncAndroidOptions(
       backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
       originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
         fileName: 'settings_data',
       ),
     );
 
-    preferences = SharedPreferencesAsync(options: prefsOption);
+    settingPrefs = SharedPreferencesAsync(options: prefsOption);
     loadSettingsData();
-
-    setState(() => isDeviceConnect = BluetoothManager.isBluetoothConnected);
-    btCheckerTask = Timer.periodic(1.seconds, (timer) {
-      setState(() => isDeviceConnect = BluetoothManager.isBluetoothConnected);
-    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    setState(
-      () => selectedLanguage = Language.allLanguages.firstWhere(
+    setState(() {
+      selectedLanguage = Language.allLanguages.firstWhere(
         (lang) => lang.code == context.locale.languageCode,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    btCheckerTask?.cancel();
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentTheme = AdaptiveTheme.of(context).mode;
+
     return Scaffold(
       body: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  LocaleKeys.setting_page_general_app_title.tr(context: context),
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+            Text(
+              "General",
+              textAlign: TextAlign.start,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const Divider(color: Colors.grey, thickness: 1.5),
+            const SizedBox(height: 8.0),
+            ScaledSwitchListTile(
+              value: autoReconnectBTEnable,
+              title: Text(
+                LocaleKeys.setting_page_general_app_auto_reconnect_bt_title.tr(context: context),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              subtitle: Text(
+                LocaleKeys.setting_page_general_app_auto_reconnect_bt_description.tr(
+                  context: context,
                 ),
-                Divider(color: Colors.grey, thickness: 1.5),
-                SizedBox(height: 10.0),
-                ListTile(
-                  title: Text(
-                    LocaleKeys.setting_page_general_app_auto_reconnect_bt_title.tr(
-                      context: context,
-                    ),
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    LocaleKeys.setting_page_general_app_auto_reconnect_bt_description.tr(
-                      context: context,
-                    ),
-                  ),
-                  onTap: () async {
-                    // Not yet implements, will be implements in next app update
-                    Toastification().show(
-                      context: context,
-                      title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
-                      description: Text(
-                        LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                      ),
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flat,
-                      alignment: Alignment.bottomCenter,
-                      autoCloseDuration: Duration(seconds: 2),
-                      animationDuration: Duration(milliseconds: 500),
-                    );
-                  },
-                  trailing: Transform.scale(
-                    scale: 0.8,
-                    child: Switch(
-                      value: autoReconnectBTEnable,
-                      onChanged: (bool value) async {
-                        // Not yet implements, will be implements in next app update
-                        setState(() {
-                          autoReconnectBTEnable = value;
-                        });
-                        // Toastification().show(
-                        //   context: context,
-                        //   title: Text(
-                        //     LocaleKeys.alert_notify_coming_soon_title.tr(context: context),
-                        //   ),
-                        //   description: Text(
-                        //     LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                        //   ),
-                        //   type: ToastificationType.info,
-                        //   style: ToastificationStyle.flat,
-                        //   alignment: Alignment.bottomCenter,
-                        //   autoCloseDuration: Duration(seconds: 2),
-                        //   animationDuration: Duration(milliseconds: 500),
-                        // );
-                        preferences.setBool('autoReconnectBT', autoReconnectBTEnable);
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(height: 5.0),
-                ExpansionTile(
-                  title: Text(
-                    LocaleKeys.setting_page_general_app_language_title.tr(context: context),
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    LocaleKeys.setting_page_general_app_language_description.tr(context: context),
-                  ),
-                  trailing: Text(selectedLanguage.name, style: TextStyle(fontSize: 12.0)),
-                  children: <Widget>[
-                    RadioGroup(
-                      groupValue: selectedLanguage,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedLanguage = value!;
-                          context.setLocale(Locale(selectedLanguage.code));
-                        });
-                      },
-                      child: Column(
-                        children: <Widget>[
-                          for (final lang in Language.allLanguages)
-                            RadioListTile(title: Text(lang.name), value: lang),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.0),
-                Text(
-                  LocaleKeys.setting_page_general_esp_title.tr(context: context),
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  LocaleKeys.setting_page_general_esp_subtitle.tr(context: context),
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.w500, color: Colors.grey),
-                ),
-                Divider(color: Colors.grey, thickness: 1.5),
-                SizedBox(height: 10.0),
-                ListTile(
-                  title: Text(
-                    LocaleKeys.setting_page_general_esp_auto_reconnect_wifi_title.tr(
-                      context: context,
-                    ),
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    LocaleKeys.setting_page_general_esp_auto_reconnect_wifi_description.tr(
-                      context: context,
-                    ),
-                  ),
-                  enabled: isDeviceConnect,
-                  onTap: () async {
-                    // Not yet implements, will be implements in next app update
-                    Toastification().show(
-                      context: context,
-                      title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
-                      description: Text(
-                        LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                      ),
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flat,
-                      alignment: Alignment.bottomCenter,
-                      autoCloseDuration: Duration(seconds: 2),
-                      animationDuration: Duration(milliseconds: 500),
-                    );
-                  },
-                  trailing: Transform.scale(
-                    scale: 0.8,
-                    child: Switch(
-                      value: autoReconnectWiFiEnable,
-                      onChanged: isDeviceConnect
-                          ? (bool value) async {
-                              // Not yet implements, will be implements in next app update
-                              Toastification().show(
-                                context: context,
-                                title: Text(
-                                  LocaleKeys.alert_notify_coming_soon_title.tr(context: context),
-                                ),
-                                description: Text(
-                                  LocaleKeys.alert_notify_coming_soon_description.tr(
-                                    context: context,
-                                  ),
-                                ),
-                                type: ToastificationType.info,
-                                style: ToastificationStyle.flat,
-                                alignment: Alignment.bottomCenter,
-                                autoCloseDuration: Duration(seconds: 2),
-                                animationDuration: Duration(milliseconds: 500),
-                              );
-                            }
-                          : null,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.0),
-                Text(
-                  LocaleKeys.setting_page_more_info_title.tr(context: context),
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                ),
-                Divider(color: Colors.grey, thickness: 1.5),
-                SizedBox(height: 10.0),
-                ListTile(
-                  title: Text(
-                    LocaleKeys.setting_page_more_info_user_guidebook_title.tr(context: context),
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    LocaleKeys.setting_page_more_info_user_guidebook_description.tr(
-                      context: context,
-                    ),
-                  ),
-                  onTap: () {
-                    // Not yet implements, will be implements in next app update
-                    Toastification().show(
-                      context: context,
-                      title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
-                      description: Text(
-                        LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                      ),
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flat,
-                      alignment: Alignment.bottomCenter,
-                      autoCloseDuration: Duration(seconds: 2),
-                      animationDuration: Duration(milliseconds: 500),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text(
-                    LocaleKeys.setting_page_more_info_about_app_title.tr(context: context),
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    LocaleKeys.setting_page_more_info_about_app_description.tr(context: context),
-                  ),
-                  onTap: () async {
-                    final PackageInfo info = await PackageInfo.fromPlatform();
-                    if (!context.mounted) return;
+                textAlign: TextAlign.justify,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              leading: const FaIcon(FontAwesomeIcons.bluetooth),
+              scale: 0.85,
+              onChanged: (value) async {
+                setState(() => autoReconnectBTEnable = value);
+                debouncer.run(() {
+                  settingPrefs.setBool('autoReconnectBT', value);
+                });
 
-                    showAboutDialog(
-                      context: context,
-                      applicationIcon: Image.asset("assets/app-icon.png", scale: 12.0),
-                      applicationName: info.appName,
-                      applicationVersion: 'v${info.version} (Build ${info.buildNumber})',
-                      applicationLegalese: '\u{a9} 2025 Atha - FOSTI UMS',
-                      children: <Widget>[
-                        SizedBox(height: 24.0),
-                        Text(
-                          LocaleKeys.setting_page_more_info_about_app_dialog.tr(context: context),
-                        ),
-                      ],
-                    );
+                Toastification().show(
+                  title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
+                  ),
+                  type: ToastificationType.info,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+              },
+            ),
+            ExpansionTile(
+              title: Text(
+                "Theme",
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              leading: FaIcon(
+                FontAwesomeIcons.circleHalfStroke,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(currentTheme.modeName, style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(width: 16.0),
+                  AnimatedRotation(
+                    turns: isThemeOptionOpened ? 0.25 : 0.0,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                    child: FaIcon(
+                      FontAwesomeIcons.chevronRight,
+                      size: 20.0,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+                  ),
+                ],
+              ),
+              expansionAnimationStyle: const AnimationStyle(
+                curve: Curves.easeInOut,
+                duration: Duration(milliseconds: 500),
+              ),
+              onExpansionChanged: (isExpanded) {
+                setState(() => isThemeOptionOpened = isExpanded);
+              },
+              children: <Widget>[
+                RadioGroup(
+                  groupValue: currentTheme,
+                  onChanged: (value) {
+                    setState(() {
+                      if (value != null) {
+                        AdaptiveTheme.of(context).setThemeMode(value);
+                      }
+                    });
                   },
+                  child: Column(
+                    children: <Widget>[
+                      for (final theme in AdaptiveThemeMode.values)
+                        RadioListTile(title: Text(theme.name), value: theme),
+                    ],
+                  ),
                 ),
               ],
+            ),
+            ExpansionTile(
+              title: Text(
+                LocaleKeys.setting_page_general_app_language_title.tr(context: context),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              leading: FaIcon(FontAwesomeIcons.language, color: Theme.of(context).iconTheme.color),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(selectedLanguage.name, style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(width: 16.0),
+                  AnimatedRotation(
+                    turns: isLanguageOptionOpened ? 0.25 : 0.0,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                    child: FaIcon(
+                      FontAwesomeIcons.chevronRight,
+                      size: 20.0,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+                  ),
+                ],
+              ),
+              expansionAnimationStyle: const AnimationStyle(
+                curve: Curves.easeInOut,
+                duration: Duration(milliseconds: 500),
+              ),
+              onExpansionChanged: (isExpanded) {
+                setState(() => isLanguageOptionOpened = isExpanded);
+              },
+              children: <Widget>[
+                RadioGroup(
+                  groupValue: selectedLanguage,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedLanguage = value!;
+                      context.setLocale(Locale(selectedLanguage.code));
+                    });
+                  },
+                  child: Column(
+                    children: <Widget>[
+                      for (final lang in Language.allLanguages)
+                        RadioListTile(title: Text(lang.name), value: lang),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24.0),
+            Text(
+              "Notifications",
+              textAlign: TextAlign.start,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const Divider(color: Colors.grey, thickness: 1.5),
+            const SizedBox(height: 8.0),
+            ScaledSwitchListTile(
+              value: notifySIMExpiredEnable,
+              title: Text(
+                "Notify SIM Expired",
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              subtitle: Text(
+                "Notify when SIM Internet has been expired and must be renewed immediately before the SIM number expires.",
+                textAlign: TextAlign.justify,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              leading: const FaIcon(FontAwesomeIcons.simCard),
+              scale: 0.85,
+              onChanged: (value) async {
+                // TODO: Not yet implements, will be implements in the future update
+                setState(() => notifySIMExpiredEnable = value);
+                debouncer.run(() {
+                  settingPrefs.setBool('notifySIMExpired', value);
+                });
+
+                Toastification().show(
+                  title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
+                  ),
+                  type: ToastificationType.info,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+              },
+            ),
+            const SizedBox(height: 24.0),
+            Text(
+              "Support & About",
+              textAlign: TextAlign.start,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const Divider(color: Colors.grey, thickness: 1.5),
+            const SizedBox(height: 8.0),
+            ListTile(
+              title: Text(
+                "FAQ",
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              leading: const FaIcon(FontAwesomeIcons.circleQuestion),
+              trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
+              onTap: () {
+                Toastification().show(
+                  title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
+                  ),
+                  type: ToastificationType.info,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: const Duration(seconds: 2),
+                  animationDuration: const Duration(milliseconds: 500),
+                );
+              },
+            ),
+            ListTile(
+              title: Text(
+                "Privacy Policy",
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              leading: const FaIcon(FontAwesomeIcons.shieldHalved),
+              trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
+              onTap: () => context.pushNamed(AppRoutes.privacyPolicyRoute.name),
+            ),
+            ListTile(
+              title: Text(
+                "Terms of Service",
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              leading: const FaIcon(FontAwesomeIcons.fileContract),
+              trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
+              onTap: () => context.pushNamed(AppRoutes.termsOfServiceRoute.name),
+            ),
+            ListTile(
+              title: Text(
+                LocaleKeys.setting_page_more_info_about_app_title.tr(context: context),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              leading: const FaIcon(FontAwesomeIcons.circleInfo),
+              trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
+              onTap: () async {
+                final PackageInfo info = await PackageInfo.fromPlatform();
+                if (!context.mounted) return;
+
+                showAboutDialog(
+                  context: context,
+                  applicationIcon: Image.asset("assets/app-icon.png", scale: 12.0),
+                  applicationName: info.appName,
+                  applicationVersion: 'v${info.version} (Build ${info.buildNumber})',
+                  applicationLegalese: '\u{a9} 2025 Atha - FOSTI UMS',
+                  children: <Widget>[
+                    const SizedBox(height: 24.0),
+                    Text(LocaleKeys.setting_page_more_info_about_app_dialog.tr(context: context)),
+                  ],
+                );
+              },
             ),
           ],
         ),
