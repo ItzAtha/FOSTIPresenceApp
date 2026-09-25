@@ -117,7 +117,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
               break;
           }
         })
-        .whenComplete(() => setState(() => isScanning = false));
+        .whenComplete(() {
+          if (mounted) {
+            setState(() => isScanning = false);
+          }
+        });
   }
 
   @override
@@ -187,7 +191,12 @@ class _BluetoothPageState extends State<BluetoothPage> {
                     );
                   }
 
-                  final devicesList = devices.entries.toList();
+                  final devicesList = devices.entries.toList()
+                    ..sort((a, b) {
+                      String nameA = bleService.getDeviceName(a.key);
+                      String nameB = bleService.getDeviceName(b.key);
+                      return nameB.compareTo(nameA);
+                    });
 
                   return ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -195,14 +204,15 @@ class _BluetoothPageState extends State<BluetoothPage> {
                     itemBuilder: (context, index) {
                       final device = devicesList[index].key;
                       final state = devicesList[index].value;
+                      final deviceName = bleService.getDeviceName(device);
 
                       return ListTile(
                         title: Text(
-                          device.platformName.isNotEmpty
-                              ? device.platformName
+                          deviceName.isNotEmpty
+                              ? deviceName
                               : LocaleKeys.bluetooth_page_unknown_device.tr(context: context),
                         ),
-                        subtitle: Text("${device.remoteId} • $state"),
+                        subtitle: Text("${device.remoteId}"),
                         trailing: switch (state) {
                           BleConnectionState.connected => ElevatedButton(
                             onPressed: () async {
@@ -221,11 +231,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                         .tr(
                                           context: context,
                                           namedArgs: {
-                                            'device': device.platformName.isEmpty
+                                            'device': deviceName.isEmpty
                                                 ? LocaleKeys.bluetooth_page_unknown_device.tr(
                                                     context: context,
                                                   )
-                                                : device.platformName,
+                                                : deviceName,
                                           },
                                         ),
                                   ),
@@ -291,11 +301,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                         .tr(
                                           context: context,
                                           namedArgs: {
-                                            'device': device.platformName.isEmpty
+                                            'device': deviceName.isEmpty
                                                 ? LocaleKeys.bluetooth_page_unknown_device.tr(
                                                     context: context,
                                                   )
-                                                : device.platformName,
+                                                : deviceName,
                                           },
                                         ),
                                   ),
@@ -315,11 +325,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                         .tr(
                                           context: context,
                                           namedArgs: {
-                                            'device': device.platformName.isEmpty
+                                            'device': deviceName.isEmpty
                                                 ? LocaleKeys.bluetooth_page_unknown_device.tr(
                                                     context: context,
                                                   )
-                                                : device.platformName,
+                                                : deviceName,
                                           },
                                         ),
                                   ),
