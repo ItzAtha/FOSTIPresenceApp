@@ -520,11 +520,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: bleService.connectedDevice == null
-            ? noBTConnected()
-            : isIdCardDetected
-            ? cardDetected()
-            : noCardDetected(),
+        body: ValueListenableBuilder(
+          valueListenable: bleService.activeConnectionState,
+          builder: (context, state, child) {
+            return state == BleConnectionState.connected
+                ? isIdCardDetected
+                      ? cardDetected()
+                      : noCardDetected()
+                : noBTConnected();
+          },
+        ),
       ),
     );
   }
