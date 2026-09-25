@@ -6,6 +6,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
 import 'package:attendance_management/shared/provider/events_notifier.dart';
+import 'package:attendance_management/shared/service/ble_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:expandable_page_view/expandable_page_view.dart';
@@ -16,12 +17,12 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../manager/bluetooth_manager.dart';
 import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart';
 import '../../../core/utils/debouncer.dart';
 import '../../../core/utils/members_data_factory.dart';
 import '../../../shared/provider/members_notifier.dart';
+import '../../../shared/service/stream_listener.dart';
 
 class PresenceMenuPage extends StatefulWidget {
   const PresenceMenuPage({super.key});
@@ -31,7 +32,7 @@ class PresenceMenuPage extends StatefulWidget {
 }
 
 class _PresenceMenuPageState extends State<PresenceMenuPage> {
-  late BluetoothManager btManager;
+  late BleService bleService;
   final carouselController = PageController(viewportFraction: 0.7);
 
   Widget noBTConnected() {
@@ -247,19 +248,19 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
   @override
   void initState() {
     super.initState();
-    btManager = BluetoothManager(context: context);
+    bleService = BleService();
 
-    BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+    BluetoothDevice? device = bleService.connectedDevice;
     if (device != null) {
-      btManager.sendBluetoothData(device, '2');
+      bleService.sendBluetoothData(device, '2');
     }
   }
 
   @override
   void dispose() {
-    BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+    BluetoothDevice? device = bleService.connectedDevice;
     if (device != null) {
-      btManager.sendBluetoothData(device, 'cancel');
+      bleService.sendBluetoothData(device, 'cancel');
     }
     super.dispose();
   }
@@ -278,10 +279,17 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: BluetoothManager.getConnectedDevice == null ? noBTConnected() : showModeOptions(),
+      body: ValueListenableBuilder(
+        valueListenable: bleService.activeConnectionState,
+        builder: (context, state, child) {
+          return state == BleConnectionState.connected ? showModeOptions() : noBTConnected();
+        },
+      ),
     );
   }
 }
+
+enum ManualAttendanceStatus { success, failed, timeout, none }
 
 enum ValidateStatus {
   member_not_yet_attendance,
@@ -304,12 +312,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   bool isSuccessAttendance = false;
   bool isManualAttendance = false;
   bool isLoadingToAttendance = false;
+  ManualAttendanceStatus manualAttendanceStatus = ManualAttendanceStatus.none;
 
   Timer? btTimerChecker;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   late MembersData membersData;
-  late BluetoothManager btManager;
+  late BleService bleService;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController memberIdCardController = TextEditingController();
@@ -355,7 +364,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
         String nim = memberNIMController.text.trim();
 
         final validation = await validateMemberData(nim);
-        BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+        BluetoothDevice? device = bleService.connectedDevice;
         if (device != null) {
           String encodeData = '';
           Map<String, dynamic> jsonPayload = {};
@@ -432,13 +441,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           }
 
           encodeData = jsonEncode(jsonPayload);
-          btManager.sendBluetoothData(device, encodeData);
+          bleService.sendBluetoothData(device, encodeData);
 
           Timer? checkTimer;
           final completer = Completer<bool>();
           Map<String, dynamic> decodeData = {};
 
-          final timeoutTimer = Timer(const Duration(seconds: 30), () {
+          final timeoutTimer = Timer(const Duration(minutes: 1), () {
             if (!completer.isCompleted) {
               setState(() => isLoadingToAttendance = false);
 
@@ -448,49 +457,60 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           });
 
           checkTimer = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
-            if (BluetoothManager.hasReceivedData) {
-              String receivedData = BluetoothManager.getReceivedData;
+            if (manualAttendanceStatus == ManualAttendanceStatus.success) {
+              checkTimer.cancel();
+              timeoutTimer.cancel();
 
-              try {
-                decodeData = jsonDecode(receivedData);
-              } catch (e) {
-                print("Error decoding received data: $e");
+              if (!completer.isCompleted) {
+                completer.complete(true);
               }
+            } else if (manualAttendanceStatus == ManualAttendanceStatus.failed) {
+              checkTimer.cancel();
+              timeoutTimer.cancel();
 
-              if (decodeData['status'] == "MEMBER_SUCCESS_MANUAL_ATTENDANCE") {
-                checkTimer.cancel();
-                timeoutTimer.cancel();
+              if (!completer.isCompleted) {
+                completer.complete(false);
+              }
+            } else if (manualAttendanceStatus == ManualAttendanceStatus.timeout) {
+              checkTimer.cancel();
+              timeoutTimer.cancel();
 
-                if (!completer.isCompleted) {
-                  completer.complete(true);
-                }
-              } else if (decodeData['status'] == "MEMBER_FAILED_MANUAL_ATTENDANCE") {
-                checkTimer.cancel();
-                timeoutTimer.cancel();
-
-                if (!completer.isCompleted) {
-                  completer.complete(false);
-                }
+              if (!completer.isCompleted) {
+                completer.completeError(TimeoutException("Request timeout"));
               }
             }
           });
 
-          bool isSuccess = await completer.future;
-          ToastificationType notificationType = isSuccess
-              ? ToastificationType.success
-              : ToastificationType.error;
+          try {
+            bool isSuccess = await completer.future;
+            ToastificationType notificationType = isSuccess
+                ? ToastificationType.success
+                : ToastificationType.error;
 
-          Toastification().show(
-            title: const Text("Member Manual Attendance"),
-            description: Text(decodeData['message']),
-            type: notificationType,
-            style: ToastificationStyle.flat,
-            alignment: Alignment.bottomCenter,
-            autoCloseDuration: const Duration(seconds: 2),
-            animationDuration: const Duration(milliseconds: 500),
-          );
+            Toastification().show(
+              title: const Text("Member Attendance"),
+              description: Text(decodeData['message']),
+              type: notificationType,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
 
-          if (isSuccess) memberNIMController.clear();
+            if (isSuccess) memberNIMController.clear();
+          } on TimeoutException {
+            Toastification().show(
+              title: const Text("Member Attendance"),
+              description: const Text("Request timeout. Please try again."),
+              type: ToastificationType.error,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+          } finally {
+            manualAttendanceStatus = ManualAttendanceStatus.none;
+          }
         } else {
           Toastification().show(
             title: const Text("Bluetooth Device"),
@@ -601,29 +621,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               return Positioned.fill(
                 child: Container(
                   color: mode == AdaptiveThemeMode.light
-                      ? Colors.black.withValues(alpha: 0.8)
+                      ? Colors.black.withValues(alpha: 0.5)
                       : Colors.white.withValues(alpha: 0.5),
                   child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            mode == AdaptiveThemeMode.light
-                                ? AppColors.secondary
-                                : AppColors.secondary,
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        Text(
-                          "Member card detected! Validating data....",
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: mode == AdaptiveThemeMode.light
-                                ? AppColors.textDark
-                                : AppColors.textLight,
-                          ),
-                        ),
-                      ],
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        mode == AdaptiveThemeMode.light ? AppColors.secondary : AppColors.secondary,
+                      ),
                     ),
                   ),
                 ),
@@ -851,11 +855,11 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   @override
   void initState() {
     super.initState();
-    btManager = BluetoothManager(context: context);
+    bleService = BleService();
 
-    BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+    BluetoothDevice? device = bleService.connectedDevice;
     if (device != null) {
-      btManager.sendBluetoothData(device, getModeIndex(widget._attendanceMode));
+      bleService.sendBluetoothData(device, getModeIndex(widget._attendanceMode));
     }
 
     if (getModeIndex(widget._attendanceMode) == '4') {
@@ -867,29 +871,59 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
         return false;
       });
     }
+  }
 
-    btTimerChecker = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) async {
-      if (BluetoothManager.hasReceivedData) {
-        String receivedData = BluetoothManager.getReceivedData;
+  @override
+  void dispose() {
+    btTimerChecker?.cancel();
 
-        Map<String, dynamic> decodeData = {};
+    if (getModeIndex(widget._attendanceMode) != '4') {
+      BluetoothDevice? device = bleService.connectedDevice;
+      if (device != null) {
+        bleService.sendBluetoothData(device, 'cancel');
+      }
+    }
+
+    memberIdCardController.dispose();
+    memberNameController.dispose();
+    memberNIMController.dispose();
+    memberDivisionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamListener(
+      stream: bleService.dataStream,
+      onData: (context, receivedData) async {
+        Map<String, dynamic> decodedData = {};
         Map<String, dynamic> data = {};
 
+        print("Received data: $receivedData");
+
         try {
-          decodeData = jsonDecode(receivedData);
-          data = decodeData['data'];
+          decodedData = jsonDecode(receivedData);
+          data = decodedData['data'];
         } catch (e) {
           print("Error decoding received data: $e");
         }
 
-        final membersList = await ref.read(membersProvider.future);
+        if (decodedData['status'] == "CARD_DETECTED") {
+          String cardUID = data['cardId'];
 
-        if (decodeData['status'] == "CARD_DETECTED") {
-          String cardUID = data['card_uid'];
-
-          BluetoothDevice? device = BluetoothManager.getConnectedDevice;
+          BluetoothDevice? device = bleService.connectedDevice;
           if (device != null) {
             setState(() => isIdCardDetected = true);
+            Toastification().show(
+              title: const Text("Member Attendance"),
+              description: const Text("Member card detected! Validating data, please wait...."),
+              type: ToastificationType.info,
+              style: ToastificationStyle.flat,
+              alignment: Alignment.bottomCenter,
+              autoCloseDuration: const Duration(seconds: 2),
+              animationDuration: const Duration(milliseconds: 500),
+            );
+
             final validation = await validateMemberData(cardUID);
 
             String encodeData = '';
@@ -979,7 +1013,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             }
 
             encodeData = jsonEncode(jsonPayload);
-            btManager.sendBluetoothData(device, encodeData);
+            bleService.sendBluetoothData(device, encodeData);
           } else {
             Toastification().show(
               title: const Text("Bluetooth Device"),
@@ -992,10 +1026,30 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             );
             print("No Bluetooth device connected. Cannot send data.");
           }
+        } else if (decodedData['status'] == "MEMBER_SUCCESS_MANUAL_ATTENDANCE") {
+          manualAttendanceStatus = ManualAttendanceStatus.success;
+        } else if (decodedData['status'] == "MEMBER_FAILED_MANUAL_ATTENDANCE") {
+          manualAttendanceStatus = ManualAttendanceStatus.failed;
+        } else if (decodedData['status'] == "TIMEOUT_NO_DATA") {
+          if (isManualAttendance) {
+            manualAttendanceStatus = ManualAttendanceStatus.timeout;
+            return;
+          }
+
+          Toastification().show(
+            title: const Text("Member Attendance"),
+            description: const Text("Request timeout. Please try again."),
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
         } else {
           ToastificationType notificationType = ToastificationType.error;
-          if (decodeData['status'] == "MEMBER_SUCCESS_ATTENDANCE") {
-            String cardUID = data['card_uid'];
+          if (decodedData['status'] == "MEMBER_SUCCESS_ATTENDANCE") {
+            String cardUID = data['cardId'];
+            final membersList = await ref.read(membersProvider.future);
             final member = membersList.firstWhere((m) => m.cardId == cardUID);
 
             memberIdCardController.text = member.cardId;
@@ -1024,7 +1078,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
           Toastification().show(
             title: const Text("Member Attendance"),
-            description: Text(decodeData['message']),
+            description: Text(decodedData['message']),
             type: notificationType,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -1032,53 +1086,36 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             animationDuration: const Duration(milliseconds: 500),
           );
         }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    btTimerChecker?.cancel();
-
-    if (getModeIndex(widget._attendanceMode) != '4') {
-      BluetoothDevice? device = BluetoothManager.getConnectedDevice;
-      if (device != null) {
-        btManager.sendBluetoothData(device, 'cancel');
-      }
-    }
-
-    memberIdCardController.dispose();
-    memberNameController.dispose();
-    memberNIMController.dispose();
-    memberDivisionController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: <Widget>[
-            BluetoothManager.getConnectedDevice == null
-                ? noBTConnected()
-                : isManualAttendance
-                ? showManualAttendance()
-                : isSuccessAttendance
-                ? showMemberProfile()
-                : noMemberAttendance(),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(AppSizes.p16),
-                child: BackButton(
-                  onPressed: () {
-                    context.pop();
-                  },
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: <Widget>[
+              ValueListenableBuilder(
+                valueListenable: bleService.activeConnectionState,
+                builder: (context, state, child) {
+                  return state == BleConnectionState.connected
+                      ? isManualAttendance
+                            ? showManualAttendance()
+                            : isSuccessAttendance
+                            ? showMemberProfile()
+                            : noMemberAttendance()
+                      : noBTConnected();
+                },
+              ),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSizes.p16),
+                  child: BackButton(
+                    onPressed: () {
+                      context.pop();
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
