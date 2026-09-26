@@ -105,18 +105,6 @@ class _SettingPageState extends State<SettingPage> {
                 debouncer.run(() {
                   settingPrefs.setBool('autoReconnectBT', value);
                 });
-
-                Toastification().show(
-                  title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
-                  description: Text(
-                    LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                  ),
-                  type: ToastificationType.info,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: const Duration(seconds: 2),
-                  animationDuration: const Duration(milliseconds: 500),
-                );
               },
             ),
             ExpansionTile(
