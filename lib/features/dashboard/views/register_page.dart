@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:attendance_management/shared/provider/members_notifier.dart';
 import 'package:attendance_management/shared/service/stream_listener.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -29,11 +28,13 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
+  String callbackMsg = "";
+
   bool isIdCardDetected = false;
   bool isLoadingToRegister = false;
-  RegisterStatus registerStatus = RegisterStatus.none;
 
   Divisions? selectedDivision;
+  RegisterStatus registerStatus = RegisterStatus.none;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   late MembersData membersData;
@@ -96,7 +97,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         });
 
         checkTimer = Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
-          print("Active check timer");
           if (registerStatus == RegisterStatus.success) {
             checkTimer.cancel();
             timeoutTimer.cancel();
@@ -123,32 +123,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
         try {
           bool isSuccess = await completer.future;
-          if (isSuccess) {
-            Toastification().show(
-              title: const Text("Member Register"),
-              description: Text("Successfully register new member with ID: $cardId"),
-              type: ToastificationType.success,
-              style: ToastificationStyle.flat,
-              alignment: Alignment.bottomCenter,
-              autoCloseDuration: const Duration(seconds: 2),
-              animationDuration: const Duration(milliseconds: 500),
-            );
+          ToastificationType notificationType = isSuccess
+              ? ToastificationType.success
+              : ToastificationType.error;
 
-            print("Member registered successfully.");
-            ref.invalidate(membersProvider);
-          } else {
-            Toastification().show(
-              title: const Text("Member Register"),
-              description: Text(
-                "Failed to register member. Data already exists in database with ID: $cardId",
-              ),
-              type: ToastificationType.error,
-              style: ToastificationStyle.flat,
-              alignment: Alignment.bottomCenter,
-              autoCloseDuration: const Duration(seconds: 2),
-              animationDuration: const Duration(milliseconds: 500),
-            );
-          }
+          Toastification().show(
+            title: const Text("Member Register"),
+            description: Text(callbackMsg),
+            type: notificationType,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: const Duration(seconds: 2),
+            animationDuration: const Duration(milliseconds: 500),
+          );
         } on TimeoutException {
           Toastification().show(
             title: const Text("Member Register"),
@@ -165,6 +152,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           memberNIMController.clear();
 
           setState(() {
+            callbackMsg = "";
             selectedDivision = null;
             isIdCardDetected = false;
             isLoadingToRegister = false;
@@ -475,6 +463,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           print("Error decoding received data: $e");
         }
 
+        callbackMsg = decodedData['message'];
         if (decodedData['status'] == "CARD_DETECTED") {
           setState(() => isIdCardDetected = true);
           memberIdCardController.text = data['cardId'];
@@ -501,6 +490,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             memberNIMController.clear();
 
             setState(() {
+              callbackMsg = "";
               selectedDivision = null;
               isIdCardDetected = false;
               registerStatus = RegisterStatus.none;
