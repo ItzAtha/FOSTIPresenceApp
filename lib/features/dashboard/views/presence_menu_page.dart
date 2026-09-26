@@ -361,7 +361,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
     if (form != null) {
       if (form.validate()) {
+        FocusManager.instance.primaryFocus?.unfocus();
+
         String nim = memberNIMController.text.trim();
+        bool hasError = false;
 
         BluetoothDevice? device = bleService.connectedDevice;
         if (device != null) {
@@ -388,7 +391,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               print("Member with NIM ${member?.nim} is not yet attended the active event.");
               break;
             case ValidateStatus.member_already_attendance:
-              setState(() => isLoadingToAttendance = false);
+              setState(() {
+                hasError = true;
+                isLoadingToAttendance = false;
+              });
 
               jsonPayload = {
                 "message": "Member with NIM ${member?.nim} has already attended the active event.",
@@ -410,7 +416,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               print("Member with NIM ${member?.nim} has already attended the active event.");
               break;
             case ValidateStatus.member_not_exists:
-              setState(() => isLoadingToAttendance = false);
+              setState(() {
+                hasError = true;
+                isLoadingToAttendance = false;
+              });
 
               jsonPayload = {
                 "message": "No member found with NIM $nim.",
@@ -430,7 +439,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               print("No member found with NIM $nim.");
               break;
             case ValidateStatus.event_not_exists:
-              setState(() => isLoadingToAttendance = false);
+              setState(() {
+                hasError = true;
+                isLoadingToAttendance = false;
+              });
 
               jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
 
@@ -450,6 +462,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
           encodeData = jsonEncode(jsonPayload);
           bleService.sendBluetoothData(device, encodeData);
+
+          if (hasError) return;
 
           Timer? checkTimer;
           final completer = Completer<bool>();
@@ -941,9 +955,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             String encodeData = '';
             Map<String, dynamic> jsonPayload = {};
 
-            MemberModel? member = validation.data;
             switch (validation.status) {
               case ValidateStatus.member_not_yet_attendance:
+                MemberModel? member = validation.data;
+
                 jsonPayload = {
                   "message":
                       "Member with Card Id ${member?.cardId} is not yet attended the active event.",
@@ -964,15 +979,14 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 setState(() => isIdCardDetected = false);
 
                 jsonPayload = {
-                  "message":
-                      "Member with Card Id ${member?.cardId} has already attended the active event.",
+                  "message": "Member with Card Id $cardUID has already attended the active event.",
                   "status": "MEMBER_ALREADY_ATTENDANCE",
                 };
 
                 Toastification().show(
                   title: const Text("Member Attendance"),
                   description: Text(
-                    "Member with Card Id ${member?.cardId} has already attended the active event.",
+                    "Member with Card Id $cardUID has already attended the active event.",
                   ),
                   type: ToastificationType.error,
                   style: ToastificationStyle.flat,
@@ -981,9 +995,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                   animationDuration: const Duration(milliseconds: 500),
                 );
 
-                print(
-                  "Member with Card Id ${member?.cardId} has already attended the active event.",
-                );
+                print("Member with Card Id $cardUID has already attended the active event.");
                 break;
               case ValidateStatus.member_not_exists:
                 setState(() => isIdCardDetected = false);
@@ -995,7 +1007,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
                 Toastification().show(
                   title: const Text("Member Attendance"),
-                  description: Text("Member with Card Id ${member?.cardId} is not exists."),
+                  description: Text("Member with Card Id $cardUID is not exists."),
                   type: ToastificationType.error,
                   style: ToastificationStyle.flat,
                   alignment: Alignment.bottomCenter,
