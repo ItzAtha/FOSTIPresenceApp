@@ -308,6 +308,8 @@ class PresenceModePage extends ConsumerStatefulWidget {
 }
 
 class _PresenceModePageState extends ConsumerState<PresenceModePage> {
+  String callbackMsg = "";
+
   bool isIdCardDetected = false;
   bool isSuccessAttendance = false;
   bool isManualAttendance = false;
@@ -359,13 +361,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
     if (form != null) {
       if (form.validate()) {
-        setState(() => isLoadingToAttendance = true);
-
         String nim = memberNIMController.text.trim();
 
-        final validation = await validateMemberData(nim);
         BluetoothDevice? device = bleService.connectedDevice;
         if (device != null) {
+          setState(() => isLoadingToAttendance = true);
+          final validation = await validateMemberData(nim);
+
           String encodeData = '';
           Map<String, dynamic> jsonPayload = {};
 
@@ -386,6 +388,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               print("Member with NIM ${member?.nim} is not yet attended the active event.");
               break;
             case ValidateStatus.member_already_attendance:
+              setState(() => isLoadingToAttendance = false);
+
               jsonPayload = {
                 "message": "Member with NIM ${member?.nim} has already attended the active event.",
                 "status": "MEMBER_ALREADY_ATTENDANCE",
@@ -406,6 +410,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               print("Member with NIM ${member?.nim} has already attended the active event.");
               break;
             case ValidateStatus.member_not_exists:
+              setState(() => isLoadingToAttendance = false);
+
               jsonPayload = {
                 "message": "No member found with NIM $nim.",
                 "status": "MEMBER_NOT_EXISTS",
@@ -424,6 +430,8 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               print("No member found with NIM $nim.");
               break;
             case ValidateStatus.event_not_exists:
+              setState(() => isLoadingToAttendance = false);
+
               jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
 
               Toastification().show(
@@ -445,12 +453,9 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
           Timer? checkTimer;
           final completer = Completer<bool>();
-          Map<String, dynamic> decodeData = {};
 
           final timeoutTimer = Timer(const Duration(minutes: 1), () {
             if (!completer.isCompleted) {
-              setState(() => isLoadingToAttendance = false);
-
               checkTimer?.cancel();
               completer.completeError(TimeoutException("Request timeout"));
             }
@@ -489,7 +494,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
             Toastification().show(
               title: const Text("Member Attendance"),
-              description: Text(decodeData['message']),
+              description: Text(callbackMsg),
               type: notificationType,
               style: ToastificationStyle.flat,
               alignment: Alignment.bottomCenter,
@@ -509,6 +514,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               animationDuration: const Duration(milliseconds: 500),
             );
           } finally {
+            memberNIMController.clear();
+
+            setState(() {
+              callbackMsg = "";
+              isLoadingToAttendance = false;
+            });
+
             manualAttendanceStatus = ManualAttendanceStatus.none;
           }
         } else {
@@ -523,8 +535,6 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           );
           print("No Bluetooth device connected. Cannot send data.");
         }
-
-        setState(() => isLoadingToAttendance = false);
       }
     }
   }
@@ -877,9 +887,11 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   void dispose() {
     btTimerChecker?.cancel();
 
-    if (getModeIndex(widget._attendanceMode) != '4') {
-      BluetoothDevice? device = bleService.connectedDevice;
-      if (device != null) {
+    BluetoothDevice? device = bleService.connectedDevice;
+    if (device != null) {
+      bleService.sendBluetoothData(device, 'cancel');
+
+      if (getModeIndex(widget._attendanceMode) == '4') {
         bleService.sendBluetoothData(device, 'cancel');
       }
     }
@@ -1027,15 +1039,12 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             print("No Bluetooth device connected. Cannot send data.");
           }
         } else if (decodedData['status'] == "MEMBER_SUCCESS_MANUAL_ATTENDANCE") {
+          callbackMsg = decodedData['message'];
           manualAttendanceStatus = ManualAttendanceStatus.success;
         } else if (decodedData['status'] == "MEMBER_FAILED_MANUAL_ATTENDANCE") {
+          callbackMsg = decodedData['message'];
           manualAttendanceStatus = ManualAttendanceStatus.failed;
         } else if (decodedData['status'] == "TIMEOUT_NO_DATA") {
-          if (isManualAttendance) {
-            manualAttendanceStatus = ManualAttendanceStatus.timeout;
-            return;
-          }
-
           Toastification().show(
             title: const Text("Member Attendance"),
             description: const Text("Request timeout. Please try again."),
