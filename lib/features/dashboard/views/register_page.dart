@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/shared/provider/members_notifier.dart';
 import 'package:attendance_management/shared/service/stream_listener.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -75,7 +77,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             autoCloseDuration: const Duration(seconds: 2),
             animationDuration: const Duration(milliseconds: 500),
           );
-          print("No Bluetooth device connected. Cannot send data.");
+
           setState(() {
             isIdCardDetected = false;
             isLoadingToRegister = false;
@@ -136,6 +138,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             autoCloseDuration: const Duration(seconds: 2),
             animationDuration: const Duration(milliseconds: 500),
           );
+
+          if (isSuccess) ref.invalidate(membersProvider);
         } on TimeoutException {
           Toastification().show(
             title: const Text("Member Register"),
@@ -332,9 +336,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     onChanged: (value) async {
                       debouncer.run(() {
                         final memberData = membersData.findStudentByNIM(value);
-                        print("Found: $memberData");
 
                         if (memberData.isNotEmpty) {
+                          if (kDebugMode) {
+                            debugPrint("Found: $memberData");
+                          }
+
                           setState(() {
                             memberNameController.text = memberData[1];
                             selectedDivision = Divisions.values.firstWhere(
@@ -416,17 +423,31 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     membersData
         .loadData()
-        .then((isSuccess) {
-          if (!mounted) return;
-
-          BluetoothDevice? device = bleService.connectedDevice;
-          if (device != null) {
-            bleService.sendBluetoothData(device, '1');
+        .then((success) {
+          if (success) {
+            if (kDebugMode) {
+              debugPrint("FOSTI members data excel loaded successfully.");
+            }
+          } else {
+            if (kDebugMode) {
+              debugPrint("No FOSTI members data excel found or failed to load.");
+            }
           }
         })
-        .catchError((error) {
-          print("Error loading FOSTI members data excel: $error");
+        .catchError((e, trace) {
+          if (kDebugMode) {
+            debugPrintStack(
+              stackTrace: trace,
+              label: "Error loading FOSTI members data excel",
+              maxFrames: 5,
+            );
+          }
         });
+
+    BluetoothDevice? device = bleService.connectedDevice;
+    if (device != null) {
+      bleService.sendBluetoothData(device, '1');
+    }
   }
 
   @override
@@ -454,13 +475,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         Map<String, dynamic> decodedData = {};
         Map<String, dynamic> data = {};
 
-        print("Received data: $receivedData");
+        if (kDebugMode) {
+          debugPrint("Received data: $receivedData");
+        }
 
         try {
           decodedData = jsonDecode(receivedData);
           data = decodedData['data'];
-        } catch (e) {
-          print("Error decoding received data: $e");
+        } catch (_, trace) {
+          if (kDebugMode) {
+            debugPrintStack(stackTrace: trace, label: "Error decoding received data", maxFrames: 5);
+          }
         }
 
         callbackMsg = decodedData['message'];
