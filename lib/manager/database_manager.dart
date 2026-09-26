@@ -45,7 +45,7 @@ class DatabaseManager {
     }
 
     if (kDebugMode && showLogs) {
-      print(_databaseStatus);
+      debugPrint(_databaseStatus);
     }
 
     return isSuccess;
@@ -84,7 +84,7 @@ class DatabaseManager {
     }
 
     if (kDebugMode && showLogs) {
-      print(_databaseStatus);
+      debugPrint(_databaseStatus);
     }
 
     return isSuccess;
@@ -113,7 +113,7 @@ class DatabaseManager {
     }
 
     if (kDebugMode && showLogs) {
-      print(_databaseStatus);
+      debugPrint(_databaseStatus);
     }
 
     return isSuccess;
@@ -147,7 +147,7 @@ class DatabaseManager {
     }
 
     if (kDebugMode && showLogs) {
-      print(_databaseStatus);
+      debugPrint(_databaseStatus);
     }
 
     return responseResult;

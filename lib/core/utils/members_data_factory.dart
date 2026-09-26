@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:attendance_management/core/utils/string_similar.dart';
 import 'package:excel_plus/excel_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -26,25 +27,36 @@ class MembersData {
     entities = appDocDir != null ? appDocDir.listSync(recursive: true) : [];
 
     files = entities.whereType<File>().where((e) => e.path.endsWith(".xlsx")).toList();
-    print(files.map((file) => file.path).toList());
+
+    if (kDebugMode) {
+      debugPrint("File path list: ${files.map((file) => file.path).toList()}");
+    }
 
     for (var file in files) {
       List<int> bytes = await file.readAsBytes();
       try {
         Excel workbook = Excel.decodeBytes(bytes);
         _workbooks.add(workbook);
-        print("Data loaded from ${file.path} | Excel file name: ${path.basename(file.path)}");
+
+        if (kDebugMode) {
+          debugPrint(
+            "Data loaded from ${file.path} | Excel file name: ${path.basename(file.path)}",
+          );
+        }
       } catch (e) {
-        print("Error decoding Excel file ${file.path}: $e. Skipping....");
+        if (kDebugMode) {
+          debugPrint("Error decoding Excel file ${file.path}: $e. Skipping....");
+        }
       }
     }
 
     if (_workbooks.isEmpty) {
-      print("No Excel files found in the directory.");
       return false;
     }
 
-    print("Total Excel files loaded: ${_workbooks.length}");
+    if (kDebugMode) {
+      debugPrint("Total Excel files loaded: ${_workbooks.length}");
+    }
     return true;
   }
 
@@ -56,7 +68,9 @@ class MembersData {
       Map<String, List<List<String>>> workbookDataMap = {};
 
       if (workbook.sheets.isEmpty) {
-        print("No sheets found in the workbook.");
+        if (kDebugMode) {
+          debugPrint("No sheets found in the workbook.");
+        }
         continue;
       }
 
@@ -65,7 +79,9 @@ class MembersData {
         startIdColumns.clear();
 
         if (worksheet.rows.isEmpty) {
-          print("No rows found in the worksheet ${worksheet.sheetName}.");
+          if (kDebugMode) {
+            debugPrint("No rows found in the worksheet ${worksheet.sheetName}.");
+          }
           continue;
         }
 
@@ -78,7 +94,9 @@ class MembersData {
             );
 
             if (hasMatch) {
-              print("Found Division on Index ${cell.cellIndex} | Value: ${cell.value}");
+              if (kDebugMode) {
+                debugPrint("Found Division on Index ${cell.cellIndex} | Value: ${cell.value}");
+              }
               startIdColumns.add(cell.cellIndex);
               break;
             }
@@ -97,9 +115,12 @@ class MembersData {
               .toString();
           List<List<String>> studentsData = [];
 
-          print(
-            "$divName Start ID Column: ${startIdColumn.columnIndex}, Row: ${startIdColumn.rowIndex}",
-          );
+          if (kDebugMode) {
+            debugPrint(
+              "$divName Start ID Column: ${startIdColumn.columnIndex}, Row: ${startIdColumn.rowIndex}",
+            );
+          }
+
           int columnIndex = startIdColumn.columnIndex;
           int rowIndex = startIdColumn.rowIndex;
 
@@ -112,14 +133,19 @@ class MembersData {
               );
 
               if (cell.value == null || row == rowIndex + 1) continue;
-              print("Cell at Row: $row, Col: $column has value: ${cell.value}");
+              if (kDebugMode) {
+                debugPrint("Cell at Row: $row, Col: $column has value: ${cell.value}");
+              }
               tempStudentsData.add(cell.value.toString());
             }
 
             if (tempStudentsData.isNotEmpty) {
               studentsData.add(tempStudentsData);
             }
-            print("==================================================================");
+
+            if (kDebugMode) {
+              debugPrint("==================================================================");
+            }
 
             var cell = worksheet.cell(
               CellIndex.indexByColumnRow(columnIndex: columnIndex, rowIndex: row),
@@ -132,18 +158,29 @@ class MembersData {
         }
       }
 
-      print(
-        "===================================================================================================",
-      );
+      if (kDebugMode) {
+        debugPrint(
+          "===================================================================================================",
+        );
+      }
+
       workbookDataMap.forEach((key, value) {
-        print("Division: $key");
+        if (kDebugMode) {
+          debugPrint("Division: $key");
+        }
+
         for (var student in value) {
-          print("Student Data: ${student.toString()}");
+          if (kDebugMode) {
+            debugPrint("Student Data: ${student.toString()}");
+          }
         }
       });
-      print(
-        "===================================================================================================",
-      );
+
+      if (kDebugMode) {
+        debugPrint(
+          "===================================================================================================",
+        );
+      }
 
       if (studentsDataMap.isEmpty) {
         studentsDataMap = workbookDataMap;
@@ -159,7 +196,9 @@ class MembersData {
     }
 
     String encodedData = jsonEncode(studentsDataMap);
-    print("Encoded Students Data: $encodedData");
+    if (kDebugMode) {
+      debugPrint("Encoded Students Data: $encodedData");
+    }
     return studentsDataMap;
   }
 
@@ -180,14 +219,19 @@ class MembersData {
 
           foundStudent.add(division);
           foundStudent.addAll(student);
-          print("Found Student in Division $division: ${student.toString()}");
+
+          if (kDebugMode) {
+            debugPrint("Found Student in Division $division: ${student.toString()}");
+          }
           break;
         }
       }
     });
 
     if (foundStudent.isEmpty) {
-      print("No Student found with NIM: $nim");
+      if (kDebugMode) {
+        debugPrint("No Student found with NIM: $nim");
+      }
     }
 
     return foundStudent.isNotEmpty ? foundStudent.sublist(0, 3) : [];

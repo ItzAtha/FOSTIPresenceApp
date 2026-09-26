@@ -5,6 +5,7 @@ import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
 import 'package:attendance_management/shared/provider/events_notifier.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -698,10 +699,10 @@ class _EventPageState extends ConsumerState<EventPage> {
           uti: "com.microsoft.excel.xls",
         );
 
-        if (result.type == ResultType.done) {
-          print("Successfully opened recap excel file at ${recapResult.data}");
+        if (kDebugMode && result.type == ResultType.done) {
+          debugPrint("Successfully opened recap excel file at ${recapResult.data}");
         } else {
-          print("Failed to open recap excel file at ${recapResult.data}");
+          debugPrint("Failed to open recap excel file at ${recapResult.data}");
         }
       }
     } else if (recapResult?.result == SaveResult.failed) {

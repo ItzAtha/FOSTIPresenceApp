@@ -102,8 +102,11 @@ class RecapFactory {
           formattedLoginDate = DateFormat("dd MMMM yyyy, HH:mm:ss")
               .format(eventLog.loginDate!.toLocal());
         } on FormatException {
-          print("Warning: Invalid login date format for member ${member
-              .nim}: ${eventLog.loginDate}");
+          if (kDebugMode) {
+            debugPrint(
+              "Warning: Invalid login date format for member ${member.nim}: ${eventLog.loginDate}",
+            );
+          }
         }
       }
 
@@ -112,10 +115,11 @@ class RecapFactory {
           formattedLogoutDate = DateFormat("dd MMMM yyyy, HH:mm:ss")
               .format(eventLog.logoutDate!.toLocal());
         } on FormatException {
-          print(
-            "Warning: Invalid logout date format for member ${member
-                .nim}: ${eventLog.logoutDate}",
-          );
+          if (kDebugMode) {
+            debugPrint(
+              "Warning: Invalid logout date format for member ${member.nim}: ${eventLog.logoutDate}",
+            );
+          }
         }
       }
 
@@ -261,8 +265,8 @@ class RecapFactory {
       localFilePath = path.join(appDocDir.path, fileName);
       final File file = File(localFilePath);
       await file.writeAsBytes(_excelBytes, flush: true);
-    } catch (e) {
-      print("Warning: Could not write local cache file: $e");
+    } catch (_, trace) {
+      debugPrintStack(stackTrace: trace, label: "Warning: Could not write local cache file");
       return (data: null, result: SaveResult.failed);
     }
 
@@ -281,7 +285,10 @@ class RecapFactory {
     if (savedPath == null) {
       return (data: null, result: SaveResult.cancel);
     }
-    print("Successfully saved recap excel file as $fileName at $savedPath");
+
+    if (kDebugMode) {
+      debugPrint("Successfully saved recap excel file as $fileName at $savedPath");
+    }
 
     final String pathToOpen = localFilePath.isNotEmpty ? localFilePath : savedPath.path;
     return (data: pathToOpen, result: SaveResult.success);

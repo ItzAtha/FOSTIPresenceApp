@@ -95,7 +95,9 @@ class BleService {
 
   Future<BleStatus> initialize() async {
     if (!await FlutterBluePlus.isSupported) {
-      print("Bluetooth isn't support in this device!");
+      if (kDebugMode) {
+        debugPrint("Bluetooth isn't support in this device!");
+      }
       return BleStatus.bt_not_support;
     }
 
@@ -104,19 +106,27 @@ class BleService {
     _btAdapterStateSub?.cancel();
     _btAdapterStateSub = FlutterBluePlus.adapterState.listen(
       (state) {
-        print("Bluetooth adapter state changed: $state");
+        if (kDebugMode) {
+          debugPrint("Bluetooth adapter state changed: $state");
+        }
 
         if (state == BluetoothAdapterState.on) {
-          print("Bluetooth is on.");
+          if (kDebugMode) {
+            debugPrint("Bluetooth is on.");
+          }
           if (_isAutoReconnectEnable && (_activeDevice == null || !_activeDevice!.isConnected)) {
             _reconnectLastDevice();
           }
         } else if (state == BluetoothAdapterState.off) {
-          print("Bluetooth is off.");
+          if (kDebugMode) {
+            debugPrint("Bluetooth is off.");
+          }
         }
       },
       onError: (e) {
-        print("Error during bluetooth adapter state stream: $e");
+        if (kDebugMode) {
+          debugPrintStack(stackTrace: e, label: "Error during bluetooth adapter state stream");
+        }
         return BleStatus.ble_stream_sub_error;
       },
     );
@@ -125,7 +135,9 @@ class BleService {
       try {
         await FlutterBluePlus.turnOn();
       } catch (e) {
-        print("Error during bluetooth turn on: $e");
+        if (kDebugMode) {
+          debugPrint("Error during bluetooth turn on: $e");
+        }
       }
     }
     return BleStatus.initialize_success;
@@ -144,7 +156,10 @@ class BleService {
         final statuses = await requiredPermissions.request();
         for (final permission in requiredPermissions) {
           if (statuses[permission] != PermissionStatus.granted) {
-            print("Permission denied: $permission");
+            if (kDebugMode) {
+              debugPrint("Permission denied: $permission");
+            }
+
             return (status: BlePermissionStatus.request_denied, permission: permission);
           }
         }
@@ -178,15 +193,20 @@ class BleService {
             if (!foundDevicesList.value.containsKey(device)) {
               foundDevicesList.value = Map.from(foundDevicesList.value)
                 ..[device] = BleConnectionState.disconnected;
-              print(
-                "Found device: ${device.remoteId} - ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}",
-              );
+
+              if (kDebugMode) {
+                debugPrint(
+                  "Found device: ${device.remoteId} - ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}",
+                );
+              }
             }
           }
         }
       },
       onError: (e) {
-        print("Error during bluetooth scan result stream: $e");
+        if (kDebugMode) {
+          debugPrintStack(stackTrace: e, label: "Error during bluetooth scan result stream");
+        }
         return BleStatus.ble_stream_sub_error;
       },
       cancelOnError: true,
@@ -199,7 +219,9 @@ class BleService {
   }
 
   Future<BleConnectionStatus> connectToDevice(BluetoothDevice device) async {
-    print("Connecting to device ${device.remoteId}");
+    if (kDebugMode) {
+      debugPrint("Connecting to device ${device.remoteId}");
+    }
 
     _updateDeviceState(device, BleConnectionState.connecting);
 
@@ -216,13 +238,17 @@ class BleService {
       await _setupServicesAndCharacteristics(device);
       _listenToConnectionChanges(device);
 
-      print(
-        'Connected to device ${device.platformName.isEmpty ? "Unknown Device" : device.platformName}',
-      );
+      if (kDebugMode) {
+        debugPrint('Connected to device ${deviceName.isEmpty ? "Unknown Device" : deviceName}');
+      }
+
       _updateDeviceState(device, BleConnectionState.connected);
       return BleConnectionStatus.success_connect;
-    } catch (e) {
-      print("Connection failed: $e");
+    } catch (_, trace) {
+      if (kDebugMode) {
+        debugPrintStack(stackTrace: trace, label: "Error during device connection");
+      }
+
       _updateDeviceState(device, BleConnectionState.disconnected);
       return BleConnectionStatus.failed_connect;
     }
@@ -238,12 +264,16 @@ class BleService {
       final device = _activeDevice!;
       _updateDeviceState(device, BleConnectionState.disconnecting);
 
-      print("Disconnecting from device ${device.remoteId}");
+      if (kDebugMode) {
+        debugPrint("Disconnecting from device ${device.remoteId}");
+      }
 
       try {
         await device.disconnect();
-      } catch (e) {
-        print("Disconnection failed: $e");
+      } catch (_, trace) {
+        if (kDebugMode) {
+          debugPrintStack(stackTrace: trace, label: "Error during device disconnection");
+        }
       } finally {
         _updateDeviceState(device, BleConnectionState.disconnected);
         _writeCharacteristic = null;
@@ -260,7 +290,9 @@ class BleService {
     int attempt = 0;
     const maxAttempts = 15;
 
-    print("Starting auto-reconnect for ${device.remoteId}...");
+    if (kDebugMode) {
+      debugPrint("Starting auto-reconnect for ${device.remoteId}...");
+    }
 
     while (!device.isConnected && attempt < maxAttempts) {
       attempt++;
@@ -272,23 +304,33 @@ class BleService {
       if (_isManualDisconnect) break;
 
       try {
-        print("Reconnecting... Attempt $attempt");
+        if (kDebugMode) {
+          debugPrint("Reconnecting... Attempt $attempt");
+        }
+
         await device.connect(
           license: License.nonprofit,
           mtu: 517,
           timeout: const Duration(seconds: 10),
-          autoConnect: false,
         );
 
         if (device.isConnected) {
-          print("Successfully reconnected to ${device.remoteId}");
+          if (kDebugMode) {
+            debugPrint("Successfully reconnected to ${device.remoteId}");
+          }
+
           await _setupServicesAndCharacteristics(device);
           _listenToConnectionChanges(device);
           _updateDeviceState(device, BleConnectionState.connected);
           return;
         }
-      } catch (e) {
-        print("Reconnect attempt $attempt failed: $e");
+      } catch (_, trace) {
+        if (kDebugMode) {
+          debugPrintStack(
+            stackTrace: trace,
+            label: "Error during device reconnection: $attempt Attempt",
+          );
+        }
       }
     }
 
@@ -301,7 +343,10 @@ class BleService {
     final savedId = await _settingPrefs.getString(_prefLastDeviceId);
 
     if (savedId != null && savedId.isNotEmpty) {
-      print("Found saved device ID: $savedId. Reconnecting...");
+      if (kDebugMode) {
+        debugPrint("Found saved device ID: $savedId. Reconnecting...");
+      }
+
       final device = BluetoothDevice.fromId(savedId);
       await connectToDevice(device);
     }
@@ -311,14 +356,21 @@ class BleService {
     _deviceConnectionSub?.cancel();
     _deviceConnectionSub = device.connectionState.listen((state) {
       if (state == BluetoothConnectionState.disconnected) {
-        print("Device ${getDeviceName(device)} disconnected.");
+        if (kDebugMode) {
+          debugPrint("Device ${getDeviceName(device)} disconnected.");
+        }
 
         _updateDeviceState(device, BleConnectionState.disconnected);
         _btValueReceiverSub?.cancel();
         _writeCharacteristic = null;
 
         if (_isAutoReconnectEnable) {
-          print("Unexpected disconnect detected! Trying to reconnecting to bluetooth device....");
+          if (kDebugMode) {
+            debugPrint(
+              "Unexpected disconnect detected! Trying to reconnecting to bluetooth device....",
+            );
+          }
+
           _startAutoReconnect(device);
         }
       }
@@ -327,7 +379,9 @@ class BleService {
 
   Future<bool> sendBluetoothData(BluetoothDevice device, String data) async {
     if (_activeDevice == null || !_activeDevice!.isConnected || _writeCharacteristic == null) {
-      print("No active connection to send data.");
+      if (kDebugMode) {
+        debugPrint("No active connection to send data.");
+      }
       return false;
     }
 
@@ -336,8 +390,13 @@ class BleService {
       List<int> encodedData = utf8.encode(rawData);
       await _writeCharacteristic!.write(encodedData);
       return true;
-    } catch (e) {
-      print("Error sending data: $e");
+    } catch (_, trace) {
+      if (kDebugMode) {
+        debugPrintStack(
+          stackTrace: trace,
+          label: "Error sending data to device ${getDeviceName(device)}",
+        );
+      }
       return false;
     }
   }
@@ -378,8 +437,13 @@ class BleService {
                 if (receivedData.isNotEmpty) {
                   _dataStreamController.add(receivedData);
                 }
-              } catch (e) {
-                print('Error decoding received data: $e');
+              } catch (_, trace) {
+                if (kDebugMode) {
+                  debugPrintStack(
+                    stackTrace: trace,
+                    label: 'Error decoding received data from ${getDeviceName(device)}',
+                  );
+                }
               }
             });
           }
