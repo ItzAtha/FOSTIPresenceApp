@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -322,6 +323,11 @@ class BleService {
           await _setupServicesAndCharacteristics(device);
           _listenToConnectionChanges(device);
           _updateDeviceState(device, BleConnectionState.connected);
+
+          FlutterBackgroundService().invoke('ble_connection_state_changed', {
+            'ble_name': getDeviceName(device),
+            'ble_state': BleConnectionState.connected,
+          });
           return;
         }
       } catch (_, trace) {
@@ -363,6 +369,11 @@ class BleService {
         _updateDeviceState(device, BleConnectionState.disconnected);
         _btValueReceiverSub?.cancel();
         _writeCharacteristic = null;
+
+        FlutterBackgroundService().invoke('ble_connection_state_changed', {
+          'ble_name': getDeviceName(device),
+          'ble_state': BleConnectionState.disconnected,
+        });
 
         if (_isAutoReconnectEnable) {
           if (kDebugMode) {
