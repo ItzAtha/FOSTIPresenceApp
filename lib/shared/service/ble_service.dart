@@ -326,7 +326,7 @@ class BleService {
 
           FlutterBackgroundService().invoke('ble_connection_state_changed', {
             'ble_name': getDeviceName(device),
-            'ble_state': BleConnectionState.reconnected,
+            'ble_state': BleConnectionState.reconnected.name,
           });
           return;
         }
@@ -372,7 +372,7 @@ class BleService {
 
         FlutterBackgroundService().invoke('ble_connection_state_changed', {
           'ble_name': getDeviceName(device),
-          'ble_state': BleConnectionState.disconnected,
+          'ble_state': BleConnectionState.disconnected.name,
         });
 
         if (_isAutoReconnectEnable) {
