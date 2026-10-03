@@ -1,5 +1,6 @@
 // lib/main.dart
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/shared/service/app_background_service.dart';
 import 'package:attendance_management/shared/service/ble_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,8 @@ void main() async {
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
 
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+  await AppBackgroundService.initializeService();
 
   runApp(
     ProviderScope(
