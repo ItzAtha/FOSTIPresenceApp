@@ -4,6 +4,7 @@ import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/members_notifier.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
@@ -19,6 +20,19 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  Future<void> requestLocalNotificationPermission() async {
+    final localNotificationPlugin = FlutterLocalNotificationsPlugin();
+    await localNotificationPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    requestLocalNotificationPermission();
+  }
+
   @override
   Widget build(BuildContext context) {
     final membersAsync = ref.watch(membersProvider);
@@ -60,7 +74,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Center(
                       child: eventsAsync.when(
                         data: (events) {
-                          EventModel? activeEvent = events.where((event) => event.isActive).firstOrNull;
+                          EventModel? activeEvent = events
+                              .where((event) => event.isActive)
+                              .firstOrNull;
 
                           if (events.isEmpty || activeEvent == null) {
                             return Text(
