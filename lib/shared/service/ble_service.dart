@@ -10,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_android/shared_preferences_android.dart';
 
-enum BleConnectionState { disconnected, disconnecting, connecting, connected }
+enum BleConnectionState { disconnected, disconnecting, connecting, connected, reconnected }
 
 enum BlePermissionStatus { request_success, request_failed, request_denied, not_support }
 
@@ -326,7 +326,7 @@ class BleService {
 
           FlutterBackgroundService().invoke('ble_connection_state_changed', {
             'ble_name': getDeviceName(device),
-            'ble_state': BleConnectionState.connected,
+            'ble_state': BleConnectionState.reconnected,
           });
           return;
         }
