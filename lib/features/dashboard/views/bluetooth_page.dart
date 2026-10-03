@@ -370,6 +370,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               ),
                             ),
                           ),
+                          _ => const SizedBox.shrink(),
                         },
                       );
                     },
