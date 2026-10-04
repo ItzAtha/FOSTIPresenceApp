@@ -43,7 +43,6 @@ class AppBackgroundService {
         ],
       ),
       iosConfiguration: IosConfiguration(
-        autoStart: true,
         onForeground: onStart,
         onBackground: onIosBackground,
       ),
