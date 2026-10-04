@@ -48,6 +48,12 @@ class BleService {
   final _charUUIDReceiver = Guid(
     "a29d643b-4fda-446d-b9fd-118f540a902d",
   ); // Notify char uuid from ESP32 to app
+  final _charUUIDSystemWrite = Guid(
+    "bcb02e3f-7c78-4aae-a42d-23b3a3ee6d98",
+  ); // Write char uuid from app to ESP32 for system command
+  final _charUUIDSystemReceiver = Guid(
+    "090d493b-8be6-4a3a-8841-289afcd96584",
+  ); // Notify char uuid from ESP32 to app for system command
 
   final Guid _gapServiceUUID = Guid("1800");
   final Guid _gapDeviceNameUUID = Guid("2A00");
@@ -57,8 +63,11 @@ class BleService {
 
   BluetoothDevice? _activeDevice;
   BluetoothCharacteristic? _writeCharacteristic;
+  BluetoothCharacteristic? _systemWriteCharacteristic;
   StreamSubscription<BluetoothAdapterState>? _btAdapterStateSub;
+
   StreamSubscription<List<int>>? _btValueReceiverSub;
+  StreamSubscription<List<int>>? _btSystemValueReceiverSub;
 
   bool _isManualDisconnect = false;
   bool _isAutoReconnectEnable = false;
@@ -72,6 +81,7 @@ class BleService {
   );
 
   final StreamController<String> _dataStreamController = StreamController<String>.broadcast();
+  final StreamController<String> _systemDataStreamController = StreamController<String>.broadcast();
 
   late SharedPreferencesAsync _settingPrefs;
 
@@ -224,6 +234,7 @@ class BleService {
       debugPrint("Connecting to device ${device.remoteId}");
     }
 
+    _isManualDisconnect = false;
     _updateDeviceState(device, BleConnectionState.connecting);
 
     try {
@@ -258,6 +269,7 @@ class BleService {
   Future<BleConnectionStatus> disconnectFromDevice() async {
     _deviceConnectionSub?.cancel();
     _btValueReceiverSub?.cancel();
+    _btSystemValueReceiverSub?.cancel();
 
     _isManualDisconnect = true;
 
@@ -278,6 +290,7 @@ class BleService {
       } finally {
         _updateDeviceState(device, BleConnectionState.disconnected);
         _writeCharacteristic = null;
+        _systemWriteCharacteristic = null;
         _activeDevice = null;
       }
 
@@ -367,8 +380,11 @@ class BleService {
         }
 
         _btValueReceiverSub?.cancel();
+        _btSystemValueReceiverSub?.cancel();
+
         _deviceConnectionSub?.cancel();
         _writeCharacteristic = null;
+        _systemWriteCharacteristic = null;
 
         _updateDeviceState(device, BleConnectionState.disconnected);
 
@@ -414,6 +430,32 @@ class BleService {
     }
   }
 
+  Future<bool> sendSystemBluetoothData(BluetoothDevice device, String data) async {
+    if (_activeDevice == null ||
+        !_activeDevice!.isConnected ||
+        _systemWriteCharacteristic == null) {
+      if (kDebugMode) {
+        debugPrint("No active connection to send data.");
+      }
+      return false;
+    }
+
+    try {
+      String rawData = data.trim();
+      List<int> encodedData = utf8.encode(rawData);
+      await _systemWriteCharacteristic!.write(encodedData);
+      return true;
+    } catch (_, trace) {
+      if (kDebugMode) {
+        debugPrintStack(
+          stackTrace: trace,
+          label: "Error sending system data to device ${getDeviceName(device)}",
+        );
+      }
+      return false;
+    }
+  }
+
   Future<void> _setupServicesAndCharacteristics(BluetoothDevice device) async {
     final services = await device.discoverServices();
 
@@ -441,6 +483,10 @@ class BleService {
             _writeCharacteristic = character;
           }
 
+          if (character.uuid == _charUUIDSystemWrite) {
+            _systemWriteCharacteristic = character;
+          }
+
           if (character.uuid == _charUUIDReceiver) {
             await character.setNotifyValue(true);
             _btValueReceiverSub?.cancel();
@@ -455,6 +501,26 @@ class BleService {
                   debugPrintStack(
                     stackTrace: trace,
                     label: 'Error decoding received data from ${getDeviceName(device)}',
+                  );
+                }
+              }
+            });
+          }
+
+          if (character.uuid == _charUUIDSystemReceiver) {
+            await character.setNotifyValue(true);
+            _btSystemValueReceiverSub?.cancel();
+            _btSystemValueReceiverSub = character.onValueReceived.listen((value) {
+              try {
+                final receivedData = utf8.decode(value, allowMalformed: false).trim();
+                if (receivedData.isNotEmpty) {
+                  _systemDataStreamController.add(receivedData);
+                }
+              } catch (_, trace) {
+                if (kDebugMode) {
+                  debugPrintStack(
+                    stackTrace: trace,
+                    label: 'Error decoding received system data from ${getDeviceName(device)}',
                   );
                 }
               }
@@ -491,7 +557,9 @@ class BleService {
     _deviceConnectionSub?.cancel();
     _btAdapterStateSub?.cancel();
     _btValueReceiverSub?.cancel();
+    _btSystemValueReceiverSub?.cancel();
     _dataStreamController.close();
+    _systemDataStreamController.close();
   }
 
   BluetoothDevice? get connectedDevice => _activeDevice;
@@ -499,4 +567,6 @@ class BleService {
   bool get isConnected => _activeDevice?.isConnected ?? false;
 
   Stream<String> get dataStream => _dataStreamController.stream;
+
+  Stream<String> get systemDataStream => _systemDataStreamController.stream;
 }
