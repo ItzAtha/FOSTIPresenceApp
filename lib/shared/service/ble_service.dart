@@ -317,7 +317,7 @@ class BleService {
 
         if (device.isConnected) {
           if (kDebugMode) {
-            debugPrint("Successfully reconnected to ${device.remoteId}");
+            debugPrint("Successfully reconnected to ${getDeviceName(device)}");
           }
 
           await _setupServicesAndCharacteristics(device);
@@ -366,9 +366,11 @@ class BleService {
           debugPrint("Device ${getDeviceName(device)} disconnected.");
         }
 
-        _updateDeviceState(device, BleConnectionState.disconnected);
         _btValueReceiverSub?.cancel();
+        _deviceConnectionSub?.cancel();
         _writeCharacteristic = null;
+
+        _updateDeviceState(device, BleConnectionState.disconnected);
 
         FlutterBackgroundService().invoke('ble_connection_state_changed', {
           'ble_name': getDeviceName(device),
