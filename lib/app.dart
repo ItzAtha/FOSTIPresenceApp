@@ -21,7 +21,8 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
-  StreamSubscription? toastSubscription;
+  StreamSubscription? bleToastSubscription;
+  StreamSubscription? simToastSubscription;
   final FlutterBackgroundService backgroundService = FlutterBackgroundService();
 
   Future<void> initUiNotificationReceiver() async {
@@ -34,10 +35,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       settings: const InitializationSettings(android: initializationSettings),
       onDidReceiveNotificationResponse: (response) {
         final routeName = response.payload;
-        print(response.payload);
 
         if (routeName != null) {
           AppRouter.router.pushNamed(routeName);
+
+          if (kDebugMode) {
+            debugPrint("Received route data from notification: ${response.payload}");
+          }
         } else {
           if (kDebugMode) {
             debugPrint("Error occurred while navigating to route.");
@@ -58,10 +62,24 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       'lifecycle_state': AppLifecycleState.resumed.name,
     });
 
-    toastSubscription = backgroundService.on('ble_toast_callback').listen((data) {
+    bleToastSubscription = backgroundService.on('ble_toast_callback').listen((data) {
       if (data != null) {
         Toastification().show(
           title: const Text("Bluetooth Device"),
+          description: Text(data['message']),
+          type: ToastificationType.info,
+          style: ToastificationStyle.flat,
+          alignment: Alignment.bottomCenter,
+          autoCloseDuration: const Duration(seconds: 2),
+          animationDuration: const Duration(milliseconds: 500),
+        );
+      }
+    });
+
+    simToastSubscription = backgroundService.on('sim_toast_callback').listen((data) {
+      if (data != null) {
+        Toastification().show(
+          title: const Text("SIM Quota"),
           description: Text(data['message']),
           type: ToastificationType.info,
           style: ToastificationStyle.flat,
@@ -91,7 +109,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    toastSubscription?.cancel();
+
+    bleToastSubscription?.cancel();
+    simToastSubscription?.cancel();
     super.dispose();
   }
 
