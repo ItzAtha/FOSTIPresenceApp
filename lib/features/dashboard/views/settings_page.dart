@@ -232,23 +232,10 @@ class _SettingPageState extends State<SettingPage> {
               leading: const FaIcon(FontAwesomeIcons.simCard),
               scale: 0.85,
               onChanged: (value) async {
-                // TODO: Not yet implements, will be implements in the future update
                 setState(() => notifySIMExpiredEnable = value);
                 debouncer.run(() {
                   settingPrefs.setBool('notifySIMExpired', value);
                 });
-
-                Toastification().show(
-                  title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
-                  description: Text(
-                    LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                  ),
-                  type: ToastificationType.info,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: const Duration(seconds: 2),
-                  animationDuration: const Duration(milliseconds: 500),
-                );
               },
             ),
             const SizedBox(height: 24.0),
