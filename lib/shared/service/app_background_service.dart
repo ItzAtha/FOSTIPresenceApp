@@ -83,6 +83,7 @@ class AppBackgroundService {
     final settingPrefs = SharedPreferencesAsync(options: prefsOption);
 
     bool isAppInForeground = true;
+    bool notifySIMExpired = await settingPrefs.getBool('notifySIMExpired') ?? false;
 
     service.on('app_lifecycle_state_changed').listen((data) {
       if (data != null) {
@@ -217,6 +218,8 @@ class AppBackgroundService {
     });
 
     Timer.periodic(const Duration(hours: 6), (timer) async {
+      if (!notifySIMExpired) return;
+
       if (kDebugMode) {
         debugPrint("[Background Service] Checking SIM quota expired date....");
       }
