@@ -1,11 +1,16 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:attendance_management/core/app_constants.dart';
 import 'package:attendance_management/shared/service/ble_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_android/shared_preferences_android.dart';
 
 @pragma('vm:entry-point')
 class AppBackgroundService {
@@ -42,23 +47,21 @@ class AppBackgroundService {
           AndroidForegroundType.connectedDevice,
         ],
       ),
-      iosConfiguration: IosConfiguration(
-        onForeground: onStart,
-        onBackground: onIosBackground,
-      ),
+      iosConfiguration: IosConfiguration(onForeground: onStart, onBackground: onIosBackground),
     );
   }
 
   @pragma('vm:entry-point')
   static Future<bool> onIosBackground(ServiceInstance service) async {
-    WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
+    WidgetsFlutterBinding.ensureInitialized();
     return true;
   }
 
   @pragma('vm:entry-point')
   static void onStart(ServiceInstance service) async {
     DartPluginRegistrant.ensureInitialized();
+    WidgetsFlutterBinding.ensureInitialized();
 
     final localNotification = FlutterLocalNotificationsPlugin();
     const AndroidInitializationSettings initializationSettings = AndroidInitializationSettings(
@@ -69,6 +72,15 @@ class AppBackgroundService {
       settings: const InitializationSettings(android: initializationSettings),
     );
 
+    final prefsOption = const SharedPreferencesAsyncAndroidOptions(
+      backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
+      originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
+        fileName: 'settings_data',
+      ),
+    );
+
+    final settingPrefs = SharedPreferencesAsync(options: prefsOption);
+
     bool isAppInForeground = true;
 
     service.on('app_lifecycle_state_changed').listen((data) {
@@ -77,7 +89,7 @@ class AppBackgroundService {
 
         if (kDebugMode) {
           debugPrint(
-            "User position status updated: ${isAppInForeground ? 'Inside App' : 'Outside App'}",
+            "[Background Service] User position status updated: ${isAppInForeground ? 'Inside App' : 'Outside App'}",
           );
         }
       }
@@ -89,24 +101,36 @@ class AppBackgroundService {
           (data) async {
             if (data == null) return;
 
-            String bleName = "Unknown";
+            if (kDebugMode) {
+              debugPrint("[Background Service] Received ble connection state data: $data");
+            }
+
+            String bleName = data['ble_name'] ?? "Unknown";
             String bleDescription = "";
-            BleConnectionState bleState = BleConnectionState.disconnected;
+            BleConnectionState? bleState;
 
             try {
-              bleName = data['ble_name'];
               bleState = BleConnectionState.values.byName(data['ble_state']);
             } catch (_, trace) {
               if (kDebugMode) {
-                debugPrintStack(stackTrace: trace, label: "Error occurred while parsing BLE data");
+                debugPrintStack(
+                  stackTrace: trace,
+                  label: "[Background Service] Error occurred while parsing BLE state",
+                );
               }
             }
 
-            if (bleState == BleConnectionState.reconnected) {
+            if (bleState != null) {
+              if (bleState == BleConnectionState.reconnected) {
+                bleDescription =
+                    "The Bluetooth device connection with name $bleName has been reconnected.";
+              } else if (bleState == BleConnectionState.disconnected) {
+                bleDescription =
+                    "The Bluetooth device connection with name $bleName has been lost.";
+              }
+            } else {
               bleDescription =
-                  "The Bluetooth device connection with name $bleName has been reconnected.";
-            } else if (bleState == BleConnectionState.disconnected) {
-              bleDescription = "The Bluetooth device connection with name $bleName has been lost.";
+                  "The Bluetooth device connection with name $bleName is in an unknown state.";
             }
 
             if (!isAppInForeground) {
@@ -135,10 +159,111 @@ class AppBackgroundService {
             if (kDebugMode) {
               debugPrintStack(
                 stackTrace: trace,
-                label: "Error occurred while processing BLE connection state",
+                label: "[Background Service] Error occurred while processing BLE connection state",
               );
             }
           },
         );
+
+    service.on('system_data_received').listen((data) async {
+      if (data == null) return;
+
+      if (kDebugMode) {
+        debugPrint("[Background Service] Received system data: $data");
+      }
+
+      Map<String, dynamic> decodedData = {};
+      try {
+        decodedData = jsonDecode(data['data']) as Map<String, dynamic>;
+      } catch (_, trace) {
+        if (kDebugMode) {
+          debugPrintStack(
+            stackTrace: trace,
+            label: "[Background Service] Error occurred while decoding system data",
+          );
+        }
+      }
+
+      if (decodedData.isNotEmpty) {
+        try {
+          if (decodedData['type'] == "SIM_QUOTA_DETAILS") {
+            String simData = jsonEncode(decodedData['data'] as Map<String, dynamic>);
+            if (await settingPrefs.containsKey('sim_quota_data')) {
+              String? currentSimData = await settingPrefs.getString('sim_quota_data');
+              if (currentSimData != null) {
+                bool isDataChange = simData.compareTo(currentSimData) != 0;
+                if (isDataChange) {
+                  settingPrefs.setString('sim_quota_data', simData);
+                }
+              }
+            } else {
+              settingPrefs.setString('sim_quota_data', simData);
+            }
+
+            if (kDebugMode) {
+              debugPrint("[Background Service] SIM data: $simData");
+            }
+          }
+        } catch (_, trace) {
+          if (kDebugMode) {
+            debugPrintStack(
+              stackTrace: trace,
+              label: "[Background Service] Error occurred while processing system data",
+            );
+          }
+        }
+      }
+    });
+
+    Timer.periodic(const Duration(hours: 1), (timer) async {
+      if (kDebugMode) {
+        debugPrint("[Background Service] Checking SIM quota expired date....");
+      }
+
+      if (await settingPrefs.containsKey('sim_quota_data')) {
+        String? simData = await settingPrefs.getString('sim_quota_data');
+        if (simData != null) {
+          Map<String, dynamic> decodedSimData = jsonDecode(simData);
+          DateTime? expiredQuota;
+
+          try {
+            String rawExpiredDate = decodedSimData['expiredDateTime'].toString().replaceAll(
+              '/',
+              '-',
+            );
+            final formattedExpiredDate = DateFormat("yyyy-MM-dd HH:mm:ss");
+            expiredQuota = formattedExpiredDate.parse(rawExpiredDate);
+          } catch (_, stackTrace) {
+            if (kDebugMode) {
+              debugPrintStack(
+                stackTrace: stackTrace,
+                label: "[Background Service] Error occurred while parsing expired date",
+              );
+            }
+          }
+
+          if (expiredQuota != null) {
+            Set<int> notifyDay = {15, 10, 5, 3, 2, 1};
+            DateTime currentDate = DateTime.now();
+
+            // Calculate the number of days remaining until the SIM quota expires
+            final start = DateTime(currentDate.year, currentDate.month, currentDate.day);
+            final end = DateTime(expiredQuota.year, expiredQuota.month, expiredQuota.day);
+
+            final daysRemaining = end.difference(start).inDays;
+
+            if (currentDate.isAfter(expiredQuota)) {
+              if (kDebugMode) {
+                debugPrint("[Background Service] SIM quota has expired");
+              }
+            } else if (notifyDay.contains(daysRemaining)) {
+              if (kDebugMode) {
+                debugPrint("[Background Service] Quota expires in $daysRemaining day(s)");
+              }
+            }
+          }
+        }
+      }
+    });
   }
 }
