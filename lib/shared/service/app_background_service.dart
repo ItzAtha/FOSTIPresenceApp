@@ -15,8 +15,9 @@ import 'package:shared_preferences_android/shared_preferences_android.dart';
 @pragma('vm:entry-point')
 class AppBackgroundService {
   static const String channelId = 'foreground_service_channel';
-  static const int systemNotificationId = 888;
-  static const int notificationId = 999;
+  static const int bleNotificationId = 111;
+  static const int simNotificationId = 222;
+  static const int systemNotificationId = 999;
 
   static Future<void> initializeService() async {
     final service = FlutterBackgroundService();
@@ -135,7 +136,7 @@ class AppBackgroundService {
 
             if (!isAppInForeground) {
               await localNotification.show(
-                id: notificationId,
+                id: bleNotificationId,
                 title: "Bluetooth Device",
                 body: bleDescription,
                 notificationDetails: const NotificationDetails(
@@ -215,7 +216,7 @@ class AppBackgroundService {
       }
     });
 
-    Timer.periodic(const Duration(hours: 1), (timer) async {
+    Timer.periodic(const Duration(hours: 6), (timer) async {
       if (kDebugMode) {
         debugPrint("[Background Service] Checking SIM quota expired date....");
       }
@@ -252,15 +253,41 @@ class AppBackgroundService {
 
             final daysRemaining = end.difference(start).inDays;
 
+            String simDescription = "";
             if (currentDate.isAfter(expiredQuota)) {
+              simDescription = "SIM quota has expired. Please top up the SIM card's data allowance so the ESP32 modem can reconnect to the internet.";
+
               if (kDebugMode) {
-                debugPrint("[Background Service] SIM quota has expired");
+                debugPrint("[Background Service] SIM quota has expired!");
               }
             } else if (notifyDay.contains(daysRemaining)) {
+              simDescription = "SIM quota is about to be expired in $daysRemaining day(s).";
+
               if (kDebugMode) {
                 debugPrint("[Background Service] Quota expires in $daysRemaining day(s)");
               }
             }
+
+            if (!isAppInForeground) {
+              await localNotification.show(
+                id: simNotificationId,
+                title: "SIM Quota",
+                body: simDescription,
+                notificationDetails: const NotificationDetails(
+                  android: AndroidNotificationDetails(
+                    channelId,
+                    "Background Monitor Service",
+                    channelDescription: "Notification for background monitor service",
+                    importance: Importance.max,
+                    priority: Priority.high,
+                    ongoing: true,
+                  ),
+                ),
+              );
+              return;
+            }
+
+            service.invoke('sim_toast_callback', {'message': simDescription});
           }
         }
       }
