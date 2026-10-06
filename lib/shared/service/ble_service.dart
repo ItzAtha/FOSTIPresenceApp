@@ -81,7 +81,6 @@ class BleService {
   );
 
   final StreamController<String> _dataStreamController = StreamController<String>.broadcast();
-  final StreamController<String> _systemDataStreamController = StreamController<String>.broadcast();
 
   late SharedPreferencesAsync _settingPrefs;
 
@@ -151,6 +150,15 @@ class BleService {
         }
       }
     }
+
+    FlutterBackgroundService().on('send_system_ble_command').listen((event) {
+      if (event != null && event['data'] != null) {
+        if (_activeDevice != null) {
+          sendSystemBluetoothData(_activeDevice!, event['data'].toString());
+        }
+      }
+    });
+
     return BleStatus.initialize_success;
   }
 
@@ -514,7 +522,7 @@ class BleService {
               try {
                 final receivedData = utf8.decode(value, allowMalformed: false).trim();
                 if (receivedData.isNotEmpty) {
-                  _systemDataStreamController.add(receivedData);
+                  FlutterBackgroundService().invoke('system_data_received', {'data': receivedData});
                 }
               } catch (_, trace) {
                 if (kDebugMode) {
@@ -559,7 +567,6 @@ class BleService {
     _btValueReceiverSub?.cancel();
     _btSystemValueReceiverSub?.cancel();
     _dataStreamController.close();
-    _systemDataStreamController.close();
   }
 
   BluetoothDevice? get connectedDevice => _activeDevice;
@@ -567,6 +574,4 @@ class BleService {
   bool get isConnected => _activeDevice?.isConnected ?? false;
 
   Stream<String> get dataStream => _dataStreamController.stream;
-
-  Stream<String> get systemDataStream => _systemDataStreamController.stream;
 }
