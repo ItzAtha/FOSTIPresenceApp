@@ -83,7 +83,6 @@ class AppBackgroundService {
     final settingPrefs = SharedPreferencesAsync(options: prefsOption);
 
     bool isAppInForeground = true;
-    bool notifySIMExpired = await settingPrefs.getBool('notifySIMExpired') ?? false;
 
     service.on('app_lifecycle_state_changed').listen((data) {
       if (data != null) {
@@ -218,6 +217,7 @@ class AppBackgroundService {
     });
 
     Timer.periodic(const Duration(hours: 6), (timer) async {
+      bool notifySIMExpired = await settingPrefs.getBool('notifySIMExpired') ?? false;
       if (!notifySIMExpired) return;
 
       if (kDebugMode) {
@@ -235,7 +235,7 @@ class AppBackgroundService {
               '/',
               '-',
             );
-            final formattedExpiredDate = DateFormat("yyyy-MM-dd HH:mm:ss");
+            final formattedExpiredDate = DateFormat("dd-MM-yyyy HH:mm:ss");
             expiredQuota = formattedExpiredDate.parse(rawExpiredDate);
           } catch (_, stackTrace) {
             if (kDebugMode) {
@@ -269,6 +269,11 @@ class AppBackgroundService {
               if (kDebugMode) {
                 debugPrint("[Background Service] Quota expires in $daysRemaining day(s)");
               }
+            } else {
+              if (kDebugMode) {
+                debugPrint("[Background Service] SIM quota still enough.");
+              }
+              return;
             }
 
             if (!isAppInForeground) {
