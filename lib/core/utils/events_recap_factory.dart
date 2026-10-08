@@ -23,7 +23,29 @@ class RecapFactory {
   List<int> _excelBytes = [];
 
   RecapFactory({required this._eventData, required this._membersData, required this._logsData})
-    : _workbook = Excel.createExcel();
+    : _workbook = Excel.createExcel() {
+    final memberMap = {for (final m in _membersData) m.cardId: m};
+
+    _logsData.sort((a, b) {
+      if (a.role == null && b.role != null) return 1;
+      if (a.role != null && b.role == null) return -1;
+
+      if (a.role != null && b.role != null) {
+        final roleCmp = b.role!.index.compareTo(a.role!.index);
+        if (roleCmp != 0) return roleCmp;
+      }
+
+      final memberA = memberMap[a.cardId];
+      final memberB = memberMap[b.cardId];
+
+      if (memberA == null || memberB == null) return 0;
+
+      final informationCmp = a.information.index.compareTo(b.information.index);
+      if (informationCmp != 0) return informationCmp;
+
+      return memberA.name.compareTo(memberB.name);
+    });
+  }
 
   Future<RecapFactory?> createExcel() async {
     final String defaultSheet = _workbook.getDefaultSheet() ?? 'Sheet1';
@@ -91,9 +113,9 @@ class RecapFactory {
     _currentIndexColumn++;
 
     // ============[ Content Section ] ============
-    for (int i = 0; i < _membersData.length; i++) {
-      MemberModel member = _membersData[i];
-      EventLogModel eventLog = _logsData.firstWhere((log) => log.cardId == member.cardId);
+    for (int i = 0; i < _logsData.length; i++) {
+      EventLogModel eventLog = _logsData[i];
+      MemberModel member = _membersData.firstWhere((m) => m.cardId == eventLog.cardId);
       String formattedLoginDate = "";
       String formattedLogoutDate = "";
 
