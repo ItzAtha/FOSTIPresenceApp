@@ -900,6 +900,47 @@ class _EventPageState extends ConsumerState<EventPage> {
     );
   }
 
+  Widget noFilteredEvent() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.p16),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const FaIcon(FontAwesomeIcons.solidUser, size: 32.0),
+                      const SizedBox(width: 16.0),
+                      Expanded(
+                        child: Text(
+                          "No Filtered Event Found",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8.0),
+                  const Divider(thickness: 1.5),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    "Search with another name key",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget hasEvents(List<EventModel> events) {
     List<EventModel> filteredEvents = events.where((event) {
       return event.title.toLowerCase().contains(searchQuery.toLowerCase());
@@ -976,43 +1017,47 @@ class _EventPageState extends ConsumerState<EventPage> {
                   child: IntrinsicHeight(
                     child: Column(
                       children: <Widget>[
-                        AnimationLimiter(
-                          child: Column(
-                            children: List<Widget>.generate(currentEvents.length, (index) {
-                              final eventData = currentEvents[index];
+                        if (currentEvents.isEmpty) ...[
+                          const Spacer(),
+                          noFilteredEvent(),
+                        ] else
+                          AnimationLimiter(
+                            child: Column(
+                              children: List<Widget>.generate(currentEvents.length, (index) {
+                                final eventData = currentEvents[index];
 
-                              return Column(
-                                children: <Widget>[
-                                  AnimationConfiguration.staggeredList(
-                                    position: index,
-                                    delay: const Duration(milliseconds: 300),
-                                    duration: const Duration(milliseconds: 800),
-                                    child: SlideAnimation(
-                                      verticalOffset: 50.0,
-                                      child: FadeInAnimation(
-                                        child: EventCardWidget(
-                                          title: eventData.title,
-                                          description: eventData.description,
-                                          location: eventData.location,
-                                          date: eventData.eventDate,
-                                          editButton: () => eventEditButton(
-                                            eventsData: events,
-                                            eventData: eventData,
+                                return Column(
+                                  children: <Widget>[
+                                    AnimationConfiguration.staggeredList(
+                                      position: index,
+                                      delay: const Duration(milliseconds: 300),
+                                      duration: const Duration(milliseconds: 800),
+                                      child: SlideAnimation(
+                                        verticalOffset: 50.0,
+                                        child: FadeInAnimation(
+                                          child: EventCardWidget(
+                                            title: eventData.title,
+                                            description: eventData.description,
+                                            location: eventData.location,
+                                            date: eventData.eventDate,
+                                            editButton: () => eventEditButton(
+                                              eventsData: events,
+                                              eventData: eventData,
+                                            ),
+                                            deleteButton: () => eventDeleteButton(eventData),
+                                            downloadButton: () => eventDownloadButton(eventData),
                                           ),
-                                          deleteButton: () => eventDeleteButton(eventData),
-                                          downloadButton: () => eventDownloadButton(eventData),
                                         ),
                                       ),
                                     ),
-                                  ),
 
-                                  if (index < currentEvents.length - 1)
-                                    const SizedBox(height: 16.0),
-                                ],
-                              );
-                            }),
+                                    if (index < currentEvents.length - 1)
+                                      const SizedBox(height: 16.0),
+                                  ],
+                                );
+                              }),
+                            ),
                           ),
-                        ),
                         const SizedBox(height: 16.0),
                         const Spacer(),
                         Row(
