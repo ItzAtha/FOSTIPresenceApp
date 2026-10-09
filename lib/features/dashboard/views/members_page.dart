@@ -327,7 +327,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        const Icon(Icons.person, size: 40.0),
+                        const FaIcon(FontAwesomeIcons.userGroup, size: 32.0),
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
@@ -348,6 +348,47 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget noFilteredMember() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.p16),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const FaIcon(FontAwesomeIcons.solidUser, size: 32.0),
+                      const SizedBox(width: 16.0),
+                      Expanded(
+                        child: Text(
+                          "No Filtered Member Found",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8.0),
+                  const Divider(thickness: 1.5),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    "Search another name key or select filter category",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                ],
               ),
             ),
           ),
@@ -460,40 +501,44 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   child: IntrinsicHeight(
                     child: Column(
                       children: <Widget>[
-                        AnimationLimiter(
-                          child: Column(
-                            children: List<Widget>.generate(currentMembers.length, (index) {
-                              final memberData = currentMembers[index];
+                        if (currentMembers.isEmpty) ...[
+                          const Spacer(),
+                          noFilteredMember(),
+                        ] else
+                          AnimationLimiter(
+                            child: Column(
+                              children: List<Widget>.generate(currentMembers.length, (index) {
+                                final memberData = currentMembers[index];
 
-                              return Column(
-                                children: <Widget>[
-                                  AnimationConfiguration.staggeredList(
-                                    position: index,
-                                    delay: const Duration(milliseconds: 300),
-                                    duration: const Duration(milliseconds: 800),
-                                    child: SlideAnimation(
-                                      verticalOffset: 50.0,
-                                      child: FadeInAnimation(
-                                        child: MemberCardWidget(
-                                          name: memberData.name,
-                                          nim: memberData.nim,
-                                          division: memberData.division,
-                                          editButton: () => memberEditButton(
-                                            membersData: members,
-                                            memberData: memberData,
+                                return Column(
+                                  children: <Widget>[
+                                    AnimationConfiguration.staggeredList(
+                                      position: index,
+                                      delay: const Duration(milliseconds: 300),
+                                      duration: const Duration(milliseconds: 800),
+                                      child: SlideAnimation(
+                                        verticalOffset: 50.0,
+                                        child: FadeInAnimation(
+                                          child: MemberCardWidget(
+                                            name: memberData.name,
+                                            nim: memberData.nim,
+                                            division: memberData.division,
+                                            editButton: () => memberEditButton(
+                                              membersData: members,
+                                              memberData: memberData,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
 
-                                  if (index < currentMembers.length - 1)
-                                    const SizedBox(height: 16.0),
-                                ],
-                              );
-                            }),
+                                    if (index < currentMembers.length - 1)
+                                      const SizedBox(height: 16.0),
+                                  ],
+                                );
+                              }),
+                            ),
                           ),
-                        ),
                         const SizedBox(height: 16.0),
                         const Spacer(),
                         Row(
