@@ -13,6 +13,7 @@ import 'package:toastification/toastification.dart';
 import '../../../../core/utils/language.dart';
 import '../../../core/app_constants.dart';
 import '../../../core/utils/debouncer.dart';
+import 'app_about_dialog.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -300,16 +301,20 @@ class _SettingPageState extends State<SettingPage> {
                 final PackageInfo info = await PackageInfo.fromPlatform();
                 if (!context.mounted) return;
 
-                showAboutDialog(
+                showDialog(
                   context: context,
-                  applicationIcon: Image.asset("assets/app-icon.png", scale: 12.0),
-                  applicationName: info.appName,
-                  applicationVersion: 'v${info.version} (Build ${info.buildNumber})',
-                  applicationLegalese: '\u{a9} 2025 Atha - FOSTI UMS',
-                  children: <Widget>[
-                    const SizedBox(height: 24.0),
-                    Text(LocaleKeys.setting_page_more_info_about_app_dialog.tr(context: context)),
-                  ],
+                  builder: (context) => AppAboutDialog(
+                    applicationIcon: Image.asset("assets/app-icon.png", scale: 12.0),
+                    applicationName: info.appName,
+                    applicationVersion: 'v${info.version} (Build ${info.buildNumber})',
+                    applicationLegalese: '\u{a9} 2026 Atha - FOSTI UMS',
+                    children: <Widget>[
+                      Text(
+                        LocaleKeys.setting_page_more_info_about_app_dialog.tr(context: context),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
