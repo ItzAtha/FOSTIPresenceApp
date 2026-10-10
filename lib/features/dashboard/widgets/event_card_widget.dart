@@ -100,7 +100,6 @@ class _EventCardWidgetState extends State<EventCardWidget> {
                         Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(widget._title, style: Theme.of(context).textTheme.titleSmall),
                               Text(
