@@ -476,6 +476,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                         builder: (context) {
                           return FilterSelectorMenu(
                             filterData: selectedFilterIndex,
+                            filterDataName: filterQuery,
                             onFilterSelected: (query) => setState(() => filterQuery = query),
                             onFilterChange: (updatedFilter) => selectedFilterIndex = updatedFilter,
                           );
@@ -652,11 +653,14 @@ class FilterSelectorMenu extends StatefulWidget {
   const FilterSelectorMenu({
     super.key,
     required this._filterData,
+    required this._filterDataName,
     required this._onFilterSelected,
     required this._onFilterChange,
   });
 
   final FilterIndexSelection _filterData;
+  final MemberFilterQuery? _filterDataName;
+
   final ValueChanged<MemberFilterQuery?> _onFilterSelected;
   final ValueChanged<FilterIndexSelection> _onFilterChange;
 
@@ -680,7 +684,7 @@ class _FilterSelectorMenuState extends State<FilterSelectorMenu> {
   void initState() {
     super.initState();
     filterSelectionData = widget._filterData;
-    filteredSelectionName = const MemberFilterQuery();
+    filteredSelectionName = widget._filterDataName ?? const MemberFilterQuery();
 
     int currentYear = DateTime.now().year;
     generation.addAll(List.generate(4, (index) => currentYear - 3 + index));
