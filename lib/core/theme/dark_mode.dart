@@ -66,6 +66,15 @@ class DarkMode {
           ),
         ),
       ),
+      iconButtonTheme: const IconButtonThemeData(
+        style: ButtonStyle(
+          elevation: WidgetStatePropertyAll(16.0),
+          backgroundColor: WidgetStatePropertyAll(AppColors.cardDark),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          ),
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
           minimumSize: const WidgetStatePropertyAll(Size(180.0, 40.0)),
@@ -75,6 +84,9 @@ class DarkMode {
             RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
           ),
         ),
+      ),
+      textButtonTheme: const TextButtonThemeData(
+        style: ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.textDark)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
@@ -128,15 +140,6 @@ class DarkMode {
         textStyle: const WidgetStatePropertyAll(TextStyle(color: AppColors.textDark)),
         shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
-        ),
-      ),
-      iconButtonTheme: const IconButtonThemeData(
-        style: ButtonStyle(
-          elevation: WidgetStatePropertyAll(16.0),
-          backgroundColor: WidgetStatePropertyAll(AppColors.cardDark),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
-          ),
         ),
       ),
       chipTheme: ChipThemeData(

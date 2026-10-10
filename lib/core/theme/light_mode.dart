@@ -16,7 +16,9 @@ class LightMode {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       iconTheme: const IconThemeData(color: AppColors.iconLight),
-      radioTheme: RadioThemeData(fillColor: WidgetStatePropertyAll(AppColors.secondary.withValues(alpha: 0.8))),
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStatePropertyAll(AppColors.secondary.withValues(alpha: 0.8)),
+      ),
       textTheme: (() {
         final textBase = Typography(platform: TargetPlatform.android).black
             .apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight);
@@ -66,6 +68,15 @@ class LightMode {
           ),
         ),
       ),
+      iconButtonTheme: const IconButtonThemeData(
+        style: ButtonStyle(
+          elevation: WidgetStatePropertyAll(8.0),
+          backgroundColor: WidgetStatePropertyAll(AppColors.cardLight),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          ),
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
           minimumSize: const WidgetStatePropertyAll(Size(180.0, 40.0)),
@@ -75,6 +86,9 @@ class LightMode {
             RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
           ),
         ),
+      ),
+      textButtonTheme: const TextButtonThemeData(
+        style: ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppColors.textLight)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
@@ -128,15 +142,6 @@ class LightMode {
         textStyle: const WidgetStatePropertyAll(TextStyle(color: AppColors.textLight)),
         shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
-        ),
-      ),
-      iconButtonTheme: const IconButtonThemeData(
-        style: ButtonStyle(
-          elevation: WidgetStatePropertyAll(8.0),
-          backgroundColor: WidgetStatePropertyAll(AppColors.cardLight),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
-          ),
         ),
       ),
       chipTheme: ChipThemeData(
