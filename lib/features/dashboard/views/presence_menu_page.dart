@@ -1078,10 +1078,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             memberNIMController.text = member.nim;
             memberDivisionController.text = member.division.aliases;
 
-            setState(() {
-              isIdCardDetected = false;
-              isSuccessAttendance = true;
-            });
+            setState(() => isSuccessAttendance = true);
 
             ref.invalidate(eventsLogsProvider);
             notificationType = ToastificationType.success;
@@ -1097,6 +1094,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             });
           }
 
+          setState(() => isIdCardDetected = false);
           Toastification().show(
             title: const Text("Member Attendance"),
             description: Text(decodedData['message']),
