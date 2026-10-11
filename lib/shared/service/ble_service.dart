@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:attendance_management/shared/service/preferences_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -69,8 +70,10 @@ class BleService {
   StreamSubscription<List<int>>? _btValueReceiverSub;
   StreamSubscription<List<int>>? _btSystemValueReceiverSub;
 
+  late int _maxBTReconnectRetries;
+  late bool _isAutoReconnectEnable;
+
   bool _isManualDisconnect = false;
-  bool _isAutoReconnectEnable = false;
   final Map<String, String> _deviceNames = {};
 
   final ValueNotifier<Map<BluetoothDevice, BleConnectionState>> foundDevicesList =
@@ -82,6 +85,7 @@ class BleService {
 
   final StreamController<String> _dataStreamController = StreamController<String>.broadcast();
 
+  final PreferencesService _prefsService = PreferencesService.instance;
   late SharedPreferencesAsync _settingPrefs;
 
   Future<void> _loadBluetoothSetting() async {
@@ -99,8 +103,29 @@ class BleService {
       _deviceNames[savedId] = savedName;
     }
 
-    bool? autoReconnectBT = await _settingPrefs.getBool('autoReconnectBT');
-    _isAutoReconnectEnable = autoReconnectBT ?? false;
+    _isAutoReconnectEnable = _prefsService.btAutoReconnectNotifier.value;
+    _maxBTReconnectRetries = _prefsService.btReconnectRetriesNotifier.value;
+
+    _prefsService.btAutoReconnectNotifier.addListener(_onAutoReconnectChanged);
+    _prefsService.btReconnectRetriesNotifier.addListener(_onMaxRetriesChanged);
+  }
+
+  void _onAutoReconnectChanged() {
+    _isAutoReconnectEnable = _prefsService.btAutoReconnectNotifier.value;
+
+    if (kDebugMode) {
+      debugPrint("Track event: Auto reconnect setting updated to $_isAutoReconnectEnable");
+    }
+  }
+
+  void _onMaxRetriesChanged() {
+    _maxBTReconnectRetries = _prefsService.btReconnectRetriesNotifier.value;
+
+    if (kDebugMode) {
+      debugPrint(
+        "Track event: Max reconnect retries setting updated to ${_maxBTReconnectRetries == -1 ? "Unlimited" : _maxBTReconnectRetries} attempt(s)",
+      );
+    }
   }
 
   Future<BleStatus> initialize() async {
@@ -308,15 +333,30 @@ class BleService {
     return BleConnectionStatus.no_device_connected;
   }
 
+  Future<void> _reconnectLastDevice() async {
+    if (_activeDevice != null && _activeDevice!.isConnected) return;
+
+    final savedId = await _settingPrefs.getString(_prefLastDeviceId);
+
+    if (savedId != null && savedId.isNotEmpty) {
+      if (kDebugMode) {
+        debugPrint("Found saved device ID: $savedId. Reconnecting...");
+      }
+
+      final device = BluetoothDevice.fromId(savedId);
+      await connectToDevice(device);
+    }
+  }
+
   Future<void> _startAutoReconnect(BluetoothDevice device) async {
     int attempt = 0;
-    const maxAttempts = 15;
+    int maxAttempts = _maxBTReconnectRetries;
 
     if (kDebugMode) {
       debugPrint("Starting auto-reconnect for ${device.remoteId}...");
     }
 
-    while (!device.isConnected && attempt < maxAttempts) {
+    while (!device.isConnected && (maxAttempts == -1 || attempt < maxAttempts)) {
       attempt++;
       _updateDeviceState(device, BleConnectionState.connecting);
 
@@ -362,21 +402,6 @@ class BleService {
     }
 
     _updateDeviceState(device, BleConnectionState.disconnected);
-  }
-
-  Future<void> _reconnectLastDevice() async {
-    if (_activeDevice != null && _activeDevice!.isConnected) return;
-
-    final savedId = await _settingPrefs.getString(_prefLastDeviceId);
-
-    if (savedId != null && savedId.isNotEmpty) {
-      if (kDebugMode) {
-        debugPrint("Found saved device ID: $savedId. Reconnecting...");
-      }
-
-      final device = BluetoothDevice.fromId(savedId);
-      await connectToDevice(device);
-    }
   }
 
   void _listenToConnectionChanges(BluetoothDevice device) {
@@ -567,6 +592,9 @@ class BleService {
     _btValueReceiverSub?.cancel();
     _btSystemValueReceiverSub?.cancel();
     _dataStreamController.close();
+
+    _prefsService.btAutoReconnectNotifier.removeListener(_onAutoReconnectChanged);
+    _prefsService.btReconnectRetriesNotifier.removeListener(_onMaxRetriesChanged);
   }
 
   BluetoothDevice? get connectedDevice => _activeDevice;
