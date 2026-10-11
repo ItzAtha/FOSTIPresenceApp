@@ -2,6 +2,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/shared/service/app_background_service.dart';
 import 'package:attendance_management/shared/service/ble_service.dart';
+import 'package:attendance_management/shared/service/preferences_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ void main() async {
 
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
+  await PreferencesService.instance.init();
   await AppBackgroundService.initializeService();
 
   runApp(
