@@ -20,6 +20,7 @@ class BluetoothPage extends StatefulWidget {
 
 class _BluetoothPageState extends State<BluetoothPage> {
   bool isScanning = true;
+  bool isOtherBTAlreadyConnecting = false;
   late BleService bleService;
 
   Future<void> initializeBluetooth() async {
@@ -287,7 +288,27 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                 return;
                               }
 
+                              if (isOtherBTAlreadyConnecting) {
+                                Toastification().show(
+                                  context: context,
+                                  title: Text(
+                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                  ),
+                                  description: const Text(
+                                    "Another device is already connecting. Please wait it to be connected.",
+                                  ),
+                                  type: ToastificationType.warning,
+                                  style: ToastificationStyle.flat,
+                                  alignment: Alignment.bottomCenter,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                  animationDuration: const Duration(milliseconds: 500),
+                                );
+                                return;
+                              }
+
+                              isOtherBTAlreadyConnecting = true;
                               final status = await bleService.connectToDevice(device);
+                              isOtherBTAlreadyConnecting = false;
 
                               if (!context.mounted) return;
 
