@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +33,20 @@ class PrivacyPolicyPage extends StatelessWidget {
           future: _loadPrivacyPolicy(),
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                child: ValueListenableBuilder(
+                  valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+                  builder: (_, mode, child) {
+                    return CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        mode == AdaptiveThemeMode.light
+                            ? AppColors.secondary
+                            : AppColors.secondary.withValues(alpha: 0.6),
+                      ),
+                    );
+                  },
+                ),
+              );
             } else if (snapshot.hasError) {
               return Center(
                 child: Text(

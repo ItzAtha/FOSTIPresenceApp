@@ -157,8 +157,8 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               return CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   mode == AdaptiveThemeMode.light
-                                      ? AppColors.primary
-                                      : AppColors.primary.withValues(alpha: 0.6),
+                                      ? AppColors.secondary
+                                      : AppColors.secondary.withValues(alpha: 0.6),
                                 ),
                               );
                             },

@@ -117,8 +117,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             return CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 mode == AdaptiveThemeMode.light
-                                    ? AppColors.primary
-                                    : AppColors.primary.withValues(alpha: 0.6),
+                                    ? AppColors.secondary
+                                    : AppColors.secondary.withValues(alpha: 0.6),
                               ),
                             );
                           },
@@ -197,8 +197,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     return CircularProgressIndicator(
                                       valueColor: AlwaysStoppedAnimation<Color>(
                                         mode == AdaptiveThemeMode.light
-                                            ? AppColors.primary
-                                            : AppColors.primary.withValues(alpha: 0.6),
+                                            ? AppColors.secondary
+                                            : AppColors.secondary.withValues(alpha: 0.6),
                                       ),
                                     );
                                   },
@@ -257,8 +257,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     return CircularProgressIndicator(
                                       valueColor: AlwaysStoppedAnimation<Color>(
                                         mode == AdaptiveThemeMode.light
-                                            ? AppColors.primary
-                                            : AppColors.primary.withValues(alpha: 0.6),
+                                            ? AppColors.secondary
+                                            : AppColors.secondary.withValues(alpha: 0.6),
                                       ),
                                     );
                                   },

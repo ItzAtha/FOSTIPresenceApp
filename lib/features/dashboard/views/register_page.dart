@@ -398,7 +398,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     mode == AdaptiveThemeMode.light
                                         ? AppColors.secondary
-                                        : AppColors.secondary.withValues(alpha: 0.8),
+                                        : AppColors.secondary.withValues(alpha: 0.6),
                                   ),
                                 ),
                               );

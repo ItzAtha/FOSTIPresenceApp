@@ -650,7 +650,9 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                   child: Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        mode == AdaptiveThemeMode.light ? AppColors.secondary : AppColors.secondary,
+                        mode == AdaptiveThemeMode.light
+                            ? AppColors.secondary
+                            : AppColors.secondary.withValues(alpha: 0.6),
                       ),
                     ),
                   ),
@@ -692,7 +694,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                       child: CircularProgressIndicator(
                         value: downloadProgress.progress,
                         color: AppColors.secondary,
-                        backgroundColor: AppColors.secondary.withValues(alpha: 0.4),
+                        backgroundColor: AppColors.secondary.withValues(alpha: 0.6),
                       ),
                     ),
                   ),
@@ -844,7 +846,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     mode == AdaptiveThemeMode.light
                                         ? AppColors.secondary
-                                        : AppColors.secondary.withValues(alpha: 0.8),
+                                        : AppColors.secondary.withValues(alpha: 0.6),
                                   ),
                                 ),
                               );
