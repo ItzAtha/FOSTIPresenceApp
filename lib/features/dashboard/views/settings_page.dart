@@ -12,7 +12,7 @@ import 'package:toastification/toastification.dart';
 import '../../../../core/utils/language.dart';
 import '../../../core/app_constants.dart';
 import '../../../core/utils/debouncer.dart';
-import 'app_about_dialog.dart';
+import '../widgets/app_about_dialog.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
