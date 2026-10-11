@@ -1,13 +1,12 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/features/dashboard/widgets/scaled_switch_list_tile.dart';
+import 'package:attendance_management/shared/service/preferences_service.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_android/shared_preferences_android.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/language.dart';
@@ -22,40 +21,44 @@ class SettingPage extends StatefulWidget {
   State<SettingPage> createState() => _SettingPageState();
 }
 
-class _SettingPageState extends State<SettingPage> {
+class _SettingPageState extends State<SettingPage> with SingleTickerProviderStateMixin {
   bool isThemeOptionOpened = false;
   bool isLanguageOptionOpened = false;
 
-  bool autoReconnectBTEnable = false;
-  bool notifySIMExpiredEnable = true;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   late Language selectedLanguage;
-  late SharedPreferencesAsync settingPrefs;
 
-  Future<void> loadSettingsData() async {
-    bool? autoReconnectBT = await settingPrefs.getBool('autoReconnectBT');
-    bool? notifySIMExpired = await settingPrefs.getBool('notifySIMExpired');
+  late final Animation<double> btMaxRetriesAnimation;
+  late final AnimationController btMaxRetriesAnimController;
 
-    setState(() {
-      autoReconnectBTEnable = autoReconnectBT ?? false;
-      notifySIMExpiredEnable = notifySIMExpired ?? true;
-    });
-  }
+  static const List<MapEntry<int, String>> btRetryOptions = [
+    MapEntry(1, '1 attempt'),
+    MapEntry(3, '3 attempts'),
+    MapEntry(5, '5 attempts'),
+    MapEntry(10, '10 attempts'),
+    MapEntry(15, '15 attempts'),
+    MapEntry(-1, 'Unlimited'),
+  ];
 
   @override
   void initState() {
     super.initState();
 
-    final prefsOption = const SharedPreferencesAsyncAndroidOptions(
-      backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
-      originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
-        fileName: 'settings_data',
-      ),
+    btMaxRetriesAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    btMaxRetriesAnimation = CurvedAnimation(
+      parent: btMaxRetriesAnimController,
+      curve: Curves.easeInOutCubic,
     );
 
-    settingPrefs = SharedPreferencesAsync(options: prefsOption);
-    loadSettingsData();
+    if (PreferencesService.instance.btAutoReconnectNotifier.value) {
+      btMaxRetriesAnimController.forward();
+    } else {
+      btMaxRetriesAnimController.reverse();
+    }
   }
 
   @override
@@ -70,12 +73,18 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   @override
+  void dispose() {
+    btMaxRetriesAnimController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final currentTheme = AdaptiveTheme.of(context).mode;
 
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(AppSizes.p16),
         child: ListView(
           children: <Widget>[
             Text(
@@ -85,27 +94,100 @@ class _SettingPageState extends State<SettingPage> {
             ),
             const Divider(color: Colors.grey, thickness: 1.5),
             const SizedBox(height: 8.0),
-            ScaledSwitchListTile(
-              value: autoReconnectBTEnable,
-              title: Text(
-                LocaleKeys.setting_page_general_app_auto_reconnect_bt_title.tr(context: context),
-                style: Theme.of(context).textTheme.labelLarge
-                    ?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              subtitle: Text(
-                LocaleKeys.setting_page_general_app_auto_reconnect_bt_description.tr(
-                  context: context,
-                ),
-                textAlign: TextAlign.justify,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              leading: const FaIcon(FontAwesomeIcons.bluetooth),
-              scale: 0.85,
-              onChanged: (value) async {
-                setState(() => autoReconnectBTEnable = value);
-                debouncer.run(() {
-                  settingPrefs.setBool('autoReconnectBT', value);
-                });
+            ValueListenableBuilder(
+              valueListenable: PreferencesService.instance.btAutoReconnectNotifier,
+              builder: (context, isEnable, _) {
+                return ScaledSwitchListTile(
+                  value: isEnable,
+                  title: Text(
+                    LocaleKeys.setting_page_general_app_auto_reconnect_bt_title.tr(
+                      context: context,
+                    ),
+                    style: Theme.of(context).textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text(
+                    LocaleKeys.setting_page_general_app_auto_reconnect_bt_description.tr(
+                      context: context,
+                    ),
+                    textAlign: TextAlign.justify,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                  leading: const FaIcon(FontAwesomeIcons.bluetooth),
+                  scale: 0.85,
+                  onChanged: (value) async {
+                    PreferencesService.instance.setBTAutoReconnect(value);
+
+                    if (value) {
+                      btMaxRetriesAnimController.forward();
+                    } else {
+                      btMaxRetriesAnimController.reverse();
+                    }
+                  },
+                );
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: PreferencesService.instance.btReconnectRetriesNotifier,
+              builder: (context, maxRetries, _) {
+                return ClipRect(
+                  child: SizeTransition(
+                    sizeFactor: btMaxRetriesAnimation,
+                    alignment: Alignment.bottomCenter,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.0, -1.0),
+                        end: Offset.zero,
+                      ).animate(btMaxRetriesAnimation),
+                      child: FadeTransition(
+                        opacity: btMaxRetriesAnimation,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: AppSizes.p12),
+                          child: ListTile(
+                            leading: const FaIcon(FontAwesomeIcons.rotate, size: 22.0),
+                            title: Text(
+                              "Max Retries",
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(fontWeight: FontWeight.w500),
+                            ),
+                            subtitle: Text(
+                              "Number of bluetooth reconnection attempts",
+                              textAlign: TextAlign.justify,
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                            trailing: DropdownMenu<int>(
+                              initialSelection: maxRetries,
+                              width: 120.0,
+                              menuHeight: 160.0,
+                              requestFocusOnTap: false,
+                              inputDecorationTheme: const InputDecorationTheme(
+                                isDense: true,
+                                contentPadding: EdgeInsets.all(AppSizes.p8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                                ),
+                              ),
+                              menuStyle: MenuStyle(
+                                elevation: const WidgetStatePropertyAll(4.0),
+                                backgroundColor: WidgetStatePropertyAll(
+                                  Theme.of(context).cardTheme.color,
+                                ),
+                              ),
+                              onSelected: (int? value) {
+                                if (value != null) {
+                                  PreferencesService.instance.setBTMaxRetries(value);
+                                }
+                              },
+                              dropdownMenuEntries: btRetryOptions.map((entry) {
+                                return DropdownMenuEntry<int>(value: entry.key, label: entry.value);
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
             ExpansionTile(
@@ -218,25 +300,27 @@ class _SettingPageState extends State<SettingPage> {
             ),
             const Divider(color: Colors.grey, thickness: 1.5),
             const SizedBox(height: 8.0),
-            ScaledSwitchListTile(
-              value: notifySIMExpiredEnable,
-              title: Text(
-                "Notify SIM Expired",
-                style: Theme.of(context).textTheme.labelLarge
-                    ?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              subtitle: Text(
-                "Notify when SIM Internet has been expired and must be renewed immediately before the SIM number expires.",
-                textAlign: TextAlign.justify,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              leading: const FaIcon(FontAwesomeIcons.simCard),
-              scale: 0.85,
-              onChanged: (value) async {
-                setState(() => notifySIMExpiredEnable = value);
-                debouncer.run(() {
-                  settingPrefs.setBool('notifySIMExpired', value);
-                });
+            ValueListenableBuilder(
+              valueListenable: PreferencesService.instance.simExpiredNotifyNotifier,
+              builder: (context, isEnable, _) {
+                return ScaledSwitchListTile(
+                  value: isEnable,
+                  title: Text(
+                    "Notify SIM Expired",
+                    style: Theme.of(context).textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text(
+                    "Notify when SIM Internet has been expired and must be renewed immediately before the SIM number expires",
+                    textAlign: TextAlign.justify,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                  leading: const FaIcon(FontAwesomeIcons.simCard),
+                  scale: 0.85,
+                  onChanged: (value) async {
+                    PreferencesService.instance.setSIMExpiredNotify(value);
+                  },
+                );
               },
             ),
             const SizedBox(height: 24.0),
