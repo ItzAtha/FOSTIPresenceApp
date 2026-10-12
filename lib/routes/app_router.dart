@@ -11,6 +11,7 @@ import '../features/dashboard/base_pages.dart';
 import '../features/dashboard/views/bluetooth_page.dart';
 import '../features/dashboard/views/frequently_ask_question_page.dart';
 import '../features/dashboard/views/home_page.dart';
+import '../features/dashboard/views/members_excel_page.dart';
 import '../features/dashboard/views/settings_page.dart';
 import '../features/legality/views/privacy_policy_page.dart';
 import '../features/legality/views/terms_of_service_page.dart';
@@ -78,6 +79,12 @@ class AppRouter {
                     name: AppRoutes.addMemberRoute.name,
                     path: AppRoutes.addMemberRoute.path,
                     builder: (context, state) => const RegisterPage(),
+                  ),
+                  GoRoute(
+                    parentNavigatorKey: _navigatorKey,
+                    name: AppRoutes.memberExcelRoute.name,
+                    path: AppRoutes.memberExcelRoute.path,
+                    builder: (context, state) => const MembersExcelPage(),
                   ),
                 ],
               ),
