@@ -49,13 +49,19 @@ class _MemberRegisterFAQViewerState extends State<MemberRegisterFAQViewer> {
             ),
           );
         } else {
-          return MarkdownBody(
-            data: snapshot.data ?? 'No member registration FAQ available.',
-            styleSheet: MarkdownStyleSheet(
-              p: Theme.of(context).textTheme.labelMedium?.copyWith(height: 1.5),
-              h1: Theme.of(context).textTheme.titleLarge,
-              h2: Theme.of(context).textTheme.titleMedium,
-              listBullet: Theme.of(context).textTheme.labelMedium?.copyWith(height: 1.5),
+          return SizedBox(
+            height: 300.0,
+            child: Scrollbar(
+              child: Markdown(
+                data: snapshot.data ?? 'No member registration FAQ available.',
+                padding: const EdgeInsets.all(AppSizes.p8),
+                styleSheet: MarkdownStyleSheet(
+                  p: Theme.of(context).textTheme.labelMedium?.copyWith(height: 1.5),
+                  h1: Theme.of(context).textTheme.titleLarge,
+                  h2: Theme.of(context).textTheme.titleMedium,
+                  listBullet: Theme.of(context).textTheme.labelMedium?.copyWith(height: 1.5),
+                ),
+              ),
             ),
           );
         }
