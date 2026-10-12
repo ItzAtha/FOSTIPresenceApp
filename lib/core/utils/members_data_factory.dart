@@ -19,7 +19,7 @@ class MembersDataFactory {
     "Keor",
   ];
 
-  Future<bool> loadData() async {
+  Future<bool> loadExcelData() async {
     List<FileSystemEntity> entities = [];
     List<File> files = [];
 
@@ -60,9 +60,9 @@ class MembersDataFactory {
     return true;
   }
 
-  Map<String, List<List<String>>> _getStudentsList() {
+  Map<String, List<List<String>>> _getMembersPerDivisions() {
     List<CellIndex> startIdColumns = [];
-    Map<String, List<List<String>>> studentsDataMap = {};
+    Map<String, List<List<String>>> membersDataMap = {};
 
     for (var workbook in _workbooks) {
       Map<String, List<List<String>>> workbookDataMap = {};
@@ -113,7 +113,7 @@ class MembersDataFactory {
               )
               .value
               .toString();
-          List<List<String>> studentsData = [];
+          List<List<String>> membersData = [];
 
           if (kDebugMode) {
             debugPrint(
@@ -140,7 +140,7 @@ class MembersDataFactory {
             }
 
             if (tempStudentsData.isNotEmpty) {
-              studentsData.add(tempStudentsData);
+              membersData.add(tempStudentsData);
             }
 
             if (kDebugMode) {
@@ -151,7 +151,7 @@ class MembersDataFactory {
               CellIndex.indexByColumnRow(columnIndex: columnIndex, rowIndex: row),
             );
             if (cell.value == null) {
-              workbookDataMap[divName] = studentsData;
+              workbookDataMap[divName] = membersData;
               break;
             }
           }
@@ -169,9 +169,9 @@ class MembersDataFactory {
           debugPrint("Division: $key");
         }
 
-        for (var student in value) {
+        for (var member in value) {
           if (kDebugMode) {
-            debugPrint("Student Data: ${student.toString()}");
+            debugPrint("Student Data: ${member.toString()}");
           }
         }
       });
@@ -182,33 +182,33 @@ class MembersDataFactory {
         );
       }
 
-      if (studentsDataMap.isEmpty) {
-        studentsDataMap = workbookDataMap;
+      if (membersDataMap.isEmpty) {
+        membersDataMap = workbookDataMap;
       } else {
         workbookDataMap.forEach((key, value) {
-          if (studentsDataMap.containsKey(key)) {
-            studentsDataMap[key]!.addAll(value);
+          if (membersDataMap.containsKey(key)) {
+            membersDataMap[key]!.addAll(value);
           } else {
-            studentsDataMap[key] = value;
+            membersDataMap[key] = value;
           }
         });
       }
     }
 
-    String encodedData = jsonEncode(studentsDataMap);
+    String encodedData = jsonEncode(membersDataMap);
     if (kDebugMode) {
       debugPrint("Encoded Students Data: $encodedData");
     }
-    return studentsDataMap;
+    return membersDataMap;
   }
 
-  List<String> findStudentByNIM(String nim) {
-    List<String> foundStudent = [];
-    Map<String, List<List<String>>> studentsDataMap = _getStudentsList();
+  List<String> findMemberByNIM(String nim) {
+    List<String> foundMemberList = [];
+    Map<String, List<List<String>>> membersDataMap = _getMembersPerDivisions();
 
-    studentsDataMap.forEach((division, studentsList) {
-      for (var student in studentsList) {
-        if (student.isNotEmpty && student[1] == nim && nim.length == 10) {
+    membersDataMap.forEach((division, membersList) {
+      for (var member in membersList) {
+        if (member.isNotEmpty && member[1] == nim && nim.length == 10) {
           if (StringSimilar.jaccardSimilarity(division, "Keilmuan dan Riset Teknologi") >= 0.8) {
             division = "RISTEK";
           } else if (StringSimilar.jaccardSimilarity(division, "Hubungan Publik") >= 0.8) {
@@ -217,23 +217,23 @@ class MembersDataFactory {
             division = "KEOR";
           }
 
-          foundStudent.add(division);
-          foundStudent.addAll(student);
+          foundMemberList.add(division);
+          foundMemberList.addAll(member);
 
           if (kDebugMode) {
-            debugPrint("Found Student in Division $division: ${student.toString()}");
+            debugPrint("Found Student in Division $division: ${member.toString()}");
           }
           break;
         }
       }
     });
 
-    if (foundStudent.isEmpty) {
+    if (foundMemberList.isEmpty) {
       if (kDebugMode) {
         debugPrint("No Student found with NIM: $nim");
       }
     }
 
-    return foundStudent.isNotEmpty ? foundStudent.sublist(0, 3) : [];
+    return foundMemberList.isNotEmpty ? foundMemberList.sublist(0, 3) : [];
   }
 }
