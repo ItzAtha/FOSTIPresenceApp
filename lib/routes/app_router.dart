@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../core/constants/app_routes.dart';
 import '../features/dashboard/base_pages.dart';
 import '../features/dashboard/views/bluetooth_page.dart';
+import '../features/dashboard/views/frequently_ask_question_page.dart';
 import '../features/dashboard/views/home_page.dart';
 import '../features/dashboard/views/settings_page.dart';
 import '../features/legality/views/privacy_policy_page.dart';
@@ -100,6 +101,12 @@ class AppRouter {
                 routes: <RouteBase>[
                   GoRoute(
                     parentNavigatorKey: _navigatorKey,
+                    name: AppRoutes.faqRoute.name,
+                    path: AppRoutes.faqRoute.path,
+                    builder: (context, state) => const FrequentlyAskQuestionPage(),
+                  ),
+                  GoRoute(
+                    parentNavigatorKey: _navigatorKey,
                     name: AppRoutes.privacyPolicyRoute.name,
                     path: AppRoutes.privacyPolicyRoute.path,
                     builder: (context, state) => const PrivacyPolicyPage(),
@@ -109,8 +116,8 @@ class AppRouter {
                     name: AppRoutes.termsOfServiceRoute.name,
                     path: AppRoutes.termsOfServiceRoute.path,
                     builder: (context, state) => const TermsOfServicePage(),
-                  )
-                ]
+                  ),
+                ],
               ),
             ],
           ),
