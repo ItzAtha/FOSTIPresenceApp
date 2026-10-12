@@ -39,7 +39,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   RegisterStatus registerStatus = RegisterStatus.none;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
-  late MembersData membersData;
+  late MembersDataFactory membersData;
   late BleService bleService;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -418,7 +418,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    membersData = MembersData();
+    membersData = MembersDataFactory();
     bleService = BleService();
 
     membersData

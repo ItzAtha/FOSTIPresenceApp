@@ -319,7 +319,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
   Timer? btTimerChecker;
   Debouncer debouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
-  late MembersData membersData;
+  late MembersDataFactory membersData;
   late BleService bleService;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -891,7 +891,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
     if (getModeIndex(widget._attendanceMode) == '4') {
       setState(() => isManualAttendance = true);
 
-      membersData = MembersData();
+      membersData = MembersDataFactory();
       membersData.loadData().catchError((error) {
         print("Error loading FOSTI members data excel: $error");
         return false;
