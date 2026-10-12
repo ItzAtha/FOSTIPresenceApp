@@ -13,18 +13,18 @@ class MemberRegisterFAQViewer extends StatefulWidget {
 }
 
 class _MemberRegisterFAQViewerState extends State<MemberRegisterFAQViewer> {
-  late final Future<String> _policyFuture;
+  late final Future<String> memberRegisterDataFuture;
 
   @override
   void initState() {
     super.initState();
-    _policyFuture = rootBundle.loadString('assets/faq/member_register_faq.md');
+    memberRegisterDataFuture = rootBundle.loadString('assets/faq/member_register_faq.md');
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-      future: _policyFuture,
+      future: memberRegisterDataFuture,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
