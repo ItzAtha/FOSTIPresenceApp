@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-class MembersData {
+class MembersDataFactory {
   final List<Excel> _workbooks = [];
 
   final List<String> divisionList = [

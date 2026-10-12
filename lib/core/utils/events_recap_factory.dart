@@ -12,7 +12,7 @@ import 'package:path_provider/path_provider.dart';
 
 enum SaveResult { success, failed, cancel }
 
-class RecapFactory {
+class EventsRecapFactory {
   final EventModel _eventData;
   final List<MemberModel> _membersData;
   final List<EventLogModel> _logsData;
@@ -22,7 +22,7 @@ class RecapFactory {
   int _startIndexInfoColumn = 0;
   List<int> _excelBytes = [];
 
-  RecapFactory({required this._eventData, required this._membersData, required this._logsData})
+  EventsRecapFactory({required this._eventData, required this._membersData, required this._logsData})
     : _workbook = Excel.createExcel() {
     final memberMap = {for (final m in _membersData) m.cardId: m};
 
@@ -47,7 +47,7 @@ class RecapFactory {
     });
   }
 
-  Future<RecapFactory?> createExcel() async {
+  Future<EventsRecapFactory?> createExcel() async {
     final String defaultSheet = _workbook.getDefaultSheet() ?? 'Sheet1';
     _workbook.rename(defaultSheet, 'PresenceRecap');
     Sheet worksheet = _workbook['PresenceRecap'];
