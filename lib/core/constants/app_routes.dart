@@ -7,9 +7,19 @@ class AppRoutes {
   static const ({String name, String path}) eventRoute = (path: '/events', name: "events");
   static const ({String name, String path}) settingRoute = (path: '/setting', name: "settings");
 
-  // ============[ Legality route ]============
-  static const ({String name, String path}) privacyPolicyRoute = (path: 'privacy-policy', name: "privacy-policy");
-  static const ({String name, String path}) termsOfServiceRoute = (path: 'terms-of-service', name: "terms-of-service");
+  // ============[ Setting & Legality route ]============
+  static const ({String name, String path}) faqRoute = (
+    path: '/frequently-ask-question',
+    name: "faq",
+  );
+  static const ({String name, String path}) privacyPolicyRoute = (
+    path: 'privacy-policy',
+    name: "privacy-policy",
+  );
+  static const ({String name, String path}) termsOfServiceRoute = (
+    path: 'terms-of-service',
+    name: "terms-of-service",
+  );
 
   // ============[ Action button routes ]============
   static const ({String name, String path}) addMemberRoute = (
