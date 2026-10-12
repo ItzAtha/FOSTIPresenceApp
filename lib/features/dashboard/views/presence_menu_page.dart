@@ -892,7 +892,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
       setState(() => isManualAttendance = true);
 
       membersData = MembersDataFactory();
-      membersData.loadData().catchError((error) {
+      membersData.loadExcelData().catchError((error) {
         print("Error loading FOSTI members data excel: $error");
         return false;
       });

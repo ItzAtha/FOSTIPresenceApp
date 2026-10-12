@@ -335,7 +335,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     textInputAction: TextInputAction.next,
                     onChanged: (value) async {
                       debouncer.run(() {
-                        final memberData = membersData.findStudentByNIM(value);
+                        final memberData = membersData.findMemberByNIM(value);
 
                         if (memberData.isNotEmpty) {
                           if (kDebugMode) {
@@ -422,7 +422,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     bleService = BleService();
 
     membersData
-        .loadData()
+        .loadExcelData()
         .then((success) {
           if (success) {
             if (kDebugMode) {
