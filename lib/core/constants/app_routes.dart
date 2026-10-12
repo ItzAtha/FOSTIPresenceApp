@@ -26,6 +26,10 @@ class AppRoutes {
     path: 'add-member',
     name: "add-member",
   );
+  static const ({String name, String path}) memberExcelRoute = (
+  path: 'member-excel',
+  name: "member-excel",
+  );
   static const ({String name, String path}) bluetoothMenuRoute = (
     path: 'bluetooth-menu',
     name: "bluetooth-menu",
