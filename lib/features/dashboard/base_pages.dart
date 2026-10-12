@@ -75,6 +75,15 @@ class _BasePagesState extends State<BasePages> {
             animationDuration: const Duration(milliseconds: 300),
             children: [
               SpeedDialChild(
+                child: const FaIcon(FontAwesomeIcons.fileExcel, size: 25.0),
+                backgroundColor: Colors.lightGreen,
+                foregroundColor: Colors.white,
+                label: 'Members Excel',
+                labelStyle: Theme.of(context).textTheme.labelMedium,
+                labelBackgroundColor: Theme.of(context).cardTheme.color,
+                onTap: () => context.pushNamed(AppRoutes.memberExcelRoute.name),
+              ),
+              SpeedDialChild(
                 child: const FaIcon(FontAwesomeIcons.bluetoothB, size: 25.0),
                 backgroundColor: Colors.orangeAccent,
                 foregroundColor: Colors.white,
