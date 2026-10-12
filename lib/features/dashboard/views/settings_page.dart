@@ -7,7 +7,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/language.dart';
 import '../../../core/app_constants.dart';
@@ -339,19 +338,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
               ),
               leading: const FaIcon(FontAwesomeIcons.circleQuestion),
               trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
-              onTap: () {
-                Toastification().show(
-                  title: Text(LocaleKeys.alert_notify_coming_soon_title.tr(context: context)),
-                  description: Text(
-                    LocaleKeys.alert_notify_coming_soon_description.tr(context: context),
-                  ),
-                  type: ToastificationType.info,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: const Duration(seconds: 2),
-                  animationDuration: const Duration(milliseconds: 500),
-                );
-              },
+              onTap: () => context.pushNamed(AppRoutes.faqRoute.name),
             ),
             ListTile(
               title: Text(
