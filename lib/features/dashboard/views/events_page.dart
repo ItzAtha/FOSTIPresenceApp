@@ -614,7 +614,7 @@ class _EventPageState extends ConsumerState<EventPage> {
 
     membersData.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-    final isCreated = await RecapFactory(
+    final isCreated = await EventsRecapFactory(
       eventData: eventData,
       membersData: membersData,
       logsData: logsList,
