@@ -64,7 +64,7 @@ class _EventPageState extends ConsumerState<EventPage> {
 
     if (!mounted) return;
 
-    var eventEditForm = AlertDialog(
+    var eventAddForm = AlertDialog(
       title: Text(
         LocaleKeys.event_page_dialog_add_title.tr(context: context),
         textAlign: TextAlign.center,
@@ -244,7 +244,7 @@ class _EventPageState extends ConsumerState<EventPage> {
         duration: Duration(milliseconds: 300),
       ),
       builder: (BuildContext context) {
-        return eventEditForm;
+        return eventAddForm;
       },
     );
   }
