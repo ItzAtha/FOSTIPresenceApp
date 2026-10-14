@@ -9,6 +9,7 @@ class MemberExcelCardWidget extends StatefulWidget {
   final Map<String, int> _data;
   final void Function() _viewButton;
   final void Function() _editButton;
+  final void Function() _deleteButton;
 
   const MemberExcelCardWidget({
     super.key,
@@ -16,6 +17,7 @@ class MemberExcelCardWidget extends StatefulWidget {
     required this._data,
     required this._viewButton,
     required this._editButton,
+    required this._deleteButton,
   });
 
   @override
@@ -118,7 +120,7 @@ class _MemberExcelCardWidgetState extends State<MemberExcelCardWidget> {
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 120.0),
+          constraints: const BoxConstraints(minHeight: 150.0),
           child: IntrinsicHeight(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -132,7 +134,7 @@ class _MemberExcelCardWidgetState extends State<MemberExcelCardWidget> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 widget._name,
@@ -140,7 +142,7 @@ class _MemberExcelCardWidgetState extends State<MemberExcelCardWidget> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const Divider(color: Colors.grey, thickness: 1.0),
-                              const SizedBox(height: 12.0),
+                              const SizedBox(height: 16.0),
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
@@ -196,6 +198,24 @@ class _MemberExcelCardWidgetState extends State<MemberExcelCardWidget> {
                                         padding: EdgeInsets.all(AppSizes.p8),
                                         child: FaIcon(
                                           FontAwesomeIcons.pen,
+                                          color: Colors.white,
+                                          size: 20.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: InkWell(
+                                  onTap: widget._deleteButton,
+                                  child: Container(
+                                    color: Colors.red,
+                                    child: const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(AppSizes.p8),
+                                        child: FaIcon(
+                                          FontAwesomeIcons.trash,
                                           color: Colors.white,
                                           size: 20.0,
                                         ),
