@@ -1,3 +1,4 @@
+import 'package:attendance_management/features/dashboard/views/faq/member_excel_upload_faq_viewer.dart';
 import 'package:attendance_management/features/dashboard/widgets/faq_expansion_tile.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -30,7 +31,7 @@ class _FrequentlyAskQuestionPageState extends State<FrequentlyAskQuestionPage> {
     ),
     const FaqExpansionTile(
       title: "How do I upload all members data Excel to used in member registration?",
-      description: Text("This FAQ is under construction. Please check back later for updates."),
+      description: MemberExcelUploadFAQViewer(),
     ),
     const FaqExpansionTile(
       title: "How do I attendance a member in active event with Card ID?",
