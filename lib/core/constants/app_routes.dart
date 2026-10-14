@@ -30,6 +30,10 @@ class AppRoutes {
   path: 'member-excel',
   name: "member-excel",
   );
+  static const ({String name, String path}) memberExcelViewRoute = (
+  path: ':title',
+  name: "member-excel-data",
+  );
   static const ({String name, String path}) bluetoothMenuRoute = (
     path: 'bluetooth-menu',
     name: "bluetooth-menu",
