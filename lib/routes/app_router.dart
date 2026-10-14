@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:attendance_management/core/app_constants.dart';
 import 'package:attendance_management/features/dashboard/views/events_page.dart';
 import 'package:attendance_management/features/dashboard/views/members_page.dart';
@@ -12,6 +14,7 @@ import '../features/dashboard/views/bluetooth_page.dart';
 import '../features/dashboard/views/frequently_ask_question_page.dart';
 import '../features/dashboard/views/home_page.dart';
 import '../features/dashboard/views/members_excel_page.dart';
+import '../features/dashboard/views/members_excel_viewer_page.dart';
 import '../features/dashboard/views/settings_page.dart';
 import '../features/legality/views/privacy_policy_page.dart';
 import '../features/legality/views/terms_of_service_page.dart';
@@ -85,6 +88,20 @@ class AppRouter {
                     name: AppRoutes.memberExcelRoute.name,
                     path: AppRoutes.memberExcelRoute.path,
                     builder: (context, state) => const MembersExcelPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        parentNavigatorKey: _navigatorKey,
+                        name: AppRoutes.memberExcelViewRoute.name,
+                        path: AppRoutes.memberExcelViewRoute.path,
+                        builder: (context, state) {
+                          String path = AppRoutes.memberExcelViewRoute.path.substring(1);
+                          final title = state.pathParameters[path] ?? "";
+                          final excelData = state.extra as Map<String, List<List<String>>>;
+
+                          return MembersExcelViewerPage(title: title, excelData: excelData);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
