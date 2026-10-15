@@ -869,6 +869,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
               child: Padding(
                 padding: const EdgeInsets.all(AppSizes.p16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -891,6 +892,25 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                       "No members Excel data found! Add a new one member Excel data to see it in here.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.5),
+                    const SizedBox(height: 8.0),
+                    ElevatedButton(
+                      onPressed: () => excelAddButton(),
+                      style: ElevatedButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: Size.zero,
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text("Add", style: TextStyle(color: Colors.white)),
+                          SizedBox(width: 8.0),
+                          FaIcon(FontAwesomeIcons.calendarPlus, size: 20.0, color: Colors.white),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1197,7 +1217,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
       ),
       body: isLoadingExcelData
           ? loadingExcelData()
-          : workbooks.isNotEmpty
+          : workbooks.isEmpty
           ? hasExcelData()
           : noExcelData(),
     );

@@ -870,6 +870,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               child: Padding(
                 padding: const EdgeInsets.all(AppSizes.p16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -892,6 +893,32 @@ class _EventPageState extends ConsumerState<EventPage> {
                       LocaleKeys.event_page_loading_data_no_data_description.tr(context: context),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.5),
+                    const SizedBox(height: 8.0),
+                    ElevatedButton(
+                      onPressed: () => eventAddButton(),
+                      style: ElevatedButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: Size.zero,
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            LocaleKeys.event_page_dialog_button_create.tr(context: context),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          const SizedBox(width: 8.0),
+                          const FaIcon(
+                            FontAwesomeIcons.calendarPlus,
+                            size: 20.0,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
