@@ -1217,7 +1217,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
       ),
       body: isLoadingExcelData
           ? loadingExcelData()
-          : workbooks.isEmpty
+          : workbooks.isNotEmpty
           ? hasExcelData()
           : noExcelData(),
     );
