@@ -1011,7 +1011,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                         },
                       ),
                   ],
-                  hintText: LocaleKeys.search_bar_member.tr(context: context),
+                  hintText: "Search excel file.....",
                   textInputAction: TextInputAction.search,
                   onChanged: (String value) {
                     setState(() {
