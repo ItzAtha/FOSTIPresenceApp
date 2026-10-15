@@ -1,0 +1,13 @@
+export 'dashboard/base_pages.dart';
+export 'dashboard/views/bluetooth_page.dart';
+export 'dashboard/views/events_page.dart';
+export 'dashboard/views/frequently_ask_question_page.dart';
+export 'dashboard/views/home_page.dart';
+export 'dashboard/views/members_excel_page.dart';
+export 'dashboard/views/members_excel_viewer_page.dart';
+export 'dashboard/views/members_page.dart';
+export 'dashboard/views/presence_menu_page.dart';
+export 'dashboard/views/register_page.dart';
+export 'dashboard/views/settings_page.dart';
+export 'legality/views/privacy_policy_page.dart';
+export 'legality/views/terms_of_service_page.dart';
