@@ -40,7 +40,7 @@ class _EventCardWidgetState extends State<EventCardWidget> {
     final String currentRoute =
         AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
 
-    if (currentRoute != AppRoutes.eventRoute.path) {
+    if (currentRoute != AppRoutes.eventRoutePath) {
       setState(() {
         showOptionButton = false;
         optionButtonWidth = 0.0;

@@ -34,7 +34,7 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
     final String currentRoute =
         AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
 
-    if (currentRoute != AppRoutes.memberRoute.path) {
+    if (currentRoute != AppRoutes.memberRoutePath) {
       setState(() {
         showEditButton = false;
         editButtonWidth = 0.0;

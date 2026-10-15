@@ -35,7 +35,7 @@ class _MemberExcelCardWidgetState extends State<MemberExcelCardWidget> {
     final String currentRoute =
         AppRouter.router.routerDelegate.currentConfiguration.last.matchedLocation;
 
-    if (currentRoute != AppRoutes.memberRoute.path) {
+    if (currentRoute != AppRoutes.memberExcelRoutePath) {
       setState(() {
         showEditButton = false;
         editButtonWidth = 0.0;
