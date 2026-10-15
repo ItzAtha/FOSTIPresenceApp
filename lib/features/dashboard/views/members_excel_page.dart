@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/features/dashboard/enum/dialog_acceptance.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:excel_plus/excel_plus.dart' hide Border;
 import 'package:file_picker/file_picker.dart';
@@ -16,6 +17,7 @@ import 'package:toastification/toastification.dart';
 
 import '../../../core/app_constants.dart';
 import '../../../core/utils/string_similar.dart';
+import '../../../routes/app_router.dart';
 import '../../../translations/locale_keys.g.dart';
 import '../widgets/member_excel_card_widget.dart';
 
@@ -25,8 +27,6 @@ class MembersExcelPage extends StatefulWidget {
   @override
   State<MembersExcelPage> createState() => _MembersExcelPageState();
 }
-
-enum Answer { YES, NO }
 
 class _MembersExcelPageState extends State<MembersExcelPage> {
   int currentPage = 1;
@@ -728,7 +728,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
   }
 
   Future<void> excelDeleteButton(File fileData) async {
-    final Answer answer = await await showDialog(
+    final DialogAcceptance answer = await showDialog(
       context: context,
       animationStyle: const AnimationStyle(
         curve: Curves.easeIn,
@@ -753,10 +753,10 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                     children: <Widget>[
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => dialogContext.pop(Answer.YES),
+                          onPressed: () => dialogContext.pop(DialogAcceptance.YES),
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                           child: Text(
-                            LocaleKeys.event_page_dialog_button_yes.tr(context: context),
+                            LocaleKeys.event_page_dialog_button_yes.tr(context: dialogContext),
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -764,12 +764,14 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                       const SizedBox(width: 24.0),
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => dialogContext.pop(Answer.NO),
+                          onPressed: () => dialogContext.pop(DialogAcceptance.NO),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.dangerZone,
                             side: const BorderSide(color: AppColors.dangerZone),
                           ),
-                          child: Text(LocaleKeys.event_page_dialog_button_no.tr(context: context)),
+                          child: Text(
+                            LocaleKeys.event_page_dialog_button_no.tr(context: dialogContext),
+                          ),
                         ),
                       ),
                     ],
@@ -782,7 +784,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
       },
     );
 
-    if (answer == Answer.YES) {
+    if (answer == DialogAcceptance.YES) {
       bool isSuccess = false;
 
       if (!mounted) return;
@@ -1058,11 +1060,10 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                                           child: MemberExcelCardWidget(
                                             name: memberExcelName,
                                             data: memberExcelData,
-                                            viewButton: () => context.pushNamed(
-                                              AppRoutes.memberExcelViewRoute.name,
-                                              pathParameters: {'title': memberExcelName},
-                                              extra: membersDataPerDivisions,
-                                            ),
+                                            viewButton: () => MemberExcelViewRoute(
+                                              title: memberExcelName,
+                                              $extra: membersDataPerDivisions,
+                                            ).push(context),
                                             editButton: () =>
                                                 excelEditButton(memberExcelName, memberExcelFile),
                                             deleteButton: () => excelDeleteButton(memberExcelFile),

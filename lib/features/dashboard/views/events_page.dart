@@ -20,6 +20,7 @@ import '../../../core/app_constants.dart';
 import '../../../core/utils/events_recap_factory.dart';
 import '../../../shared/models/event_log_model.dart';
 import '../../../shared/provider/members_notifier.dart';
+import '../enum/dialog_acceptance.dart';
 import '../widgets/event_card_widget.dart';
 
 class EventPage extends ConsumerStatefulWidget {
@@ -28,8 +29,6 @@ class EventPage extends ConsumerStatefulWidget {
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _EventPageState();
 }
-
-enum Answer { YES, NO }
 
 class _EventPageState extends ConsumerState<EventPage> {
   int currentPage = 1;
@@ -637,62 +636,63 @@ class _EventPageState extends ConsumerState<EventPage> {
         animationDuration: const Duration(milliseconds: 500),
       );
 
-      var openFileConfirm = SimpleDialog(
-        title: const Text("Open File Confirmation", textAlign: TextAlign.center),
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
-            child: Column(
-              children: <Widget>[
-                const Text(
-                  "Do you want to open this excel file recap?",
-                  textAlign: TextAlign.justify,
-                ),
-                const SizedBox(height: 25.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      final DialogAcceptance answer = await showDialog(
+        context: context,
+        animationStyle: const AnimationStyle(
+          curve: Curves.easeIn,
+          reverseCurve: Curves.easeOut,
+          duration: Duration(milliseconds: 300),
+        ),
+        builder: (dialogContext) {
+          return SimpleDialog(
+            title: const Text("Open File Confirmation", textAlign: TextAlign.center),
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                child: Column(
                   children: <Widget>[
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => context.pop(Answer.YES),
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                        child: Text(
-                          LocaleKeys.event_page_dialog_button_yes.tr(context: context),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
+                    const Text(
+                      "Do you want to open this excel file recap?",
+                      textAlign: TextAlign.justify,
                     ),
-                    const SizedBox(width: 24.0),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.pop(Answer.NO),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.dangerZone,
-                          side: const BorderSide(color: AppColors.dangerZone),
+                    const SizedBox(height: 25.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => dialogContext.pop(DialogAcceptance.YES),
+                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                            child: Text(
+                              LocaleKeys.event_page_dialog_button_yes.tr(context: dialogContext),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
-                        child: Text(LocaleKeys.event_page_dialog_button_no.tr(context: context)),
-                      ),
+                        const SizedBox(width: 24.0),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => dialogContext.pop(DialogAcceptance.NO),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.dangerZone,
+                              side: const BorderSide(color: AppColors.dangerZone),
+                            ),
+                            child: Text(
+                              LocaleKeys.event_page_dialog_button_no.tr(context: dialogContext),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       );
 
-      if (await showDialog(
-            context: context,
-            animationStyle: const AnimationStyle(
-              curve: Curves.easeIn,
-              reverseCurve: Curves.easeOut,
-              duration: Duration(milliseconds: 300),
-            ),
-            builder: (BuildContext context) {
-              return openFileConfirm;
-            },
-          ) ==
-          Answer.YES) {
+      if (answer == DialogAcceptance.YES) {
         final OpenResult result = await OpenFilex.open(
           recapResult!.data!,
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -738,65 +738,68 @@ class _EventPageState extends ConsumerState<EventPage> {
 
     if (!mounted) return;
 
-    var eventDeleteConfirm = SimpleDialog(
-      title: Text(
-        LocaleKeys.event_page_dialog_delete_confirm_title.tr(context: context),
-        textAlign: TextAlign.center,
+    final DialogAcceptance answer = await showDialog(
+      context: context,
+      animationStyle: const AnimationStyle(
+        curve: Curves.easeIn,
+        reverseCurve: Curves.easeOut,
+        duration: Duration(milliseconds: 300),
       ),
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
-          child: Column(
-            children: <Widget>[
-              Text(
-                LocaleKeys.event_page_dialog_delete_confirm_description.tr(context: context),
-                textAlign: TextAlign.justify,
-              ),
-              const SizedBox(height: 25.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      builder: (dialogContext) {
+        return SimpleDialog(
+          title: Text(
+            LocaleKeys.event_page_dialog_delete_confirm_title.tr(context: dialogContext),
+            textAlign: TextAlign.center,
+          ),
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+              child: Column(
                 children: <Widget>[
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => context.pop(Answer.YES),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                      child: Text(
-                        LocaleKeys.event_page_dialog_button_yes.tr(context: context),
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                  Text(
+                    LocaleKeys.event_page_dialog_delete_confirm_description.tr(
+                      context: dialogContext,
                     ),
+                    textAlign: TextAlign.justify,
                   ),
-                  const SizedBox(width: 24.0),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => context.pop(Answer.NO),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.dangerZone,
-                        side: const BorderSide(color: AppColors.dangerZone),
+                  const SizedBox(height: 25.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => dialogContext.pop(DialogAcceptance.YES),
+                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                          child: Text(
+                            LocaleKeys.event_page_dialog_button_yes.tr(context: dialogContext),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
-                      child: Text(LocaleKeys.event_page_dialog_button_no.tr(context: context)),
-                    ),
+                      const SizedBox(width: 24.0),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => dialogContext.pop(DialogAcceptance.NO),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.dangerZone,
+                            side: const BorderSide(color: AppColors.dangerZone),
+                          ),
+                          child: Text(
+                            LocaleKeys.event_page_dialog_button_no.tr(context: dialogContext),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
 
-    if (await showDialog(
-          context: context,
-          animationStyle: const AnimationStyle(
-            curve: Curves.easeIn,
-            reverseCurve: Curves.easeOut,
-            duration: Duration(milliseconds: 300),
-          ),
-          builder: (BuildContext context) {
-            return eventDeleteConfirm;
-          },
-        ) ==
-        Answer.YES) {
+    if (answer == DialogAcceptance.YES) {
       bool isSuccess = await ref.read(eventsProvider.notifier).deleteEvent(eventData);
 
       if (!mounted) return;
