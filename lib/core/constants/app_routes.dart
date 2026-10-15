@@ -2,48 +2,21 @@ class AppRoutes {
   AppRoutes._();
 
   // ============[ Navigation route ]============
-  static const ({String name, String path}) homeRoute = (path: '/home', name: "home");
-  static const ({String name, String path}) memberRoute = (path: '/members', name: "members");
-  static const ({String name, String path}) eventRoute = (path: '/events', name: "events");
-  static const ({String name, String path}) settingRoute = (path: '/setting', name: "settings");
+  static const String homeRoutePath = '/home';
+  static const String memberRoutePath = '/members';
+  static const String eventRoutePath = '/events';
+  static const String settingRoutePath = '/setting';
 
   // ============[ Setting & Legality route ]============
-  static const ({String name, String path}) faqRoute = (
-    path: '/frequently-ask-question',
-    name: "faq",
-  );
-  static const ({String name, String path}) privacyPolicyRoute = (
-    path: 'privacy-policy',
-    name: "privacy-policy",
-  );
-  static const ({String name, String path}) termsOfServiceRoute = (
-    path: 'terms-of-service',
-    name: "terms-of-service",
-  );
+  static const String faqRoutePath = 'faq';
+  static const String privacyPolicyRoutePath = 'privacy-policy';
+  static const String termsOfServiceRoutePath = 'terms-of-service';
 
   // ============[ Action button routes ]============
-  static const ({String name, String path}) addMemberRoute = (
-    path: 'add-member',
-    name: "add-member",
-  );
-  static const ({String name, String path}) memberExcelRoute = (
-  path: 'member-excel',
-  name: "member-excel",
-  );
-  static const ({String name, String path}) memberExcelViewRoute = (
-  path: ':title',
-  name: "member-excel-data",
-  );
-  static const ({String name, String path}) bluetoothMenuRoute = (
-    path: 'bluetooth-menu',
-    name: "bluetooth-menu",
-  );
-  static const ({String name, String path}) memberAttendanceRoute = (
-    path: 'member-presence',
-    name: "member-presence",
-  );
-  static const ({String name, String path}) memberAttendanceModeRoute = (
-    path: ':presenceMode',
-    name: "member-presence-mode",
-  );
+  static const String registerRoutePath = 'register';
+  static const String memberExcelRoutePath = 'excel';
+  static const String memberExcelViewRoutePath = ':title';
+  static const String bluetoothRoutePath = 'bluetooth';
+  static const String attendanceRoutePath = 'attendance';
+  static const String attendanceModeRoutePath = ':attendanceMode';
 }
