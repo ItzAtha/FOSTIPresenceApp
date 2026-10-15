@@ -1,0 +1,4 @@
+enum DialogAcceptance {
+  YES,
+  NO
+}
