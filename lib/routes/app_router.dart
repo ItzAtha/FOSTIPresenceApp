@@ -1,150 +1,96 @@
 import 'package:attendance_management/core/app_constants.dart';
-import 'package:attendance_management/features/dashboard/views/events_page.dart';
-import 'package:attendance_management/features/dashboard/views/members_page.dart';
-import 'package:attendance_management/features/dashboard/views/presence_menu_page.dart';
-import 'package:attendance_management/features/dashboard/views/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_routes.dart';
-import '../features/dashboard/base_pages.dart';
-import '../features/dashboard/views/bluetooth_page.dart';
-import '../features/dashboard/views/frequently_ask_question_page.dart';
-import '../features/dashboard/views/home_page.dart';
-import '../features/dashboard/views/members_excel_page.dart';
-import '../features/dashboard/views/members_excel_viewer_page.dart';
-import '../features/dashboard/views/settings_page.dart';
-import '../features/legality/views/privacy_policy_page.dart';
-import '../features/legality/views/terms_of_service_page.dart';
+import '../features/dashboard_pages_views.dart';
+
+part 'app_router.g.dart';
+part 'branches/event_branch.dart';
+part 'branches/home_branch.dart';
+part 'branches/member_branch.dart';
+part 'branches/setting_branch.dart';
+
+@TypedStatefulShellRoute<AppShellRouteData>(
+  branches: <TypedStatefulShellBranch<StatefulShellBranchData>>[
+    // ===================[ BRANCH 1: HOME ]===================
+    TypedStatefulShellBranch<HomeBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<HomeRoute>(
+          path: AppRoutes.homeRoutePath,
+          routes: <TypedRoute<RouteData>>[
+            TypedGoRoute<BluetoothMenuRoute>(path: AppRoutes.bluetoothRoutePath),
+            TypedGoRoute<MemberAttendanceRoute>(
+              path: AppRoutes.attendanceRoutePath,
+              routes: <TypedRoute<RouteData>>[
+                TypedGoRoute<MemberAttendanceModeRoute>(path: AppRoutes.attendanceModeRoutePath),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+
+    // ===================[ BRANCH 2: MEMBER ]===================
+    TypedStatefulShellBranch<MemberBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<MemberRoute>(
+          path: AppRoutes.memberRoutePath,
+          routes: <TypedRoute<RouteData>>[
+            TypedGoRoute<AddMemberRoute>(path: AppRoutes.registerRoutePath),
+            TypedGoRoute<MemberExcelRoute>(
+              path: AppRoutes.memberExcelRoutePath,
+              routes: <TypedRoute<RouteData>>[
+                TypedGoRoute<MemberExcelViewRoute>(path: AppRoutes.memberExcelViewRoutePath),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+
+    // ===================[ BRANCH 3: EVENT ]===================
+    TypedStatefulShellBranch<EventBranchData>(
+      routes: <TypedRoute<RouteData>>[TypedGoRoute<EventRoute>(path: AppRoutes.eventRoutePath)],
+    ),
+
+    // ===================[ BRANCH 4: SETTINGS ]===================
+    TypedStatefulShellBranch<SettingBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<SettingRoute>(
+          path: AppRoutes.settingRoutePath,
+          routes: <TypedRoute<RouteData>>[
+            TypedGoRoute<FaqRoute>(path: AppRoutes.faqRoutePath),
+            TypedGoRoute<PrivacyPolicyRoute>(path: AppRoutes.privacyPolicyRoutePath),
+            TypedGoRoute<TermsOfServiceRoute>(path: AppRoutes.termsOfServiceRoutePath),
+          ],
+        ),
+      ],
+    ),
+  ],
+)
+class AppShellRouteData extends StatefulShellRouteData {
+  const AppShellRouteData();
+
+  @override
+  Widget builder(
+    BuildContext context,
+    GoRouterState state,
+    StatefulNavigationShell navigationShell,
+  ) {
+    return BasePages(navigationShell: navigationShell);
+  }
+}
 
 class AppRouter {
   static final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
-  static final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
     observers: [routeObserver],
-    navigatorKey: _navigatorKey,
-    initialLocation: AppRoutes.homeRoute.path,
+    navigatorKey: rootNavigatorKey,
+    initialLocation: const HomeRoute().location,
     debugLogDiagnostics: true,
-    routes: <RouteBase>[
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return BasePages(navigationShell: navigationShell);
-        },
-        branches: <StatefulShellBranch>[
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
-                name: AppRoutes.homeRoute.name,
-                path: AppRoutes.homeRoute.path,
-                builder: (context, state) => const HomePage(),
-                routes: <RouteBase>[
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.bluetoothMenuRoute.name,
-                    path: AppRoutes.bluetoothMenuRoute.path,
-                    builder: (context, state) => const BluetoothPage(),
-                  ),
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.memberAttendanceRoute.name,
-                    path: AppRoutes.memberAttendanceRoute.path,
-                    builder: (context, state) => const PresenceMenuPage(),
-                    routes: <RouteBase>[
-                      GoRoute(
-                        parentNavigatorKey: _navigatorKey,
-                        name: AppRoutes.memberAttendanceModeRoute.name,
-                        path: AppRoutes.memberAttendanceModeRoute.path,
-                        builder: (context, state) {
-                          String path = AppRoutes.memberAttendanceModeRoute.path.substring(1);
-                          final presenceMode = state.pathParameters[path] ?? "";
-
-                          return PresenceModePage(attendanceMode: presenceMode);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
-                name: AppRoutes.memberRoute.name,
-                path: AppRoutes.memberRoute.path,
-                builder: (context, state) => const MemberPage(),
-                routes: <RouteBase>[
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.addMemberRoute.name,
-                    path: AppRoutes.addMemberRoute.path,
-                    builder: (context, state) => const RegisterPage(),
-                  ),
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.memberExcelRoute.name,
-                    path: AppRoutes.memberExcelRoute.path,
-                    builder: (context, state) => const MembersExcelPage(),
-                    routes: <RouteBase>[
-                      GoRoute(
-                        parentNavigatorKey: _navigatorKey,
-                        name: AppRoutes.memberExcelViewRoute.name,
-                        path: AppRoutes.memberExcelViewRoute.path,
-                        builder: (context, state) {
-                          String path = AppRoutes.memberExcelViewRoute.path.substring(1);
-                          final title = state.pathParameters[path] ?? "";
-                          final excelData = state.extra as Map<String, List<List<String>>>;
-
-                          return MembersExcelViewerPage(title: title, excelData: excelData);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
-                name: AppRoutes.eventRoute.name,
-                path: AppRoutes.eventRoute.path,
-                builder: (context, state) => const EventPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
-                name: AppRoutes.settingRoute.name,
-                path: AppRoutes.settingRoute.path,
-                builder: (context, state) => const SettingPage(),
-                routes: <RouteBase>[
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.faqRoute.name,
-                    path: AppRoutes.faqRoute.path,
-                    builder: (context, state) => const FrequentlyAskQuestionPage(),
-                  ),
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.privacyPolicyRoute.name,
-                    path: AppRoutes.privacyPolicyRoute.path,
-                    builder: (context, state) => const PrivacyPolicyPage(),
-                  ),
-                  GoRoute(
-                    parentNavigatorKey: _navigatorKey,
-                    name: AppRoutes.termsOfServiceRoute.name,
-                    path: AppRoutes.termsOfServiceRoute.path,
-                    builder: (context, state) => const TermsOfServicePage(),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
+    routes: $appRoutes,
   );
 }
