@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:attendance_management/core/app_constants.dart';
+import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/service/ble_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
@@ -149,7 +150,7 @@ class AppBackgroundService {
                     ongoing: true,
                   ),
                 ),
-                payload: AppRoutes.bluetoothMenuRoute.name,
+                payload: const BluetoothMenuRoute().location,
               );
               return;
             }
