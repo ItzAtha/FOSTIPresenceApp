@@ -34,10 +34,10 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     await localNotification.initialize(
       settings: const InitializationSettings(android: initializationSettings),
       onDidReceiveNotificationResponse: (response) {
-        final routeName = response.payload;
+        final routePath = response.payload;
 
-        if (routeName != null) {
-          AppRouter.router.pushNamed(routeName);
+        if (routePath != null && routePath.isNotEmpty) {
+          AppRouter.router.push(routePath);
 
           if (kDebugMode) {
             debugPrint("Received route data from notification: ${response.payload}");
