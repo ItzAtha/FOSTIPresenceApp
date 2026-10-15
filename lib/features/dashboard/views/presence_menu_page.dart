@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
 import 'package:attendance_management/shared/provider/events_notifier.dart';
@@ -85,10 +86,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         elevation: 5.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.pushNamed(
-            'member-presence-mode',
-            pathParameters: {'presenceMode': 'PARTICIPANT'},
-          ),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'PARTICIPANT'),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
@@ -120,10 +118,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         elevation: 5.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.pushNamed(
-            'member-presence-mode',
-            pathParameters: {'presenceMode': 'COMMITTEE'},
-          ),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'COMMITTEE'),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
@@ -155,8 +150,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         clipBehavior: Clip.antiAlias,
         elevation: 5.0,
         child: InkWell(
-          onTap: () =>
-              context.pushNamed('member-presence-mode', pathParameters: {'presenceMode': 'BPHI'}),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'BPHI'),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
@@ -188,8 +182,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         elevation: 5.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () =>
-              context.pushNamed('member-presence-mode', pathParameters: {'presenceMode': 'MANUAL'}),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'MANUAL'),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(

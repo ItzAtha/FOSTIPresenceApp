@@ -1,4 +1,5 @@
 import 'package:attendance_management/features/dashboard/widgets/navbar_widget.dart';
+import 'package:attendance_management/routes/app_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -81,7 +82,7 @@ class _BasePagesState extends State<BasePages> {
                 label: 'Members Excel',
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () => context.pushNamed(AppRoutes.memberExcelRoute.name),
+                onTap: () => const MemberExcelRoute().push(context),
               ),
               SpeedDialChild(
                 child: const FaIcon(FontAwesomeIcons.bluetoothB, size: 25.0),
@@ -90,7 +91,7 @@ class _BasePagesState extends State<BasePages> {
                 label: 'Bluetooth',
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () => context.pushNamed(AppRoutes.bluetoothMenuRoute.name),
+                onTap: () => const BluetoothMenuRoute().push(context),
               ),
               SpeedDialChild(
                 child: const FaIcon(FontAwesomeIcons.creditCard, size: 25.0),
@@ -99,7 +100,7 @@ class _BasePagesState extends State<BasePages> {
                 label: 'Attendance',
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () => context.pushNamed(AppRoutes.memberAttendanceRoute.name),
+                onTap: () => const MemberAttendanceRoute().push(context),
               ),
               SpeedDialChild(
                 child: const FaIcon(FontAwesomeIcons.userPlus, size: 20.0),
@@ -108,7 +109,7 @@ class _BasePagesState extends State<BasePages> {
                 label: 'Add Member',
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
-                onTap: () => context.pushNamed(AppRoutes.addMemberRoute.name),
+                onTap: () => const AddMemberRoute().push(context),
               ),
             ],
           ),

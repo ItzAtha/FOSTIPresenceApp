@@ -1,10 +1,10 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/features/dashboard/widgets/scaled_switch_list_tile.dart';
+import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/service/preferences_service.dart';
 import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -338,7 +338,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
               ),
               leading: const FaIcon(FontAwesomeIcons.circleQuestion),
               trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
-              onTap: () => context.pushNamed(AppRoutes.faqRoute.name),
+              onTap: () => const FaqRoute().push(context),
             ),
             ListTile(
               title: Text(
@@ -348,7 +348,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
               ),
               leading: const FaIcon(FontAwesomeIcons.shieldHalved),
               trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
-              onTap: () => context.pushNamed(AppRoutes.privacyPolicyRoute.name),
+              onTap: () => const PrivacyPolicyRoute().push(context),
             ),
             ListTile(
               title: Text(
@@ -358,7 +358,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
               ),
               leading: const FaIcon(FontAwesomeIcons.fileContract),
               trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 20.0),
-              onTap: () => context.pushNamed(AppRoutes.termsOfServiceRoute.name),
+              onTap: () => const TermsOfServiceRoute().push(context),
             ),
             ListTile(
               title: Text(
