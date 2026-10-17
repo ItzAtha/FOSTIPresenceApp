@@ -1,6 +1,6 @@
 enum Language {
   english(name: "English", code: 'en'),
-  indonesia(name: "Indonesia", code: 'id');
+  indonesian(name: "Indonesian", code: 'id');
 
   final String name;
   final String code;
