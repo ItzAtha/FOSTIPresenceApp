@@ -459,6 +459,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   ],
                   hintText: LocaleKeys.search_bar_member.tr(context: context),
                   textInputAction: TextInputAction.search,
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   onChanged: (String value) {
                     setState(() {
                       searchQuery = value;
@@ -476,8 +477,6 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   shape: Theme.of(context).iconButtonTheme.style?.shape?.resolve({}),
                   child: IconButton(
                     onPressed: () {
-                      FocusManager.instance.primaryFocus?.unfocus();
-
                       showModalBottomSheet(
                         context: context,
                         useRootNavigator: true,

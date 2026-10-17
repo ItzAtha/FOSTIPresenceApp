@@ -1089,6 +1089,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                   ],
                   hintText: LocaleKeys.search_bar_excel.tr(context: context),
                   textInputAction: TextInputAction.search,
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   onChanged: (String value) {
                     setState(() {
                       searchQuery = value;

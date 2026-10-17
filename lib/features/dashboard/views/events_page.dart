@@ -1007,6 +1007,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                   ],
                   hintText: LocaleKeys.search_bar_member.tr(context: context),
                   textInputAction: TextInputAction.search,
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   onChanged: (String value) {
                     setState(() {
                       searchQuery = value;
