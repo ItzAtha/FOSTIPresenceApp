@@ -265,7 +265,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget cardDetected() {
+  Widget cardDetected(List<MemberModel> members) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSizes.p16),
@@ -367,6 +367,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       });
                     },
                     validator: (String? value) {
+                      bool isNIMExists = members.any((m) => m.nim == value);
                       bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
 
                       if (value.toString().isEmpty) {
@@ -377,6 +378,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           value.toString().length < 10 ||
                           value.toString().length > 10) {
                         return LocaleKeys.register_page_form_nim_field_required_invalid.tr(
+                          context: context,
+                        );
+                      } else if (isNIMExists) {
+                        return LocaleKeys.register_page_form_nim_field_required_exists.tr(
                           context: context,
                         );
                       }
@@ -491,6 +496,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final members = ref.watch(membersProvider).requireValue;
+
     return StreamListener<String>(
       stream: bleService.dataStream,
       onData: (context, receivedData) {
@@ -564,7 +571,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           builder: (context, state, child) {
             return state == BleConnectionState.connected
                 ? isIdCardDetected
-                      ? cardDetected()
+                      ? cardDetected(members)
                       : noCardDetected()
                 : noBTConnected();
           },
