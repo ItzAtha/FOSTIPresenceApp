@@ -47,7 +47,11 @@
 
         "already_connected": "Ada perangkat lain yang sudah terhubung. Mohon putuskan sambungannya terlebih dahulu.",
         "already_connecting": "Perangkat lain sedang dalam proses menghubungkan. Harap tunggu hingga koneksi selesai.",
-        "already_disconnect": "Perangkat ini sudah terputus!"
+        "already_disconnect": "Perangkat ini sudah terputus!",
+
+        "reconnect_success": "Koneksi perangkat Bluetooth dengan nama {name} telah berhasil dihubungkan kembali.",
+        "connection_lost": "Koneksi perangkat Bluetooth dengan nama {name} telah terputus.",
+        "unknown_state": "Koneksi perangkat Bluetooth dengan nama {name} berada dalam status tidak dikenal."
       },
 
       "permission": {
@@ -147,7 +151,11 @@
     },
 
     "esp32_sim": {
-      "title": "Kuota SIM"
+      "title": "Kuota SIM",
+      "description": {
+        "is_about_expired": "Kuota SIM akan segera habis dalam {remaining} hari.",
+        "has_expired": "Kuota SIM telah habis. Silakan top up kuota data kartu SIM agar modem ESP32 dapat terhubung ke internet."
+      }
     },
 
     "coming_soon": {

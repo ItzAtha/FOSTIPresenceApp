@@ -47,7 +47,11 @@
 
         "already_connected": "Another device is already connected. Please disconnect it first",
         "already_connecting": "Another device is already connecting. Please wait until the connection is completed",
-        "already_disconnect": "This device already disconnected!"
+        "already_disconnect": "This device already disconnected!",
+
+        "reconnect_success": "The Bluetooth device connection with name {name} has been reconnected.",
+        "connection_lost": "The Bluetooth device connection with name {name} has been lost.",
+        "unknown_state": "The Bluetooth device connection with name {name} is in an unknown state."
       },
 
       "permission": {
@@ -147,7 +151,11 @@
     },
 
     "esp32_sim": {
-      "title": "SIM Quota"
+      "title": "SIM Quota",
+      "description": {
+        "is_about_expired": "SIM quota is about to be expired in {remaining} day(s).",
+        "has_expired": "SIM quota has expired. Please top up the SIM card's data allowance so the ESP32 modem can reconnect to the internet."
+      }
     },
 
     "coming_soon": {
