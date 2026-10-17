@@ -407,6 +407,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       if (value == selectedDivision) return;
                       setState(() => selectedDivision = value);
                     },
+                    validator: (Divisions? value) {
+                      if (value == null) {
+                        return LocaleKeys.register_page_form_division_field_required.tr(
+                          context: context,
+                        );
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
