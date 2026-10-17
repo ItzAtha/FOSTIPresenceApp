@@ -313,7 +313,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     controller: memberIdCardController,
                     decoration: InputDecoration(
                       labelText: LocaleKeys.register_page_form_card_id_field.tr(context: context),
-                      icon: const FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16.0),
@@ -323,7 +326,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       labelText: LocaleKeys.register_page_form_name_field_title.tr(
                         context: context,
                       ),
-                      icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.user, size: 24.0),
+                      ),
                       errorMaxLines: 2,
                     ),
                     keyboardType: TextInputType.name,
@@ -343,7 +349,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: LocaleKeys.register_page_form_nim_field_title.tr(context: context),
                       hintText: "L200250001",
-                      icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.idCard, size: 24.0),
+                      ),
                       errorMaxLines: 2,
                     ),
                     keyboardType: TextInputType.name,
@@ -398,7 +407,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       hintText: LocaleKeys.register_page_form_division_field_hint.tr(
                         context: context,
                       ),
-                      icon: const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
+                      ),
                     ),
                     items: Divisions.values.map((item) {
                       return DropdownMenuItem<Divisions>(value: item, child: Text(item.aliases));

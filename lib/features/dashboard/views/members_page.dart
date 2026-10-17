@@ -102,7 +102,10 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                         context: context,
                       ),
                       hintText: "Andi Setya Budi",
-                      icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.user, size: 24.0),
+                      ),
                       border: const OutlineInputBorder(),
                       errorMaxLines: 2,
                     ),
@@ -127,7 +130,10 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                         context: context,
                       ),
                       hintText: "L200250001",
-                      icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.idCard, size: 24.0),
+                      ),
                       border: const OutlineInputBorder(),
                       errorMaxLines: 2,
                     ),

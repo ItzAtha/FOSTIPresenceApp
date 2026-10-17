@@ -81,7 +81,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.event_page_dialog_name_field_title.tr(context: context),
                   hintText: "Event FOSTI 202X",
-                  icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.calendar, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -101,7 +104,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.event_page_dialog_description_field_title.tr(context: context),
                   hintText: "FOSTI event held once a year",
-                  icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -124,7 +130,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.event_page_dialog_location_field_title.tr(context: context),
                   hintText: "Gedung J, Kampus 2, UMS",
-                  icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -150,7 +159,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                     context: context,
                   ),
                   hintText: LocaleKeys.event_page_dialog_date_field_title_hint.tr(context: context),
-                  icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -295,7 +307,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.event_page_dialog_name_field_title.tr(context: context),
                   hintText: "Event FOSTI 202X",
-                  icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.calendar, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -315,7 +330,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.event_page_dialog_description_field_title.tr(context: context),
                   hintText: "FOSTI event held once a year",
-                  icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -338,7 +356,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.event_page_dialog_location_field_title.tr(context: context),
                   hintText: "Gedung J, Kampus 2, UMS",
-                  icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
@@ -364,7 +385,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                     context: context,
                   ),
                   hintText: LocaleKeys.event_page_dialog_date_field_title_hint.tr(context: context),
-                  icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
+                  prefixIcon: const Center(
+                    widthFactor: 1.0,
+                    child: FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
+                  ),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
                 ),
