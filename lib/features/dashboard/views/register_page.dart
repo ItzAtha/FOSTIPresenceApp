@@ -341,7 +341,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   TextFormField(
                     controller: memberNIMController,
                     decoration: InputDecoration(
-                      labelText: LocaleKeys.register_page_form_nim_field.tr(context: context),
+                      labelText: LocaleKeys.register_page_form_nim_field_title.tr(context: context),
                       hintText: "L200250001",
                       icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
                       errorMaxLines: 2,
