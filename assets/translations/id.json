@@ -76,6 +76,12 @@
           "failed": "Gagal memperbarui anggota."
         },
 
+        "on_register": {
+          "success": "Berhasil mendaftarkan anggota baru dengan ID Kartu {cardId}!",
+          "failed": "Gagal mendaftarkan anggota baru dengan ID Kartu {cardId}!",
+          "decode_error": "Gagal deserialisasi data pada ESP32!"
+        },
+
         "on_timeout": "Waktu permintaan habis. Silakan coba lagi."
       }
     },
@@ -87,19 +93,26 @@
       },
 
       "description": {
-        "main": {
+        "on_attend": {
           "card_detected": "Kartu anggota terdeteksi! Memvalidasi data, mohon tunggu....",
           "has_attend": "Anggota dengan ID Kartu {cardId} telah menghadiri acara yang sedang berlangsung.",
-          "not_exists": "Anggota dengan ID Kartu {cardId} tidak ditemukan. Silakan daftarkan anggota terlebih dahulu di halaman Pendaftaran Anggota."
+          "not_exists": "Anggota dengan ID Kartu {cardId} tidak ditemukan. Silakan daftarkan anggota terlebih dahulu di halaman Pendaftaran Anggota.",
+
+          "success": "Anggota dengan ID Kartu {cardId} berhasil menghadiri acara yang sedang berlangsung!",
+          "failed": "Anggota dengan ID Kartu {cardId} gagal menghadiri acara yang sedang berlangsung!"
         },
 
-        "manual": {
+        "on_manual": {
           "has_attend": "Anggota dengan NIM {nim} telah menghadiri acara yang sedang berlangsung.",
-          "not_exists": "Anggota dengan NIM {nim} tidak ditemukan. Silakan daftarkan anggota terlebih dahulu di halaman Pendaftaran Anggota."
+          "not_exists": "Anggota dengan NIM {nim} tidak ditemukan. Silakan daftarkan anggota terlebih dahulu di halaman Pendaftaran Anggota.",
+
+          "success": "Anggota dengan NIM {nim} berhasil menghadiri acara yang sedang berlangsung secara manual!",
+          "failed": "Anggota dengan NIM {nim} gagal menghadiri acara yang sedang berlangsung secara manual!"
         },
 
         "no_active_event": "Tidak ada acara aktif yang ditemukan. Silakan buat acara baru terlebih dahulu di halaman Acara.",
-        "request_timeout": "Waktu permintaan habis. Silakan coba lagi."
+        "request_timeout": "Waktu permintaan habis. Silakan coba lagi.",
+        "decode_error": "Gagal deserialisasi data pada ESP32!"
       }
     },
 

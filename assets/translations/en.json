@@ -76,6 +76,12 @@
           "failed": "Failed to update the member"
         },
 
+        "on_register": {
+          "success": "Successfully register new member with Card Id {cardId}!",
+          "failed": "Failed register new member with Card Id {cardId}!",
+          "decode_error": "Failed to deserialize data on ESP32!"
+        },
+
         "on_timeout": "Request timeout. Please try again."
       }
     },
@@ -87,19 +93,26 @@
       },
 
       "description": {
-        "main": {
+        "on_attend": {
           "card_detected": "Member card detected! Validating data, please wait....",
           "has_attend": "Member with Card Id {cardId} has already attended the active event.",
-          "not_exists": "Member with Card Id {cardId} is not exists. Please register the member first in Member Registration page."
+          "not_exists": "Member with Card Id {cardId} is not exists. Please register the member first in Member Registration page.",
+
+          "success": "Member with Card Id {cardId} successfully to attend on active event!",
+          "failed": "Member with Card Id {cardId} failed to attend on active event!"
         },
 
-        "manual": {
+        "on_manual": {
           "has_attend": "Member with NIM {nim} has already attended the active event.",
-          "not_exists": "Member with NIM {nim} is not exists. Please register the member first in Member Registration page."
+          "not_exists": "Member with NIM {nim} is not exists. Please register the member first in Member Registration page.",
+
+          "success": "Member with NIM {nim} successfully to attend on active event manually!",
+          "failed": "Member with NIM {nim} failed to attend on active event manually!"
         },
 
         "no_active_event": "No active event found. Please create a new event first in Events page.",
-        "request_timeout": "Request timeout. Please try again."
+        "request_timeout": "Request timeout. Please try again.",
+        "decode_error": "Failed to deserialize data on ESP32!"
       }
     },
 
