@@ -330,7 +330,8 @@
       },
 
       "division_field": {
-        "title": "Select member division",
+        "label": "Member Division",
+        "hint": "Select member division",
         "required": "Member division can't be empty"
       }
     }

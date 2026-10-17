@@ -330,7 +330,8 @@
       },
 
       "division_field": {
-        "title": "Pilih divisi anggota",
+        "label": "Divisi Anggota",
+        "hint": "Pilih divisi anggota",
         "required": "Divisi anggota tidak boleh kosong"
       }
     }
