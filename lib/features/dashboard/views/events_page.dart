@@ -79,7 +79,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventNameController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_name_field.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_name_field_title.tr(context: context),
                   hintText: "Event FOSTI 202X",
                   icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -99,7 +99,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventDescController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_description_field.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_description_field_title.tr(context: context),
                   hintText: "FOSTI event held once a year",
                   icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -122,7 +122,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventLocController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_location_field.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_location_field_title.tr(context: context),
                   hintText: "Gedung J, Kampus 2, UMS",
                   icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -293,7 +293,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventNameController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_name_field.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_name_field_title.tr(context: context),
                   hintText: "Event FOSTI 202X",
                   icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -313,7 +313,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventDescController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_description_field.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_description_field_title.tr(context: context),
                   hintText: "FOSTI event held once a year",
                   icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -336,7 +336,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventLocController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_location_field.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_location_field_title.tr(context: context),
                   hintText: "Gedung J, Kampus 2, UMS",
                   icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
                   border: const OutlineInputBorder(),
