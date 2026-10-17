@@ -170,6 +170,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                               style: Theme.of(context).textTheme.labelMedium,
                             ),
                             trailing: DropdownMenu<int>(
+                              key: ValueKey('${context.locale}_$maxRetries'),
                               initialSelection: maxRetries,
                               width: 120.0,
                               menuHeight: 160.0,
