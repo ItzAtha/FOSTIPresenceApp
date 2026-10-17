@@ -7,6 +7,7 @@ export 'dashboard/views/members_excel_page.dart';
 export 'dashboard/views/members_excel_viewer_page.dart';
 export 'dashboard/views/members_page.dart';
 export 'dashboard/views/presence_menu_page.dart';
+export 'dashboard/views/presence_mode_page.dart';
 export 'dashboard/views/register_page.dart';
 export 'dashboard/views/settings_page.dart';
 export 'legality/views/privacy_policy_page.dart';
