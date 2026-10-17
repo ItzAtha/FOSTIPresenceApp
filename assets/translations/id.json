@@ -1,134 +1,177 @@
 {
   "app_title": "Manajemen Kehadiran",
-  "exit_alert_title": "Peringatan Keluar",
-  "exit_alert_desc": "Tekan lagi untuk keluar",
 
-  "navbar_icon_title": {
-    "home": "Beranda",
+  "navigation": {
+    "home": "Rumah",
     "member": "Anggota",
     "event": "Acara",
-    "setting": "Setelan"
+    "setting": "Pengaturan",
+
+    "quick_button": {
+      "register": "Tambahkan Anggota",
+      "attendance": "Kehadiran",
+      "bluetooth": "Bluetooth",
+      "member_excel": "Anggota Excel"
+    }
   },
 
-  "alert_notify": {
-    "event": {
-      "title": "Peringatan Acara",
-      "description": {
-        "no_active": "Tidak ada data acara aktif yang ditemukan",
-        "no_data": "Tidak ada data acara yang ditemukan",
-        "no_data_dialog": "@:alert_notify.event.description.no_data, Anda dapat membuat acara baru untuk pertama kalinya di menu Acara",
-        "not_load": "Tidak dapat memuat acara",
-
-        "saving_recap": {
-          "process": "Menyimpan rekap acara FOSTI",
-          "success": "Berhasil menyimpan file excel rekap",
-          "failed": "Gagal menyimpan file excel rekap",
-          "no_users_log": "Tidak ada anggota yang masuk dalam acara ini"
-        },
-
-        "create": {
-          "success": "Berhasil membuat acara",
-          "failed": "Gagal membuat acara"
-        },
-
-        "update": {
-          "success": "Berhasil memperbarui acara",
-          "failed": "Gagal memperbarui acara"
-        },
-
-        "delete": {
-          "success": "Berhasil menghapus acara",
-          "failed": "Gagal menghapus acara"
-        }
-      }
+  "notification": {
+    "exit_app": {
+      "title": "Peringatan Keluar",
+      "description": "Tekan lagi untuk keluar"
     },
-    "member": {
-      "title": "Peringatan Anggota",
-      "description": {
-        "no_data": "Tidak ada data anggota yang ditemukan",
-        "not_load": "Tidak dapat memuat anggota",
 
-        "update": {
-          "success": "Berhasil memperbarui anggota",
-          "failed": "Gagal memperbarui anggota"
-        }
-      }
+    "internet_lost": {
+      "title": "Koneksi Internet",
+      "description": "Tidak ada koneksi internet, harap periksa jaringan Anda."
     },
-    "internet": {
-      "title": "Peringatan Internet",
-      "description": "Tidak ada koneksi internet, silakan periksa jaringan Anda"
-    },
-    "permission": {
-      "title": "Permission Alert",
-      "description": {
-        "not_granted": "Izin {permission} tidak diberikan",
-        "request_fail": "Permintaan izin gagal"
-      }
-    },
+
     "bluetooth": {
       "title": "Peringatan Bluetooth",
       "description": {
-        "success_discover": "Bluetooth yang tersedia selesai ditemukan",
-        "success_rediscover": "Bluetooth yang tersedia selesai ditemukan kembali",
-        "fail_discover": "Bluetooth yang tersedia gagal ditemukan",
-        "fail_rediscover": "Bluetooth yang tersedia gagal ditemukan kembali",
-        "already_connected": "Perangkat lain sudah terhubung. Silakan lepaskan terlebih dahulu",
-        "request_enable_bt": "Permintaan mengaktifkan bluetooth",
-        "bt_not_enable": "Bluetooth harus dihidupkan",
-        "bt_success_connect": "Berhasil terhubung ke {device}",
-        "bt_fail_connect": "Gagal terhubung ke {device}",
-        "bt_success_disconnect": "Berhasil terputus dari {device}",
-        "bt_fail_disconnect": "Gagal terputus dari {device}",
-        "bt_already_disconnect": "Perangkat {device} sudah terputus",
-        "bt_connection_error": "Kesalahan koneksi dengan perangkat {device}",
-        "no_active_bt": "Tidak ada koneksi aktif untuk mengirim pesan"
+        "no_device_connected": "Tidak ada perangkat Bluetooth yang terhubung. Tidak dapat mengirim data apa pun.",
+        "discover": {
+          "success": "Bluetooth yang tersedia telah berhasil ditemukan.",
+          "failed": "Bluetooth yang tersedia gagal ditemukan."
+        },
+
+        "connect": {
+          "success": "Berhasil terhubung ke {device}",
+          "failed": "Gagal terhubung ke {device}"
+        },
+
+        "disconnect": {
+          "success": "Berhasil terputus dari {device}",
+          "failed": "Gagal terputus dari {device}"
+        },
+
+        "already_connected": "Ada perangkat lain yang sudah terhubung. Mohon putuskan sambungannya terlebih dahulu.",
+        "already_connecting": "Perangkat lain sedang dalam proses menghubungkan. Harap tunggu hingga koneksi selesai.",
+        "already_disconnect": "Perangkat ini sudah terputus!"
+      },
+
+      "permission": {
+        "title": "Izin Bluetooth",
+        "description": {
+          "not_granted": "Izin {permission} tidak diberikan. Mohon berikan izin untuk menggunakan fitur ini.",
+          "request_failed": "Permintaan izin gagal. Silakan coba lagi.",
+          "not_support": "Permintaan izin Bluetooth tidak didukung pada perangkat ini."
+        }
       }
     },
-    "wifi": {
-      "title": "Peringatan WiFi",
+
+    "member": {
+      "title": {
+        "main": "Pemberitahuan Anggota",
+        "register": "Pendaftaran Anggota"
+      },
+
       "description": {
-        "success_discover": "WiFi yang tersedia selesai ditemukan",
-        "success_rediscover": "WiFi yang tersedia selesai ditemukan kembali",
-        "fail_discover": "WiFi yang tersedia gagal ditemukan",
-        "fail_rediscover": "WiFi yang tersedia gagal ditemukan kembali",
-        "cant_start_scan": "Pemindaian WiFi tidak dapat dimulai: {reason}",
-        "cant_get_scan_result": "Tidak dapat mendapatkan hasil WiFi yang dipindai: {reason}"
+        "on_update": {
+          "success": "Pembaruan anggota berhasil.",
+          "failed": "Gagal memperbarui anggota."
+        },
+
+        "on_timeout": "Waktu permintaan habis. Silakan coba lagi."
       }
     },
-    "esp": {
-      "title": "Peringatan ESP",
+
+    "attendance": {
+      "title": {
+        "main": "Kehadiran Anggota",
+        "manual": "Kehadiran Manual Anggota"
+      },
+
       "description": {
-        "no_wifi": "Silakan sambungkan ESP ke WiFi terlebih dahulu",
-        "no_bluetooth": "Silakan sambungkan Bluetooth ke ESP terlebih dahulu",
-        "wifi_connected": "ESP WiFi sudah terhubung",
-        "success_connect": "ESP berhasil terhubung ke {ssid}",
-        "fail_connect": "ESP gagal terhubung ke {ssid}",
-        "no_esp": "Tidak ada ESP yang terhubung saat ini, pastikan ESP terhubung melalui bluetooth"
+        "main": {
+          "card_detected": "Kartu anggota terdeteksi! Memvalidasi data, mohon tunggu....",
+          "has_attend": "Anggota dengan ID Kartu {cardId} telah menghadiri acara yang sedang berlangsung.",
+          "not_exists": "Anggota dengan ID Kartu {cardId} tidak ditemukan. Silakan daftarkan anggota terlebih dahulu di halaman Pendaftaran Anggota."
+        },
+
+        "manual": {
+          "has_attend": "Anggota dengan NIM {nim} telah menghadiri acara yang sedang berlangsung.",
+          "not_exists": "Anggota dengan NIM {nim} tidak ditemukan. Silakan daftarkan anggota terlebih dahulu di halaman Pendaftaran Anggota."
+        },
+
+        "no_active_event": "Tidak ada acara aktif yang ditemukan. Silakan buat acara baru terlebih dahulu di halaman Acara.",
+        "request_timeout": "Waktu permintaan habis. Silakan coba lagi."
       }
     },
-    "file": {
-      "title": "Peringatan File",
+
+    "event": {
+      "title": "Peringatan Acara",
       "description": {
-        "success_set": "Berhasil mengatur file excel data anggota sebagai {fileName}",
-        "fail_set": "Gagal mengatur file excel data anggota sebagai {fileName}"
+        "on_create": {
+          "success": "Berhasil membuat acara tersebut",
+          "failed": "Gagal membuat acara tersebut"
+        },
+
+        "on_update": {
+          "success": "Acara berhasil diperbarui",
+          "failed": "Gagal memperbarui acara"
+        },
+
+        "on_delete": {
+          "success": "Acara berhasil dihapus",
+          "failed": "Gagal menghapus acara tersebut"
+        },
+
+        "on_saving": {
+          "process": "Menyimpan rangkuman acara FOSTI",
+          "success": "Berhasil menyimpan file excel rangkuman",
+          "failed": "Gagal menyimpan file excel rangkuman",
+          "no_logs": "Tidak ada log anggota dalam acara ini"
+        }
       }
     },
+
+    "upload_file": {
+      "title": "File Excel",
+      "description": {
+        "on_add": {
+          "success": "Berhasil menambahkan file Excel dengan nama {fileName}",
+          "failed": "Gagal menambahkan file Excel dengan nama {fileName}"
+        },
+
+        "on_update": {
+          "success": "Berhasil mengedit nama file Excel dari {fileName} menjadi {newFileName}",
+          "failed": "Gagal mengedit nama file Excel dari {fileName} menjadi {newFileName}"
+        },
+
+        "on_delete": {
+          "success": "Berhasil menghapus file Excel dengan nama {fileName}",
+          "failed": "Gagal menghapus file Excel dengan nama {fileName}"
+        }
+      }
+    },
+
+    "esp32_sim": {
+      "title": "Kuota SIM"
+    },
+
     "coming_soon": {
-      "title": "Peringatan Segera Hadir",
+      "title": "Pemberitahuan Segera Hadir",
       "description": "Fitur ini akan segera hadir, pantau terus!"
     }
   },
 
   "search_bar": {
-    "event": "Cari acara.....",
-    "member": "Cari anggota....."
+    "member": "Cari anggota....",
+    "event": "Cari acara....",
+    "excel": "Cari file excel...."
   },
 
-  "device_button_state": {
-    "connect": "Sambungkan",
-    "disconnect": "Lepaskan",
-    "connecting": "Menghubungkan",
-    "disconnecting": "Melepaskan"
+  "filter": {
+    "apply": "Menerapkan",
+    "clear": "Bersihkan"
+  },
+
+  "bluetooth_state": {
+    "connect": "Menghubungkan",
+    "connected": "Terhubung",
+    "disconnect": "Memutuskan",
+    "disconnected": "Terputus"
   },
 
   "paginating_page": {
@@ -137,219 +180,383 @@
     "previous": "Sebelumnya"
   },
 
-  "home_page": {
-    "stats_title": {
-      "active_event": "Acara Aktif",
-      "total_events": "Total Acara",
-      "total_members": "Total Anggota"
-    },
-    "no_active_event": "Tidak ada acara aktif yang tersedia",
-    "esp_statuses": {
-      "title": "Status ESP",
-      "status": {
-        "connected": "Terhubung",
-        "disconnected": "Terputus"
+  "dialog_button": {
+    "add": "Tambahkan",
+    "create": "Buat",
+    "update": "Perbarui",
+    "cancel": "Batalkan",
+    "close": "Tutup",
+    "yes": "Ya",
+    "no": "Tidak"
+  },
+
+  "alert_card": {
+    "no_bluetooth": {
+      "title": "Tidak ada Perangkat Bluetooth",
+      "description": {
+        "on_register": "Tidak ada perangkat Bluetooth yang terhubung. Harap hubungkan ke Bluetooth ESP32 terlebih dahulu di Halaman Bluetooth dari tombol aksi [ + ] sebelum mendaftarkan anggota baru.",
+        "on_attendance": "Tidak ada perangkat Bluetooth yang terhubung. Harap hubungkan ke Bluetooth ESP32 terlebih dahulu di Halaman Bluetooth dari tombol aksi [ + ] sebelum melakukan presensi."
       }
     },
-    "button": {
-      "control": "Panel Kontrol",
-      "setup": "Siapkan ESP WiFi"
+
+    "no_card": {
+      "title": "Kartu Tidak Terdeteksi",
+      "description": {
+        "on_register": "Kartu Identitas Anggota tidak terdeteksi. Silakan sentuh Kartu Identitas Anggota ke sensor RFID untuk mendeteksinya di sini.",
+        "on_attendance": "Tidak ada Anggota yang menghadiri acara aktif. Silakan sentuh ID Kartu Anggota ke sensor RFID untuk hadir dan menunjukkan data di sini."
+      }
     }
   },
 
-  "event_page": {
-    "dialog": {
-      "add_title": "Tambahkan Acara Baru",
-      "edit_title": "Mengedit Data Acara",
-      "delete_confirm": {
-        "title": "Konfirmasi Hapus",
-        "description": "Apakah Anda yakin akan menghapus acara ini?"
+  "home_page": {
+    "stats": {
+      "active_event": {
+        "title": "Acara Aktif",
+        "no_event_desc": "Tidak ada acara aktif yang tersedia."
       },
 
-      "field": {
-        "name": "Nama Acara",
-        "description": "Deskripsi Acara",
-        "location": "Lokasi Acara",
-        "date": {
-          "label": "Tanggal & Waktu Acara",
-          "hint": "Pilih Tanggal & Waktu Acara"
-        }
-      },
-
-      "validation": {
-        "name_required": "Nama acara tidak boleh kosong",
-        "description_required": "Deskripsi acara tidak boleh kosong",
-        "location_required": "Lokasi acara tidak boleh kosong",
-        "date_required": "Tanggal & Waktu acara tidak boleh kosong"
-      },
-
-      "button": {
-        "create": "Buat",
-        "update": "Perbarui",
-        "cancel": "Batal",
-        "yes": "Ya",
-        "no": "Tidak"
-      }
-    },
-
-    "button": {
-      "add": "Tambahkan Acara",
-      "edit": "Perbarui Acara",
-      "delete": "Hapus Acara",
-      "download_recap": "Unduh Rekap Acara"
-    },
-
-    "loading_data": {
-      "process": "Memuat semua data acara dari database...",
-      "no_data": {
-        "title": "Acara Mendatang",
-        "description": "Tidak ada acara yang akan datang. Ketuk tombol + untuk menambahkan acara baru"
-      }
+      "total_member": "Jumlah Anggota",
+      "total_event": "Total Acara"
     }
   },
 
   "bluetooth_page": {
     "unknown_device": "Perangkat Tidak Dikenal",
-    "loading_data": {
-      "process": "Memindai Bluetooth yang tersedia...",
-      "no_device": "Tidak ada perangkat Bluetooth yang tersedia ditemukan. \nTarik ke bawah untuk menyegarkan"
+    "data_state": {
+      "loading": "Memindai perangkat Bluetooth yang tersedia....",
+      "no_device": "Tidak ditemukan perangkat Bluetooth yang tersedia. \nGeser ke bawah untuk menyegarkan"
     }
   },
 
-  "setting_page": {
-    "general_app": {
-      "title": "Pengaturan Aplikasi Umum",
-      "auto_reconnect_bt": {
-        "title": "Hubungkan Kembali Bluetooth Secara Otomatis",
-        "description": "Sambungkan kembali secara otomatis ke perangkat Bluetooth yang terakhir terhubung saat terputus"
-      },
-      "language": {
-        "title": "Bahasa",
-        "description": "Pilih bahasa aplikasi Anda"
-      }
-    },
-    "general_esp": {
-      "title": "Pengaturan ESP Umum",
-      "subtitle": "Pengaturan ini akan tersedia saat terhubung ke ESP",
-      "auto_reconnect_wifi": {
-        "title": "Hubungkan Kembali WiFi Secara Otomatis",
-        "description": "Sambungkan kembali ESP secara otomatis ke perangkat WiFi terakhir yang terhubung saat terputus"
-      }
-    },
-    "more_info": {
-      "title": "Informasi Lebih Lanjut",
-      "user_guidebook": {
-        "title": "Buku Panduan Pengguna",
-        "description": "Menampilkan petunjuk tentang cara menggunakan aplikasi"
-      },
-      "about_app": {
-        "title": "Tentang Aplikasi",
-        "description": "Menampilkan tentang aplikasi",
-        "dialog": "Aplikasi manajemen absensi adalah antarmuka pengguna dari ID kartu kehadiran yang dapat memantau kehadiran peserta dalam acara tertentu."
-      }
-    }
-  },
-
-  "wifi_page": {
-    "title": "Menu WiFi",
-
-    "connect_dialog": {
-      "title": "Masukkan Sandi WiFi",
-      "input_box": "Sandi untuk {ssid}",
-      "button": "Sambungkan"
+  "excel_upload_page": {
+    "title": {
+      "main": "File Excel",
+      "excel_viewer": "Penampil File Excel"
     },
 
-    "loading_data": {
-      "process": "Memindai WiFi yang tersedia...",
-      "no_device": "Tidak ada perangkat WiFi yang tersedia ditemukan. \nTarik ke bawah untuk menyegarkan"
-    }
-  },
-
-  "control_page": {
-    "title": "Panel Kontrol",
-
-    "menu": {
-      "register": {
-        "title": "Daftar Kartu",
-        "description": "Buka menu daftar absensi. Menu ini digunakan untuk mendaftarkan ID kartu anggota agar dapat hadir ketika ada acara di Menu Kehadiran. Pastikan Anda mengatur (+) file excel data anggota terlebih dahulu jika ada untuk menggunakan mode otomatis.",
-        "action": {
-          "set_excel": "Atur File Excel",
-          "show_members": "Tampilkan Daftar Anggota"
-        }
-      },
-      "presence": {
-        "title": "Menu Kehadiran",
-        "description": "Buka menu absensi untuk acara yang telah dibuat. Ada beberapa pilihan untuk hadir, yaitu sebagai Peserta, Panitia/BPHI, atau Kehadiran Manual.",
-        "logs": {
-          "title": "Log Kehadiran",
-          "description": "Buka menu log kehadiran untuk melihat semua aktivitas kehadiran yang telah terjadi selama acara berlangsung."
-        }
-      },
-
-      "button": {
-        "open": "Klik untuk membuka",
-        "ok": "Oke"
+    "filter": {
+      "not_found": {
+        "title": "Tidak ditemukan file Excel yang difilter.",
+        "description": "Cari dengan kata kunci nama lain"
       }
+    },
+
+    "data_state": {
+      "loading": "Memuat semua file Excel dari folder....",
+      "no_data": {
+        "title": "File Excel",
+        "description": "Tidak ditemukan berkas Excel! Tambahkan berkas Excel baru untuk melihatnya di sini."
+      }
+    },
+
+    "button_option": {
+      "add": "Tambahkan Excel",
+      "edit": "Edit Excel",
+      "delete": "Hapus Excel"
+    },
+
+    "dialog": {
+      "add": {
+        "title": "Tambahkan Excel Baru",
+        "information": "Anda dapat mengosongkan kolom di bawah ini untuk membuat nama file yang sesuai dengan file yang telah Anda unggah."
+      },
+      "edit_title": "Edit Nama Excel",
+
+      "name_field": "Nama Excel",
+      "upload_field": {
+        "title": {
+          "choose": "Pilih File Excel",
+          "change": "Ubah File Excel"
+        },
+        "required": "Silakan pilih file Excel untuk diunggah."
+      },
+
+      "delete_confirmation": {
+        "title": "Konfirmasi Penghapusan File",
+        "message": "Apakah Anda yakin ingin menghapus file ini?"
+      },
+      "file_label": "File Excel"
     }
   },
 
   "member_page": {
-    "title": "Daftar Anggota",
-    "button_edit": "Perbarui Anggota",
-    "division_label": "Divisi: {division}",
+    "card_label": {
+      "nim": "NIM : {nim}",
+      "division": "Divisi : {division}",
+      "generation": "Angkatan : {generation}"
+    },
 
-    "dialog": {
-      "title": "Mengedit Data Anggota",
-
-      "field": {
-        "name": "Nama Anggota",
-        "nim": "NIM Anggota",
-        "division": "Pilih divisi anggota"
-      },
-
-      "validation": {
-        "name_required": "Nama anggota tidak boleh kosong",
-        "nim_required": {
-          "empty": "NIM anggota tidak boleh kosong",
-          "exists": "NIM anggota sudah ada",
-          "invalid": "NIM anggota tidak valid"
-        }
-      },
-
-      "button": {
-        "update": "Perbarui",
-        "cancel": "Batal"
+    "filter": {
+      "title": "Filter Anggota",
+      "by_division": "Urutkan berdasarkan Divisi",
+      "by_generation": "Urutkan berdasarkan Tahun",
+      "not_found": {
+        "title": "Tidak Ditemukan Anggota yang Difilter",
+        "description": "Cari kata kunci nama lain atau pilih kategori filter."
       }
     },
 
-    "loading_data": {
-      "process": "Memuat semua data anggota dari database...",
+    "data_state": {
+      "loading": "Memuat semua data anggota dari basis data....",
       "no_data": {
         "title": "Tidak Ada Anggota Terdaftar",
-        "description": "Daftarkan anggota baru di Halaman Daftar Kartu untuk melihatnya terdaftar di sini"
+        "description": "Daftarkan anggota baru di Halaman Pendaftaran dari tombol cepat [ + ] untuk melihatnya terdaftar di sini"
+      }
+    },
+
+    "edit_dialog": {
+      "title": "Edit Data Anggota",
+
+      "name_field": {
+        "title": "Nama Anggota",
+        "required": "Nama anggota tidak boleh kosong"
+      },
+
+      "nim_field": {
+        "title": "Anggota NIM",
+        "required": {
+          "empty": "NIM anggota tidak boleh kosong.",
+          "exists": "NIM anggota sudah ada.",
+          "invalid": "NIM anggota tidak valid."
+        }
+      },
+
+      "division_field": {
+        "title": "Pilih divisi anggota",
+        "required": "Divisi anggota tidak boleh kosong"
       }
     }
   },
 
-  "control_panel_page": {
-    "title": {
-      "register": "Menu Registrasi",
-      "presence": "Menu Kehadiran"
+  "register_page": {
+    "title": "Pendaftaran Anggota",
+    "form": {
+      "title": "Tambahkan Anggota Baru",
+      "information": "Anda cukup memasukkan NIM Anggota untuk mengisi kolom tersebut secara otomatis, atau jika NIM tersebut belum ada, Anda dapat memasukkannya secara manual.",
+
+      "card_id_field": "ID Kartu Anggota",
+      "name_field": {
+        "title": "Nama Anggota",
+        "required": "Nama anggota tidak boleh kosong"
+      },
+
+      "nim_field": {
+        "title": "NIM Anggota",
+        "required": {
+          "empty": "NIM anggota tidak boleh kosong.",
+          "exists": "NIM anggota sudah ada.",
+          "invalid": "NIM anggota tidak valid."
+        }
+      },
+
+      "division_field": {
+        "label": "Divisi Anggota",
+        "hint": "Pilih divisi anggota",
+        "required": "Divisi anggota tidak boleh kosong"
+      },
+
+      "button": "Daftar Anggota"
+    }
+  },
+
+  "attendance_page": {
+    "title": "Kehadiran Anggota",
+    "mode_options": {
+      "as_participant": "Kehadiran sebagai Peserta",
+      "as_committee": "Kehadiran sebagai Komite",
+      "as_bphi": "Kehadiran sebagai BPHI",
+      "manual": "Kehadiran Manual"
     },
 
-    "input_box": "Kirim pesan...",
-    "button": {
-      "auto_scroll": "Mulai/Hentikan gulir otomatis",
-      "clear_monitor": "Bersihkan monitor"
+    "mode_page": {
+      "title": "Profil Anggota",
+
+      "card_id_field": "ID Kartu Anggota",
+      "name_field": "Nama Anggota",
+      "nim_field": {
+        "title": "NIM Anggota",
+        "required": {
+          "empty": "NIM Anggota tidak boleh kosong",
+          "invalid": "NIM Anggota tidak valid"
+        }
+      },
+      "division_field": "Divisi Anggota",
+
+      "manual": {
+        "title": "Presensi Manual",
+        "information": "Tulis NIM Anggota di bawah ini untuk melakukan presensi secara manual pada acara yang aktif saat ini.",
+        "button": "Hadiri Anggota"
+      }
+    }
+  },
+
+  "event_page": {
+    "filter": {
+      "not_found": {
+        "title": "Tidak Ditemukan Acara yang Difilter",
+        "description": "Cari dengan kata kunci nama lain"
+      }
     },
 
-    "presence_mode": {
-      "title": "Pilih mode kehadiran",
-      "type": "Sebagai {mode}",
-      "list": {
-        "participant": "Peserta",
-        "committee": "Panitia",
-        "manual": "Secara Manual"
+    "data_state": {
+      "loading": "Memuat semua data acara dari basis data....",
+      "no_data": {
+        "title": "Acara Mendatang",
+        "description": "Buat acara baru di Halaman Acara untuk melihat daftarnya di sini."
+      }
+    },
+
+    "button_option": {
+      "create": "Buat Acara",
+      "edit": "Edit Acara",
+      "delete": "Hapus Acara",
+      "download": "Unduh Ringkasan Acara"
+    },
+
+    "dialog": {
+      "add_title": "Tambahkan Acara Baru",
+      "edit_title": "Edit Data Acara",
+
+      "open_file_confirmation": {
+        "title": "Konfirmasi Buka File",
+        "message": "Apakah Anda ingin membuka file excel ringkasan acara ini?"
+      },
+
+      "delete_confirmation": {
+        "title": "Konfirmasi Penghapusan Acara",
+        "message": "Apakah Anda yakin ingin menghapus acara ini?"
+      },
+
+      "name_field": {
+        "title": "Nama Acara",
+        "required": "Nama acara tidak boleh kosong"
+      },
+
+      "description_field": {
+        "title": "Deskripsi Acara",
+        "required": "Deskripsi acara tidak boleh kosong"
+      },
+
+      "location_field": {
+        "title": "Lokasi Acara",
+        "required": "Lokasi acara tidak boleh kosong"
+      },
+
+      "date_field": {
+        "title": {
+          "label": "Tanggal & Waktu Acara",
+          "hint": "Pilih Tanggal & Waktu Acara"
+        },
+        "required": "Tanggal & waktu acara tidak boleh kosong"
+      }
+    }
+  },
+
+  "setting_page": {
+    "general": {
+      "title": "Umum",
+
+      "auto_reconnect_bt": {
+        "title": "Sambung Ulang Bluetooth Otomatis",
+        "description": "Menyambungkan kembali secara otomatis ke perangkat Bluetooth yang terakhir terhubung saat koneksi terputus.",
+
+        "max_retries": {
+          "title": "Jumlah Percobaan Maksimum",
+          "description": "Jumlah upaya penyambungan ulang bluetooth",
+          "attempt":  {
+            "limited": "{max} percobaan",
+            "unlimited": "Tak terbatas"
+          }
+        }
+      },
+
+      "theme": {
+        "title": "Tema",
+        "options": {
+          "light": "Terang",
+          "dark": "Gelap",
+          "system": "Sistem"
+        }
+      },
+
+      "language": {
+        "title": "Bahasa",
+        "options": {
+          "english": "Inggris",
+          "indonesian": "Indonesia"
+        }
+      }
+    },
+
+    "notifications": {
+      "title": "Pemberitahuan",
+
+      "esp32_sim_expired": {
+        "title": "Beritahukan SIM Kedaluwarsa",
+        "description": "Berikan pemberitahuan saat layanan internet pada kartu SIM telah berakhir dan harus segera diperbarui sebelum masa berlaku nomor kartu SIM tersebut habis."
+      }
+    },
+
+    "support_about": {
+      "title": "Dukungan & Tentang Kami",
+
+      "faq": {
+        "title": "Pertanyaan Umum",
+
+        "about_app": {
+          "title": "Apa itu aplikasi manajemen kehadiran?",
+          "description": "@:setting_page.support_about.about_app.description"
+        },
+
+        "register_member": {
+          "title": "Bagaimana cara mendaftarkan anggota baru dengan ID Kartu?",
+          "data_state": {
+            "loading": "Memuat berkas panduan pendaftaran anggota....",
+            "error": "Terjadi kesalahan saat memuat FAQ pendaftaran anggota: {error}",
+            "no_data": "Tidak ada FAQ pendaftaran anggota yang tersedia."
+          }
+        },
+
+        "upload_excel_file": {
+          "title": "Bagaimana cara mengunggah data semua anggota dalam file Excel untuk digunakan dalam pendaftaran anggota?",
+          "data_state": {
+            "loading": "Memuat panduan mengunggah file Excel....",
+            "error": "Terjadi kesalahan saat memuat FAQ pengunggahan file Excel: {error}",
+            "no_data": "Tidak ada FAQ pengunggahan file Excel yang tersedia."
+          }
+        },
+
+        "attendance_member": {
+          "title": "Bagaimana cara mencatat kehadiran anggota dalam acara aktif dengan ID Kartu?",
+          "data_state": {
+            "loading": "Memuat berkas panduan pencatatan kehadiran anggota....",
+            "error": "Terjadi kesalahan saat memuat FAQ pencatatan kehadiran anggota: {error}",
+            "no_data": "Tidak ada FAQ pencatatan kehadiran anggota yang tersedia."
+          }
+        }
+      },
+
+      "privacy_policy": {
+        "title": "Kebijakan Privasi",
+        "data_state": {
+          "loading": "Memuat berkas kebijakan privasi....",
+          "error": "Terjadi kesalahan saat memuat kebijakan privasi: {error}",
+          "no_data": "Tidak ada kebijakan privasi yang tersedia."
+        }
+      },
+
+      "terms_of_service": {
+        "title": "Ketentuan Layanan",
+        "data_state": {
+          "loading": "Memuat berkas ketentuan layanan....",
+          "error": "Terjadi kesalahan saat memuat ketentuan layanan: {error}",
+          "no_data": "Tidak ada ketentuan layanan yang tersedia."
+        }
+      },
+
+      "about_app": {
+        "title": "Tentang Aplikasi",
+        "description": "Aplikasi yang dirancang untuk membantu mengelola data anggota, data acara, dan data kehadiran anggota untuk acara-acara yang diselenggarakan oleh organisasi mahasiswa Forum Open Source Teknik Informatika (FOSTI)."
       }
     }
   }

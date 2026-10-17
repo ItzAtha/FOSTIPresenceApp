@@ -1,118 +1,155 @@
 {
-  "app_title": "Presence Management",
-  "exit_alert_title": "Exit Alert",
-  "exit_alert_desc": "Press again to exit",
+  "app_title": "Attendance Management",
 
-  "navbar_icon_title": {
+  "navigation": {
     "home": "Home",
     "member": "Members",
     "event": "Events",
-    "setting": "Setting"
+    "setting": "Setting",
+
+    "quick_button": {
+      "register": "Add Member",
+      "attendance": "Attendance",
+      "bluetooth": "Bluetooth",
+      "member_excel": "Members Excel"
+    }
   },
 
-  "alert_notify": {
+  "notification": {
+    "exit_app": {
+      "title": "Exit Alert",
+      "description": "Press again to exit"
+    },
+
+    "internet_lost": {
+      "title": "Internet Connection",
+      "description": "No internet connection, please check your network."
+    },
+
+    "bluetooth": {
+      "title": "Bluetooth Alert",
+      "description": {
+        "no_device_connected": "No Bluetooth device connected. Cannot send any data.",
+        "discover": {
+          "success": "Available bluetooth completed discovered",
+          "failed": "Available bluetooth failed to discovered"
+        },
+
+        "connect": {
+          "success": "Successfully connected to {device}",
+          "failed": "Failed connected to {device}"
+        },
+
+        "disconnect": {
+          "success": "Successfully disconnected from {device}",
+          "failed": "Failed disconnected from {device}"
+        },
+
+        "already_connected": "Another device is already connected. Please disconnect it first",
+        "already_connecting": "Another device is already connecting. Please wait until the connection is completed",
+        "already_disconnect": "This device already disconnected!"
+      },
+
+      "permission": {
+        "title": "Bluetooth Permission",
+        "description": {
+          "not_granted": "Permission {permission} not granted. Please allow the permission to use this feature.",
+          "request_failed": "Permission request failed. Please try again.",
+          "not_support": "Bluetooth request permission is not support on this device."
+        }
+      }
+    },
+
+    "member": {
+      "title": {
+        "main": "Member Alert",
+        "register": "Member Registration"
+      },
+
+      "description": {
+        "on_update": {
+          "success": "Successfully update the member",
+          "failed": "Failed to update the member"
+        },
+
+        "on_timeout": "Request timeout. Please try again."
+      }
+    },
+
+    "attendance": {
+      "title": {
+        "main": "Member Attendance",
+        "manual": "Member Manual Attendance"
+      },
+
+      "description": {
+        "main": {
+          "card_detected": "Member card detected! Validating data, please wait....",
+          "has_attend": "Member with Card Id {cardId} has already attended the active event.",
+          "not_exists": "Member with Card Id {cardId} is not exists. Please register the member first in Member Registration page."
+        },
+
+        "manual": {
+          "has_attend": "Member with NIM {nim} has already attended the active event.",
+          "not_exists": "Member with NIM {nim} is not exists. Please register the member first in Member Registration page."
+        },
+
+        "no_active_event": "No active event found. Please create a new event first in Events page.",
+        "request_timeout": "Request timeout. Please try again."
+      }
+    },
+
     "event": {
       "title": "Event Alert",
       "description": {
-        "no_active": "No active events data were found",
-        "no_data": "No events data were found",
-        "no_data_dialog": "@:alert_notify.event.description.no_data, You may create a new event for first time in the Events menu",
-        "not_load": "Couldn't load events.",
-
-        "saving_recap": {
-          "process": "Saving FOSTI event recap",
-          "success": "Successfully save recap excel file",
-          "failed": "Failed to save recap excel file",
-          "no_users_log": "There are no members log in this event"
-        },
-
-        "create": {
+        "on_create": {
           "success": "Successfully create the event",
           "failed": "Failed to create the event"
         },
 
-        "update": {
+        "on_update": {
           "success": "Successfully update the event",
           "failed": "Failed to update the event"
         },
 
-        "delete": {
+        "on_delete": {
           "success": "Successfully delete the event",
           "failed": "Failed to delete the event"
-        }
-      }
-    },
-    "member": {
-      "title": "Member Alert",
-      "description": {
-        "no_data": "No members data were found",
-        "not_load": "Couldn't load members.",
+        },
 
-        "update": {
-          "success": "Successfully update the member",
-          "failed": "Failed to update the member"
+        "on_saving": {
+          "process": "Saving a recap of the FOSTI event",
+          "success": "Successfully save recap excel file",
+          "failed": "Failed to save recap excel file",
+          "no_logs": "There are no members log in this event"
         }
       }
     },
-    "internet": {
-      "title": "Internet Alert",
-      "description": "No internet connection, please check your network."
-    },
-    "permission": {
-      "title": "Permission Alert",
+
+    "upload_file": {
+      "title": "Excel File",
       "description": {
-        "not_granted": "Permission {permission} not granted",
-        "request_fail": "Permission request failed"
+        "on_add": {
+          "success": "Successfully add Excel file with name {fileName}",
+          "failed": "Failed to add Excel file with name {fileName}"
+        },
+
+        "on_update": {
+          "success": "Successfully edit Excel file name from {fileName} to {newFileName}",
+          "failed": "Failed to edit Excel file name from {fileName} to {newFileName}"
+        },
+
+        "on_delete": {
+          "success": "Successfully delete Excel file with name {fileName}",
+          "failed": "Failed to delete Excel file with name {fileName}"
+        }
       }
     },
-    "bluetooth": {
-      "title": "Bluetooth Alert",
-      "description": {
-        "success_discover": "Available bluetooth completed discovered",
-        "success_rediscover": "Available bluetooth completed rediscovered",
-        "fail_discover": "Available bluetooth failed to discovered",
-        "fail_rediscover": "Available bluetooth failed to rediscovered",
-        "already_connected": "Another device is already connected. Please disconnect it first",
-        "request_enable_bt": "Requests enable bluetooth",
-        "bt_not_enable": "Bluetooth must be turned on",
-        "bt_success_connect": "Successfully connected to {device}",
-        "bt_fail_connect": "Failed connected to {device}",
-        "bt_success_disconnect": "Successfully disconnected from {device}",
-        "bt_fail_disconnect": "Failed disconnected from {device}",
-        "bt_already_disconnect": "Device {device} already disconnected",
-        "bt_connection_error": "Connection error with device {device}",
-        "no_active_bt": "No active connection to send message"
-      }
+
+    "esp32_sim": {
+      "title": "SIM Quota"
     },
-    "wifi": {
-      "title": "WiFi Alert",
-      "description": {
-        "success_discover": "Available WiFi completed discovered",
-        "success_rediscover": "Available WiFi completed rediscovered",
-        "fail_discover": "Available WiFi failed to discovered",
-        "fail_rediscover": "Available WiFi failed to rediscovered",
-        "cant_start_scan": "WiFi scan cannot be started: {reason}",
-        "cant_get_scan_result": "Cannot get scanned WiFi results: {reason}"
-      }
-    },
-    "esp": {
-      "title": "ESP Alert",
-      "description": {
-        "no_wifi": "Please connect ESP to WiFi first",
-        "no_bluetooth": "Please connect Bluetooth to ESP first",
-        "wifi_connected": "ESP WiFi already connected",
-        "success_connect": "ESP successfully connected to {ssid}",
-        "fail_connect": "ESP failed to connect to {ssid}",
-        "no_esp": "There is no ESP32 connected at this time, make sure for ESP32 connected via bluetooth"
-      }
-    },
-    "file": {
-      "title": "File Alert",
-      "description": {
-        "success_set": "Successfully set the members data excel file as {fileName}",
-        "fail_set": "Failed to set the members data excel file as {fileName}"
-      }
-    },
+
     "coming_soon": {
       "title": "Coming Soon Alert",
       "description": "This feature is coming soon, stay tuned!"
@@ -120,15 +157,21 @@
   },
 
   "search_bar": {
-    "event": "Search events.....",
-    "member": "Search members....."
+    "member": "Search member....",
+    "event": "Search event....",
+    "excel": "Search excel file...."
   },
 
-  "device_button_state": {
+  "filter": {
+    "apply": "Apply",
+    "clear": "Clear"
+  },
+
+  "bluetooth_state": {
     "connect": "Connect",
+    "connected": "Connected",
     "disconnect": "Disconnect",
-    "connecting": "Connecting",
-    "disconnecting": "Disconnecting"
+    "disconnected": "Disconnected"
   },
 
   "paginating_page": {
@@ -137,219 +180,383 @@
     "previous": "Previous"
   },
 
-  "home_page": {
-    "stats_title": {
-      "active_event": "Active Event",
-      "total_events": "Total Events",
-      "total_members": "Total Members"
-    },
-    "no_active_event": "No active event available",
-    "esp_statuses": {
-      "title": "ESP Status",
-      "status": {
-        "connected": "Connected",
-        "disconnected": "Disconnected"
+  "dialog_button": {
+    "add": "Add",
+    "create": "Create",
+    "update": "Update",
+    "cancel": "Cancel",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No"
+  },
+
+  "alert_card": {
+    "no_bluetooth": {
+      "title": "No Bluetooth Device",
+      "description": {
+        "on_register": "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Bluetooth Page from action button [ + ] before register new member.",
+        "on_attendance": "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Bluetooth Page from action button [ + ] before attendance."
       }
     },
-    "button": {
-      "control": "Control Panel",
-      "setup": "Setup ESP WiFi"
+
+    "no_card": {
+      "title": "No Card Detected",
+      "description": {
+        "on_register": "There no Member ID Card detected. Please tap the Member ID Card to RFID sensor to detect it in here.",
+        "on_attendance": "No Member attend the active event. Please tap the Member Card Id to RFID sensor to attend and show data in here."
+      }
     }
   },
 
-  "event_page": {
-    "dialog": {
-      "add_title": "Add New Event",
-      "edit_title": "Edit Event Data",
-      "delete_confirm": {
-        "title": "Delete Confirmation",
-        "description": "Are you sure to delete this event?"
+  "home_page": {
+    "stats": {
+      "active_event": {
+        "title": "Active Event",
+        "no_event_desc": "No active event available"
       },
 
-      "field": {
-        "name": "Event Name",
-        "description": "Event Description",
-        "location": "Event Location",
-        "date": {
-          "label": "Event Date & Time",
-          "hint": "Select Event Date & Time"
-        }
-      },
-
-      "validation": {
-        "name_required": "Event name can't be empty",
-        "description_required": "Event description can't be empty",
-        "location_required": "Event location can't be empty",
-        "date_required": "Event date & time can't be empty"
-      },
-
-      "button": {
-        "create": "Create",
-        "update": "Update",
-        "cancel": "Cancel",
-        "yes": "Yes",
-        "no": "No"
-      }
-    },
-
-    "button": {
-      "add": "Add Event",
-      "edit": "Edit Event",
-      "delete": "Delete Event",
-      "download_recap": "Download Event Recap"
-    },
-
-    "loading_data": {
-      "process": "Load all events data from database...",
-      "no_data": {
-        "title": "Upcoming Events",
-        "description": "No upcoming events. Tap the + button to add a new event"
-      }
+      "total_member": "Total Members",
+      "total_event": "Total Events"
     }
   },
 
   "bluetooth_page": {
     "unknown_device": "Unknown Device",
-    "loading_data": {
-      "process": "Scanning for available Bluetooth...",
+    "data_state": {
+      "loading": "Scanning for available Bluetooth....",
       "no_device": "No available Bluetooth devices found. \nPull down to refresh"
     }
   },
 
-  "setting_page": {
-    "general_app": {
-      "title": "General App Settings",
-      "auto_reconnect_bt": {
-        "title": "Auto Reconnect Bluetooth",
-        "description": "Automatically reconnect to the last connected Bluetooth device when disconnected"
-      },
-      "language": {
-        "title": "Language",
-        "description": "Select your app language"
-      }
-    },
-    "general_esp": {
-      "title": "General ESP Settings",
-      "subtitle": "This setting will available when connect to ESP",
-      "auto_reconnect_wifi": {
-        "title": "Auto Reconnect WiFi",
-        "description": "Automatically reconnect ESP to the last connected WiFi device when disconnected"
-      }
-    },
-    "more_info": {
-      "title": "More Information",
-      "user_guidebook": {
-        "title": "User Guidebook",
-        "description": "Show instructions on how to use the app"
-      },
-      "about_app": {
-        "title": "About Application",
-        "description": "Show about application",
-        "dialog": "The attendance management application is a user interface of the attendance id card that can monitor the attendance of participants in certain events."
-      }
-    }
-  },
-
-  "wifi_page": {
-    "title": "WiFi Menu",
-
-    "connect_dialog": {
-      "title": "Enter WiFi Password",
-      "input_box": "Password for {ssid}",
-      "button": "Connect"
+  "excel_upload_page": {
+    "title": {
+      "main": "Excel File",
+      "excel_viewer": "Excel File Viewer"
     },
 
-    "loading_data": {
-      "process": "Scanning for available WiFi...",
-      "no_device": "No available WiFi devices found. \nPull down to refresh"
-    }
-  },
-
-  "control_page": {
-    "title": "Control Panel",
-
-    "menu": {
-      "register": {
-        "title": "Register Card",
-        "description": "Open the attendance register menu. This menu is used for register members ID Card in order to be able to presence when there is an event in Presence Menu. Make sure you set (+) the members data excel file first if exists to using automatic mode.",
-        "action": {
-          "set_excel": "Set Excel File",
-          "show_members": "Show Members List"
-        }
-      },
-      "presence": {
-        "title": "Presence Menu",
-        "description": "Open the attendance menu for the event that has been created. There are several options for attendance, namely as a Participant, Committee/BPHI, or Manual Presence.",
-        "logs": {
-          "title": "Presence Logs",
-          "description": "Open the presence logs menu to see all presence activities that have occurred during the event."
-        }
-      },
-
-      "button": {
-        "open": "Click to open",
-        "ok": "Ok"
+    "filter": {
+      "not_found": {
+        "title": "No Filtered Excel Found",
+        "description": "Search with another name key"
       }
+    },
+
+    "data_state": {
+      "loading": "Load all Excel file from folder....",
+      "no_data": {
+        "title": "Excel File",
+        "description": "No Excel file found! Add a new one Excel file to see it in here"
+      }
+    },
+
+    "button_option": {
+      "add": "Add Excel",
+      "edit": "Edit Excel",
+      "delete": "Delete Excel"
+    },
+
+    "dialog": {
+      "add": {
+        "title": "Add New Excel",
+        "information": "You can leave the field below blank to create a file name that matches the file you have uploaded."
+      },
+      "edit_title": "Edit Excel Name",
+
+      "name_field": "Excel Name",
+      "upload_field": {
+        "title": {
+          "choose": "Choose Excel File",
+          "change": "Change Excel File"
+        },
+        "required": "Please select an Excel file to upload"
+      },
+
+      "delete_confirmation": {
+        "title": "Confirm File Deletion",
+        "message": "Are you sure you want to delete this file?"
+      },
+      "file_label": "Excel file"
     }
   },
 
   "member_page": {
-    "title": "Member List",
-    "button_edit": "Edit Member",
-    "division_label": "Division: {division}",
+    "card_label": {
+      "nim": "NIM : {nim}",
+      "division": "Division : {division}",
+      "generation": "Generation : {generation}"
+    },
 
-    "dialog": {
+    "filter": {
+      "title": "Members Filter",
+      "by_division": "Sort by Division",
+      "by_generation": "Sort by Generation",
+      "not_found": {
+        "title": "No Filtered Member Found",
+        "description": "Search another name key or select filter category"
+      }
+    },
+
+    "data_state": {
+      "loading": "Load all members data from database....",
+      "no_data": {
+        "title": "No Registered Members",
+        "description": "Register new members in Register Page from Quick button [ + ] to see them listed here"
+      }
+    },
+
+    "edit_dialog": {
       "title": "Edit Member Data",
 
-      "field": {
-        "name": "Member Name",
-        "nim": "Member NIM",
-        "division": "Select member division"
+      "name_field": {
+        "title": "Member Name",
+        "required": "Member name can't be empty"
       },
 
-      "validation": {
-        "name_required": "Member name can't be empty",
-        "nim_required": {
+      "nim_field": {
+        "title": "Member NIM",
+        "required": {
           "empty": "Member NIM can't be empty",
           "exists": "Member NIM already exists",
           "invalid": "Member NIM is invalid"
         }
       },
 
-      "button": {
-        "update": "Update",
-        "cancel": "Cancel"
-      }
-    },
-
-    "loading_data": {
-      "process": "Load all members data from database...",
-      "no_data": {
-        "title": "No Registered Members",
-        "description": "Register new members in Register Card Page to see them listed here"
+      "division_field": {
+        "title": "Select member division",
+        "required": "Member division can't be empty"
       }
     }
   },
 
-  "control_panel_page": {
-    "title": {
-      "register": "Register Menu",
-      "presence": "Presence Menu"
+  "register_page": {
+    "title": "Member Registration",
+    "form": {
+      "title": "Add New Member",
+      "information": "You can just write a Member NIM to automatically filling the field or, if it doesn't exists, write it manually.",
+
+      "card_id_field": "Member Card ID",
+      "name_field": {
+        "title": "Member Name",
+        "required": "Member name can't be empty"
+      },
+
+      "nim_field": {
+        "title": "Member NIM",
+        "required": {
+          "empty": "Member NIM can't be empty",
+          "exists": "Member NIM already exists",
+          "invalid": "Member NIM is invalid"
+        }
+      },
+
+      "division_field": {
+        "label": "Member Division",
+        "hint": "Select member division",
+        "required": "Member division can't be empty"
+      },
+
+      "button": "Register Member"
+    }
+  },
+
+  "attendance_page": {
+    "title": "Member Attendance",
+    "mode_options": {
+      "as_participant": "Attendance as Participant",
+      "as_committee": "Attendance as Committee",
+      "as_bphi": "Attendance as BPHI",
+      "manual": "Manual Attendance"
     },
 
-    "input_box": "Send a message...",
-    "button": {
-      "auto_scroll": "Start/Stop auto scroll",
-      "clear_monitor": "Clear the monitor"
+    "mode_page": {
+      "title": "Member Profile",
+
+      "card_id_field": "Member Card ID",
+      "name_field": "Member Name",
+      "nim_field": {
+        "title": "Member NIM",
+        "required": {
+          "empty": "Member NIM can't be empty",
+          "invalid": "Member NIM is invalid"
+        }
+      },
+      "division_field": "Member Division",
+
+      "manual": {
+        "title": "Manual Attendance",
+        "information": "Write a Member NIM below to manually attend on current active event.",
+        "button": "Attend Member"
+      }
+    }
+  },
+
+  "event_page": {
+    "filter": {
+      "not_found": {
+        "title": "No Filtered Event Found",
+        "description": "Search with another name key"
+      }
     },
 
-    "presence_mode": {
-      "title": "Select presence mode",
-      "type": "As {mode}",
-      "list": {
-        "participant": "Participant",
-        "committee": "Committee",
-        "manual": "Manually"
+    "data_state": {
+      "loading": "Load all events data from database....",
+      "no_data": {
+        "title": "Upcoming Events",
+        "description": "Create new events in the Events Page to see them listed here"
+      }
+    },
+
+    "button_option": {
+      "create": "Create Event",
+      "edit": "Edit Event",
+      "delete": "Delete Event",
+      "download": "Download Event Recap"
+    },
+
+    "dialog": {
+      "add_title": "Add New Event",
+      "edit_title": "Edit Event Data",
+
+      "open_file_confirmation": {
+        "title": "Confirm Open File",
+        "message": "Do you want to open this excel file of event recap?"
+      },
+
+      "delete_confirmation": {
+        "title": "Confirm Event Deletion",
+        "message": "Are you sure you want to delete this event?"
+      },
+
+      "name_field": {
+        "title": "Event Name",
+        "required": "Event name can't be empty"
+      },
+
+      "description_field": {
+        "title": "Event Description",
+        "required": "Event description can't be empty"
+      },
+
+      "location_field": {
+        "title": "Event Location",
+        "required": "Event location can't be empty"
+      },
+
+      "date_field": {
+        "title": {
+          "label": "Event Date & Time",
+          "hint": "Select Event Date & Time"
+        },
+        "required": "Event date & time can't be empty"
+      }
+    }
+  },
+
+  "setting_page": {
+    "general": {
+      "title": "General",
+
+      "auto_reconnect_bt": {
+        "title": "Auto Reconnect Bluetooth",
+        "description": "Automatically reconnect to the last connected Bluetooth device when disconnected",
+
+        "max_retries": {
+          "title": "Max Retries",
+          "description": "Number of bluetooth reconnection attempts",
+          "attempt": {
+            "limited": "{max} attempt(s)",
+            "unlimited": "Unlimited"
+          }
+        }
+      },
+
+      "theme": {
+        "title": "Theme",
+        "options": {
+          "light": "Light",
+          "dark": "Dark",
+          "system": "System"
+        }
+      },
+
+      "language": {
+        "title": "Language",
+        "options": {
+          "english": "English",
+          "indonesian": "Indonesian"
+        }
+      }
+    },
+
+    "notifications": {
+      "title": "Notifications",
+
+      "esp32_sim_expired": {
+        "title": "Notify SIM Expired",
+        "description": "Notify when SIM Internet has been expired and must be renewed immediately before the SIM number expires"
+      }
+    },
+
+    "support_about": {
+      "title": "Support & About",
+
+      "faq": {
+        "title": "FAQ",
+
+        "about_app": {
+          "title": "What is an attendance management app?",
+          "description": "@:setting_page.support_about.about_app.description"
+        },
+
+        "register_member": {
+          "title": "How do I register new member with Card ID?",
+          "data_state": {
+            "loading": "Load member registration guide file....",
+            "error": "Error loading member registration FAQ: {error}",
+            "no_data": "No member registration FAQ available."
+          }
+        },
+
+        "upload_excel_file": {
+          "title": "How do I upload all members data Excel to used in member registration?",
+          "data_state": {
+            "loading": "Load upload Excel file guide file....",
+            "error": "Error loading upload Excel file FAQ: {error}",
+            "no_data": "No upload Excel file FAQ available."
+          }
+        },
+
+        "attendance_member": {
+          "title": "How do I attendance a member in active event with Card ID?",
+          "data_state": {
+            "loading": "Load member attendance guide file....",
+            "error": "Error loading member attendance FAQ: {error}",
+            "no_data": "No member attendance FAQ available."
+          }
+        }
+      },
+
+      "privacy_policy": {
+        "title": "Privacy Policy",
+        "data_state": {
+          "loading": "Load privacy policy file....",
+          "error": "Error loading privacy policy: {error}",
+          "no_data": "No privacy policy available."
+        }
+      },
+
+      "terms_of_service": {
+        "title": "Terms of Service",
+        "data_state": {
+          "loading": "Load terms of service file....",
+          "error": "Error loading terms of service: {error}",
+          "no_data": "No terms of service available."
+        }
+      },
+
+      "about_app": {
+        "title": "About Application",
+        "description": "An application designed to help manage members data, events data, and member attendance data for events organized by the Forum Open Source Teknik Informatika (FOSTI) student organization."
       }
     }
   }
