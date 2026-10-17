@@ -1,6 +1,6 @@
-1. Connect App to ESP32 using Bluetooth from Bluetooth Page in Quick Button (+) and search
+1. Connect App to ESP32 using Bluetooth from Bluetooth Page in Quick Button [ + ] and search
    Bluetooth name with name "ESP32-PRESENCE".
-2. Open Attendance page from Quick Button (+).
+2. Open Attendance page from Quick Button [ + ].
 3. Select attendance mode you want to use in active event. There are 4 mode: Participant, Committee,
    BPHI, and Manual (used only when a member submits a leave request or is absent without notice).
 4. Tap the ID card of member you want to attend on active event to the RFID sensor on the ESP32

@@ -1,4 +1,4 @@
-1. Open Members Excel page from Quick Button (+).
+1. Open Members Excel page from Quick Button [ + ].
 2. Click upload icon on top right or if previous excel data has never existed it will appear in
    center of page.
 3. Upload an Excel file format (only support .xlsl) from folder. You can also give a custom name

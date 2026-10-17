@@ -1,6 +1,6 @@
-1. Connect App to ESP32 using Bluetooth from Bluetooth Page in Quick Button (+) and search
+1. Connect App to ESP32 using Bluetooth from Bluetooth Page in Quick Button [ + ] and search
    Bluetooth name with name "ESP32-PRESENCE".
-2. Open Add Member page from Quick Button (+).
+2. Open Add Member page from Quick Button [ + ].
 3. Tap the ID card of the new member you want to register on the RFID sensor on the ESP32 side. Wait
    a few seconds for the card to be detected in the app.
 4. You will be given a form that must be filled in with new member data if the ID card has been
