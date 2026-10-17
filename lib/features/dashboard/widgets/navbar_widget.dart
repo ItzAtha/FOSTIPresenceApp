@@ -72,9 +72,7 @@ class NavbarWidget extends StatelessWidget {
 
     for (int i = 0; i < navbarIconsDestination.length; i++) {
       if (_floatingActionButton != null && i == (navbarIconsDestination.length / 2).floor()) {
-        navbarIcons.add(const SizedBox(width: 8.0));
         navbarIcons.add(_floatingActionButton);
-        navbarIcons.add(const SizedBox(width: 8.0));
       }
       navbarIcons.add(navbarIconsDestination[i]);
     }
@@ -139,7 +137,7 @@ class DestinationNavbarWidget extends StatelessWidget {
     bool isDestinationSelected = navbarScope.selectedIndex == destinationScope.index;
 
     return SizedBox(
-      width: 64.0,
+      width: 72.0,
       child: Material(
         clipBehavior: Clip.antiAlias,
         shape: const RoundedRectangleBorder(
