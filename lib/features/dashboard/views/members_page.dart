@@ -12,9 +12,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../core/utils/connectivity_utils.dart';
-import '../../../../shared/provider/members_notifier.dart';
-import '../../../../translations/locale_keys.g.dart';
+import '../../../core/translations/locale_keys.g.dart';
+import '../../../core/utils/connectivity_utils.dart';
+import '../../../shared/provider/members_notifier.dart';
 import '../widgets/member_card_widget.dart';
 
 part 'members_page.freezed.dart';
@@ -63,8 +63,8 @@ class _MemberPageState extends ConsumerState<MemberPage> {
       if (!mounted) return;
 
       Toastification().show(
-        title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-        description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+        title: Text(LocaleKeys.notification_internet_lost_title.tr(context: context)),
+        description: Text(LocaleKeys.notification_internet_lost_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
@@ -84,7 +84,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
       builder: (context, dialogSetState) {
         return AlertDialog(
           title: Text(
-            LocaleKeys.member_page_dialog_title.tr(context: context),
+            LocaleKeys.member_page_edit_dialog_title.tr(context: context),
             textAlign: TextAlign.center,
           ),
           content: Form(
@@ -98,7 +98,9 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   TextFormField(
                     controller: memberNameController,
                     decoration: InputDecoration(
-                      labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
+                      labelText: LocaleKeys.member_page_edit_dialog_name_field_title.tr(
+                        context: context,
+                      ),
                       hintText: "Andi Setya Budi",
                       icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
                       border: const OutlineInputBorder(),
@@ -109,7 +111,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (String? value) {
                       if (value.toString().isEmpty) {
-                        return LocaleKeys.member_page_dialog_validation_name_required.tr(
+                        return LocaleKeys.member_page_edit_dialog_name_field_required.tr(
                           context: context,
                         );
                       }
@@ -121,7 +123,9 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     controller: memberNIMController,
                     decoration: InputDecoration(
                       isDense: true,
-                      labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
+                      labelText: LocaleKeys.member_page_edit_dialog_nim_field_title.tr(
+                        context: context,
+                      ),
                       hintText: "L200250001",
                       icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
                       border: const OutlineInputBorder(),
@@ -137,15 +141,15 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                       );
 
                       if (value.toString().isEmpty) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_empty.tr(
+                        return LocaleKeys.member_page_edit_dialog_nim_field_required_empty.tr(
                           context: context,
                         );
                       } else if (isNIMExists) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_exists.tr(
+                        return LocaleKeys.member_page_edit_dialog_nim_field_required_exists.tr(
                           context: context,
                         );
                       } else if (!isValidFormat) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_invalid.tr(
+                        return LocaleKeys.member_page_edit_dialog_nim_field_required_invalid.tr(
                           context: context,
                         );
                       }
@@ -160,7 +164,9 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                       DropdownButton<Divisions>(
                         value: selectedDivision,
                         hint: Text(
-                          LocaleKeys.member_page_dialog_field_division.tr(context: context),
+                          LocaleKeys.member_page_edit_dialog_division_field_title.tr(
+                            context: context,
+                          ),
                         ),
                         items: Divisions.values.map((item) {
                           return DropdownMenuItem<Divisions>(
@@ -188,7 +194,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     onPressed: () => validateFormInput(member),
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                     child: Text(
-                      LocaleKeys.member_page_dialog_button_update.tr(context: context),
+                      LocaleKeys.dialog_button_update.tr(context: context),
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
@@ -201,7 +207,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                       foregroundColor: AppColors.dangerZone,
                       side: const BorderSide(color: AppColors.dangerZone),
                     ),
-                    child: Text(LocaleKeys.member_page_dialog_button_cancel.tr(context: context)),
+                    child: Text(LocaleKeys.dialog_button_cancel.tr(context: context)),
                   ),
                 ),
               ],
@@ -233,8 +239,10 @@ class _MemberPageState extends ConsumerState<MemberPage> {
           if (!mounted) return;
 
           Toastification().show(
-            title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-            description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+            title: Text(LocaleKeys.notification_internet_lost_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.notification_internet_lost_description.tr(context: context),
+            ),
             type: ToastificationType.info,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -257,9 +265,9 @@ class _MemberPageState extends ConsumerState<MemberPage> {
 
         if (isSuccess) {
           Toastification().show(
-            title: Text(LocaleKeys.alert_notify_member_title.tr(context: context)),
+            title: Text(LocaleKeys.notification_member_title_main.tr(context: context)),
             description: Text(
-              LocaleKeys.alert_notify_member_description_update_success.tr(context: context),
+              LocaleKeys.notification_member_description_on_update_success.tr(context: context),
             ),
             type: ToastificationType.success,
             style: ToastificationStyle.flat,
@@ -269,9 +277,9 @@ class _MemberPageState extends ConsumerState<MemberPage> {
           );
         } else {
           Toastification().show(
-            title: Text(LocaleKeys.alert_notify_member_title.tr(context: context)),
+            title: Text(LocaleKeys.notification_member_title_main.tr(context: context)),
             description: Text(
-              LocaleKeys.alert_notify_member_description_update_failed.tr(context: context),
+              LocaleKeys.notification_member_description_on_update_failed.tr(context: context),
             ),
             type: ToastificationType.error,
             style: ToastificationStyle.flat,
@@ -304,7 +312,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
           ),
           const SizedBox(height: 16.0),
           Text(
-            LocaleKeys.member_page_loading_data_process.tr(context: context),
+            LocaleKeys.member_page_data_state_loading.tr(context: context),
             style: Theme.of(context).textTheme.labelMedium,
           ),
         ],
@@ -331,7 +339,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            LocaleKeys.member_page_loading_data_no_data_title.tr(context: context),
+                            LocaleKeys.member_page_data_state_no_data_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -342,7 +350,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      LocaleKeys.member_page_loading_data_no_data_description.tr(context: context),
+                      LocaleKeys.member_page_data_state_no_data_description.tr(context: context),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -373,7 +381,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                       const SizedBox(width: 16.0),
                       Expanded(
                         child: Text(
-                          "No Filtered Member Found",
+                          LocaleKeys.member_page_filter_not_found_title.tr(context: context),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
@@ -384,7 +392,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                   const Divider(thickness: 1.5),
                   const SizedBox(height: 8.0),
                   Text(
-                    "Search another name key or select filter category",
+                    LocaleKeys.member_page_filter_not_found_description.tr(context: context),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
@@ -704,13 +712,13 @@ class _FilterSelectorMenuState extends State<FilterSelectorMenu> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              "Filters Members",
+              LocaleKeys.member_page_filter_title.tr(context: context),
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16.0),
             Text(
-              "Sort by Division",
+              LocaleKeys.member_page_filter_by_division.tr(context: context),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
             const Divider(thickness: 0.8, height: 10.0),
@@ -746,7 +754,7 @@ class _FilterSelectorMenuState extends State<FilterSelectorMenu> {
             ),
             const SizedBox(height: 16.0),
             Text(
-              "Sort by Generation",
+              LocaleKeys.member_page_filter_by_generation.tr(context: context),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
             const Divider(thickness: 0.8, height: 10.0),
@@ -799,7 +807,10 @@ class _FilterSelectorMenuState extends State<FilterSelectorMenu> {
                       padding: const EdgeInsets.symmetric(vertical: AppSizes.p12),
                       side: BorderSide(color: Colors.grey.shade600),
                     ),
-                    child: Text("Clear", style: Theme.of(context).textTheme.labelLarge),
+                    child: Text(
+                      LocaleKeys.filter_clear.tr(context: context),
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 15.0),
@@ -814,7 +825,7 @@ class _FilterSelectorMenuState extends State<FilterSelectorMenu> {
                       padding: const EdgeInsets.symmetric(vertical: AppSizes.p12),
                     ),
                     child: Text(
-                      "Apply",
+                      LocaleKeys.filter_apply.tr(context: context),
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
                     ),
                   ),

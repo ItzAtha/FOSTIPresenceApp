@@ -1,4 +1,6 @@
+import 'package:attendance_management/core/translations/locale_keys.g.dart';
 import 'package:attendance_management/routes/app_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -48,7 +50,6 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
     AppRouter.router.routerDelegate.addListener(handleRouteChange);
   }
 
-
   @override
   void dispose() {
     AppRouter.router.routerDelegate.removeListener(handleRouteChange);
@@ -57,6 +58,9 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    String generation =
+        "${widget._nim.substring(4, 6)}/${((int.tryParse(widget._nim.substring(4, 6)) ?? 0) + 1).toString()}";
+
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
         setState(() {
@@ -96,17 +100,26 @@ class _MemberCardWidgetState extends State<MemberCardWidget> {
                             children: [
                               Text(widget._name, style: Theme.of(context).textTheme.titleSmall),
                               Text(
-                                'NIM: ${widget._nim}',
+                                LocaleKeys.member_page_card_label_nim.tr(
+                                  context: context,
+                                  namedArgs: {'nim': widget._nim},
+                                ),
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                               Text(
-                                'Division: ${widget._division.name}',
+                                LocaleKeys.member_page_card_label_division.tr(
+                                  context: context,
+                                  namedArgs: {'division': widget._division.name},
+                                ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                               Text(
-                                'Generation: ${widget._nim.substring(4, 6)}/${((int.tryParse(widget._nim.substring(4, 6)) ?? 0) + 1).toString()}',
+                                LocaleKeys.member_page_card_label_generation.tr(
+                                  context: context,
+                                  namedArgs: {'generation': generation},
+                                ),
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                             ],

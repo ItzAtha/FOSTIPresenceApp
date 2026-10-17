@@ -16,9 +16,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../core/app_constants.dart';
+import '../../../core/translations/locale_keys.g.dart';
 import '../../../core/utils/string_similar.dart';
 import '../../../routes/app_router.dart';
-import '../../../translations/locale_keys.g.dart';
 import '../widgets/member_excel_card_widget.dart';
 
 class MembersExcelPage extends StatefulWidget {
@@ -322,9 +322,9 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
 
           Toastification().show(
             context: context,
-            title: Text(LocaleKeys.alert_notify_file_title.tr(context: context)),
+            title: Text(LocaleKeys.notification_upload_file_title.tr(context: context)),
             description: Text(
-              LocaleKeys.alert_notify_file_description_success_set.tr(
+              LocaleKeys.notification_upload_file_description_on_add_success.tr(
                 context: context,
                 namedArgs: {'fileName': fileName},
               ),
@@ -343,9 +343,9 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
           if (!mounted) return;
 
           Toastification().show(
-            title: Text(LocaleKeys.alert_notify_file_title.tr(context: context)),
+            title: Text(LocaleKeys.notification_upload_file_title.tr(context: context)),
             description: Text(
-              LocaleKeys.alert_notify_file_description_fail_set.tr(
+              LocaleKeys.notification_upload_file_description_on_add_failed.tr(
                 context: context,
                 namedArgs: {'fileName': fileName},
               ),
@@ -393,7 +393,10 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(AppSizes.mediumRounded)),
       ),
-      title: const Text("Add Excel Data", textAlign: TextAlign.center),
+      title: Text(
+        LocaleKeys.excel_upload_page_dialog_add_title.tr(context: context),
+        textAlign: TextAlign.center,
+      ),
       content: Form(
         key: formKey,
         canPop: false,
@@ -417,7 +420,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                       const SizedBox(width: 16.0),
                       Expanded(
                         child: Text(
-                          "You can leave the field below blank to create a file name that matches the file you have uploaded.",
+                          LocaleKeys.excel_upload_page_dialog_add_information.tr(context: context),
                           textAlign: TextAlign.justify,
                           style: Theme.of(context).textTheme.labelLarge,
                         ),
@@ -429,15 +432,15 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
               const SizedBox(height: 32.0),
               TextFormField(
                 controller: excelNameController,
-                decoration: const InputDecoration(
-                  labelText: "Excel Name",
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.excel_upload_page_dialog_name_field.tr(context: context),
                   hintText: "Daftar Anggota FOSTI 202X.xlsx",
-                  prefixIcon: Center(
+                  prefixIcon: const Center(
                     widthFactor: 1.0,
                     child: FaIcon(FontAwesomeIcons.fileLines, size: 24.0),
                   ),
                   suffixText: ".xlsx",
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.name,
                 textInputAction: TextInputAction.next,
@@ -447,7 +450,9 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
               FormField<PlatformFile>(
                 validator: (file) {
                   if (file == null) {
-                    return 'Please select an Excel file';
+                    return LocaleKeys.excel_upload_page_dialog_upload_field_required.tr(
+                      context: context,
+                    );
                   }
                   return null;
                 },
@@ -467,7 +472,13 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                           color: Theme.of(context).iconTheme.color,
                         ),
                         label: Text(
-                          file == null ? 'Choose Excel File' : 'Change Excel File',
+                          file == null
+                              ? LocaleKeys.excel_upload_page_dialog_upload_field_title_choose.tr(
+                                  context: context,
+                                )
+                              : LocaleKeys.excel_upload_page_dialog_upload_field_title_change.tr(
+                                  context: context,
+                                ),
                           style: Theme.of(context).textTheme.labelLarge,
                         ),
                         style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48.0)),
@@ -500,7 +511,9 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                                       ),
                                     ),
                                     Text(
-                                      'Excel file',
+                                      LocaleKeys.excel_upload_page_dialog_file_label.tr(
+                                        context: context,
+                                      ),
                                       style: theme.textTheme.labelSmall?.copyWith(
                                         color: theme.textTheme.labelSmall?.color?.withValues(
                                           alpha: 0.6,
@@ -545,7 +558,10 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
               child: ElevatedButton(
                 onPressed: () => validateFormInput(),
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                child: const Text("Add", style: TextStyle(color: Colors.white)),
+                child: Text(
+                  LocaleKeys.dialog_button_add.tr(context: context),
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ),
             const SizedBox(width: 24.0),
@@ -560,7 +576,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                   foregroundColor: AppColors.dangerZone,
                   side: const BorderSide(color: AppColors.dangerZone),
                 ),
-                child: Text(LocaleKeys.event_page_dialog_button_cancel.tr(context: context)),
+                child: Text(LocaleKeys.dialog_button_cancel.tr(context: context)),
               ),
             ),
           ],
@@ -607,7 +623,10 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(AppSizes.mediumRounded)),
       ),
-      title: const Text("Edit Excel Name", textAlign: TextAlign.center),
+      title: Text(
+        LocaleKeys.excel_upload_page_dialog_edit_title.tr(context: context),
+        textAlign: TextAlign.center,
+      ),
       content: Form(
         key: formKey,
         canPop: false,
@@ -619,15 +638,15 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
               const SizedBox(height: 16.0),
               TextFormField(
                 controller: excelNameController,
-                decoration: const InputDecoration(
-                  labelText: "Excel Name",
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.excel_upload_page_dialog_name_field.tr(context: context),
                   hintText: "Daftar Anggota FOSTI 202X.xlsx",
-                  prefixIcon: Center(
+                  prefixIcon: const Center(
                     widthFactor: 1.0,
                     child: FaIcon(FontAwesomeIcons.fileLines, size: 24.0),
                   ),
                   suffixText: ".xlsx",
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.name,
                 textInputAction: TextInputAction.next,
@@ -651,6 +670,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
 
                   if (newFileName.compareTo(oldFileName) == 0) return;
 
+                  bool isSuccess = false;
                   if (await fileData.exists()) {
                     File oldFileData = fileData;
 
@@ -674,6 +694,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                         membersTotalList = getMembersTotalList();
                       });
 
+                      isSuccess = true;
                       if (kDebugMode) {
                         debugPrint("File successfully renamed to: ${newFile.path}");
                       }
@@ -688,10 +709,47 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                     }
                   }
 
+                  if (!mounted) return;
+
+                  if (isSuccess) {
+                    Toastification().show(
+                      title: Text(LocaleKeys.notification_upload_file_title.tr(context: context)),
+                      description: Text(
+                        LocaleKeys.notification_upload_file_description_on_update_success.tr(
+                          context: context,
+                          namedArgs: {'fileName': oldFileName, 'newFileName': newFileName},
+                        ),
+                      ),
+                      type: ToastificationType.success,
+                      style: ToastificationStyle.flat,
+                      alignment: Alignment.bottomCenter,
+                      autoCloseDuration: const Duration(seconds: 2),
+                      animationDuration: const Duration(milliseconds: 500),
+                    );
+                  } else {
+                    Toastification().show(
+                      title: Text(LocaleKeys.notification_upload_file_title.tr(context: context)),
+                      description: Text(
+                        LocaleKeys.notification_upload_file_description_on_update_failed.tr(
+                          context: context,
+                          namedArgs: {'fileName': oldFileName, 'newFileName': newFileName},
+                        ),
+                      ),
+                      type: ToastificationType.error,
+                      style: ToastificationStyle.flat,
+                      alignment: Alignment.bottomCenter,
+                      autoCloseDuration: const Duration(seconds: 2),
+                      animationDuration: const Duration(milliseconds: 500),
+                    );
+                  }
+
                   if (mounted) context.pop();
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                child: const Text("Edit", style: TextStyle(color: Colors.white)),
+                child: Text(
+                  LocaleKeys.dialog_button_update.tr(context: context),
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ),
             const SizedBox(width: 24.0),
@@ -706,7 +764,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                   foregroundColor: AppColors.dangerZone,
                   side: const BorderSide(color: AppColors.dangerZone),
                 ),
-                child: Text(LocaleKeys.event_page_dialog_button_cancel.tr(context: context)),
+                child: Text(LocaleKeys.dialog_button_cancel.tr(context: context)),
               ),
             ),
           ],
@@ -737,14 +795,19 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
       ),
       builder: (dialogContext) {
         return SimpleDialog(
-          title: const Text("Delete Confirmation", textAlign: TextAlign.center),
+          title: Text(
+            LocaleKeys.excel_upload_page_dialog_delete_confirmation_title.tr(context: context),
+            textAlign: TextAlign.center,
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
               child: Column(
                 children: <Widget>[
-                  const Text(
-                    "Are you sure you want to delete this file?",
+                  Text(
+                    LocaleKeys.excel_upload_page_dialog_delete_confirmation_message.tr(
+                      context: context,
+                    ),
                     textAlign: TextAlign.justify,
                   ),
                   const SizedBox(height: 25.0),
@@ -756,7 +819,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                           onPressed: () => dialogContext.pop(DialogAcceptance.YES),
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                           child: Text(
-                            LocaleKeys.event_page_dialog_button_yes.tr(context: dialogContext),
+                            LocaleKeys.dialog_button_yes.tr(context: dialogContext),
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -769,9 +832,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                             foregroundColor: AppColors.dangerZone,
                             side: const BorderSide(color: AppColors.dangerZone),
                           ),
-                          child: Text(
-                            LocaleKeys.event_page_dialog_button_no.tr(context: dialogContext),
-                          ),
+                          child: Text(LocaleKeys.dialog_button_no.tr(context: dialogContext)),
                         ),
                       ),
                     ],
@@ -786,8 +847,6 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
 
     if (answer == DialogAcceptance.YES) {
       bool isSuccess = false;
-
-      if (!mounted) return;
 
       File oldFileData = fileData;
       if (await fileData.exists()) {
@@ -805,12 +864,16 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
         }
       }
 
+      if (!mounted) return;
+
       if (isSuccess) {
         setState(() => workbooks.remove(oldFileData));
 
         Toastification().show(
-          title: const Text("Excel File"),
-          description: const Text("Successfully delete Excel file"),
+          title: Text(LocaleKeys.notification_upload_file_title.tr(context: context)),
+          description: Text(
+            LocaleKeys.notification_upload_file_description_on_delete_success.tr(context: context),
+          ),
           type: ToastificationType.success,
           style: ToastificationStyle.flat,
           alignment: Alignment.bottomCenter,
@@ -819,8 +882,10 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
         );
       } else {
         Toastification().show(
-          title: const Text("Excel File"),
-          description: const Text("Failed to delete Excel file"),
+          title: Text(LocaleKeys.notification_upload_file_title.tr(context: context)),
+          description: Text(
+            LocaleKeys.notification_upload_file_description_on_delete_failed.tr(context: context),
+          ),
           type: ToastificationType.error,
           style: ToastificationStyle.flat,
           alignment: Alignment.bottomCenter,
@@ -850,7 +915,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
           ),
           const SizedBox(height: 16.0),
           Text(
-            "Load all members data excel from folder...",
+            LocaleKeys.excel_upload_page_data_state_loading.tr(context: context),
             style: Theme.of(context).textTheme.labelMedium,
           ),
         ],
@@ -878,7 +943,9 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            "Members Excel Data",
+                            LocaleKeys.excel_upload_page_data_state_no_data_title.tr(
+                              context: context,
+                            ),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -889,7 +956,9 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "No members Excel data found! Add a new one member Excel data to see it in here.",
+                      LocaleKeys.excel_upload_page_data_state_no_data_description.tr(
+                        context: context,
+                      ),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -903,12 +972,19 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                         minimumSize: Size.zero,
                         padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Text("Add", style: TextStyle(color: Colors.white)),
-                          SizedBox(width: 8.0),
-                          FaIcon(FontAwesomeIcons.calendarPlus, size: 20.0, color: Colors.white),
+                          Text(
+                            LocaleKeys.dialog_button_add.tr(context: context),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          const SizedBox(width: 8.0),
+                          const FaIcon(
+                            FontAwesomeIcons.calendarPlus,
+                            size: 20.0,
+                            color: Colors.white,
+                          ),
                         ],
                       ),
                     ),
@@ -939,7 +1015,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                       const SizedBox(width: 16.0),
                       Expanded(
                         child: Text(
-                          "No Filtered Excel Found",
+                          LocaleKeys.excel_upload_page_filter_not_found_title.tr(context: context),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
@@ -950,7 +1026,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                   const Divider(thickness: 1.5),
                   const SizedBox(height: 8.0),
                   Text(
-                    "Search with another name key",
+                    LocaleKeys.excel_upload_page_filter_not_found_description.tr(context: context),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
@@ -1011,7 +1087,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
                         },
                       ),
                   ],
-                  hintText: "Search excel file.....",
+                  hintText: LocaleKeys.search_bar_excel.tr(context: context),
                   textInputAction: TextInputAction.search,
                   onChanged: (String value) {
                     setState(() {
@@ -1205,7 +1281,7 @@ class _MembersExcelPageState extends State<MembersExcelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Members Excel'),
+        title: Text(LocaleKeys.excel_upload_page_title_main.tr(context: context)),
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: BackButton(

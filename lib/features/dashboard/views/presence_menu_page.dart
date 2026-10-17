@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:attendance_management/core/translations/locale_keys.g.dart';
 import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/events_logs_notifier.dart';
@@ -18,7 +19,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart';
 import '../../../core/utils/debouncer.dart';
 import '../../../core/utils/members_data_factory.dart';
@@ -55,7 +55,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            "Bluetooth Device",
+                            LocaleKeys.alert_card_no_bluetooth_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -66,7 +66,9 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before pick a mode for attendance.",
+                      LocaleKeys.alert_card_no_bluetooth_description_on_attendance.tr(
+                        context: context,
+                      ),
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -86,13 +88,13 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         elevation: 5.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'PARTICIPANT'),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'PARTICIPANT').push(context),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
               children: [
                 Text(
-                  "Attendance as Participant",
+                  LocaleKeys.attendance_page_mode_options_as_participant.tr(context: context),
                   style: Theme.of(context).textTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
@@ -118,13 +120,13 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         elevation: 5.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'COMMITTEE'),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'COMMITTEE').push(context),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
               children: [
                 Text(
-                  "Attendance as Committee",
+                  LocaleKeys.attendance_page_mode_options_as_committee.tr(context: context),
                   style: Theme.of(context).textTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
@@ -150,13 +152,13 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         clipBehavior: Clip.antiAlias,
         elevation: 5.0,
         child: InkWell(
-          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'BPHI'),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'BPHI').push(context),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
               children: [
                 Text(
-                  "Attendance as BPHI",
+                  LocaleKeys.attendance_page_mode_options_as_bphi.tr(context: context),
                   style: Theme.of(context).textTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
@@ -182,13 +184,13 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
         elevation: 5.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'MANUAL'),
+          onTap: () => const MemberAttendanceModeRoute(attendanceMode: 'MANUAL').push(context),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.p16),
             child: Column(
               children: [
                 Text(
-                  "Manual Attendance",
+                  LocaleKeys.attendance_page_mode_options_manual.tr(context: context),
                   style: Theme.of(context).textTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
@@ -264,7 +266,7 @@ class _PresenceMenuPageState extends State<PresenceMenuPage> {
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: Text(LocaleKeys.control_panel_page_title_presence.tr(context: context)),
+        title: Text(LocaleKeys.attendance_page_title.tr(context: context)),
         leading: BackButton(
           style: const ButtonStyle(
             backgroundColor: WidgetStatePropertyAll<Color>(Colors.transparent),
@@ -394,10 +396,15 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 "status": "MEMBER_ALREADY_ATTENDANCE",
               };
 
+              if (!mounted) return;
+
               Toastification().show(
-                title: const Text("Member Manual Attendance"),
+                title: Text(LocaleKeys.notification_attendance_title_manual.tr(context: context)),
                 description: Text(
-                  "Member with NIM ${member?.nim} has already attended the active event.",
+                  LocaleKeys.notification_attendance_description_manual_has_attend.tr(
+                    context: context,
+                    namedArgs: {'nim': ?member?.nim},
+                  ),
                 ),
                 type: ToastificationType.error,
                 style: ToastificationStyle.flat,
@@ -419,9 +426,16 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 "status": "MEMBER_NOT_EXISTS",
               };
 
+              if (!mounted) return;
+
               Toastification().show(
-                title: const Text("Member Manual Attendance"),
-                description: Text("Member with NIM $nim is not exists."),
+                title: Text(LocaleKeys.notification_attendance_title_manual.tr(context: context)),
+                description: Text(
+                  LocaleKeys.notification_attendance_description_manual_not_exists.tr(
+                    context: context,
+                    namedArgs: {'nim': nim},
+                  ),
+                ),
                 type: ToastificationType.error,
                 style: ToastificationStyle.flat,
                 alignment: Alignment.bottomCenter,
@@ -439,9 +453,15 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
               jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
 
+              if (!mounted) return;
+
               Toastification().show(
-                title: const Text("Member Manual Attendance"),
-                description: const Text("No active event found."),
+                title: Text(LocaleKeys.notification_attendance_title_manual.tr(context: context)),
+                description: Text(
+                  LocaleKeys.notification_attendance_description_no_active_event.tr(
+                    context: context,
+                  ),
+                ),
                 type: ToastificationType.error,
                 style: ToastificationStyle.flat,
                 alignment: Alignment.bottomCenter,
@@ -499,8 +519,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 ? ToastificationType.success
                 : ToastificationType.error;
 
+            if (!mounted) return;
+
             Toastification().show(
-              title: const Text("Member Attendance"),
+              title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
               description: Text(callbackMsg),
               type: notificationType,
               style: ToastificationStyle.flat,
@@ -511,9 +533,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
             if (isSuccess) memberNIMController.clear();
           } on TimeoutException {
+            if (!mounted) return;
+
             Toastification().show(
-              title: const Text("Member Attendance"),
-              description: const Text("Request timeout. Please try again."),
+              title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
+              description: Text(
+                LocaleKeys.notification_attendance_description_request_timeout.tr(context: context),
+              ),
               type: ToastificationType.error,
               style: ToastificationStyle.flat,
               alignment: Alignment.bottomCenter,
@@ -532,8 +558,12 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           }
         } else {
           Toastification().show(
-            title: const Text("Bluetooth Device"),
-            description: const Text("No Bluetooth device connected. Cannot send data."),
+            title: Text(LocaleKeys.notification_bluetooth_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.notification_bluetooth_description_no_device_connected.tr(
+                context: context,
+              ),
+            ),
             type: ToastificationType.warning,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -565,7 +595,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            "Bluetooth Device",
+                            LocaleKeys.alert_card_no_bluetooth_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -576,7 +606,9 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before attendance.",
+                      LocaleKeys.alert_card_no_bluetooth_description_on_attendance.tr(
+                        context: context,
+                      ),
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -609,7 +641,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            "Member Attendance",
+                            LocaleKeys.alert_card_no_card_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -620,7 +652,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "No Member attend the active event. Please tap the Member Card Id to RFID sensor to attend and show data in here.",
+                      LocaleKeys.alert_card_no_card_description_on_attendance.tr(context: context),
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -663,7 +695,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
         padding: const EdgeInsets.all(AppSizes.p16),
         child: Column(
           children: <Widget>[
-            Text("Member Profile", style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              LocaleKeys.attendance_page_mode_page_title.tr(context: context),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 16.0),
             SizedBox(
               height: 150.0,
@@ -700,56 +735,56 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             TextField(
               readOnly: true,
               controller: memberIdCardController,
-              decoration: const InputDecoration(
-                labelText: "Member ID",
-                prefixIcon: SizedBox(
+              decoration: InputDecoration(
+                labelText: LocaleKeys.attendance_page_mode_page_title.tr(context: context),
+                prefixIcon: const SizedBox(
                   width: 48,
                   height: 48,
                   child: Center(child: FaIcon(FontAwesomeIcons.idCard)),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               readOnly: true,
               controller: memberNameController,
-              decoration: const InputDecoration(
-                labelText: "Member Name",
-                prefixIcon: SizedBox(
+              decoration: InputDecoration(
+                labelText: LocaleKeys.attendance_page_mode_page_name_field.tr(context: context),
+                prefixIcon: const SizedBox(
                   width: 48,
                   height: 48,
                   child: Center(child: FaIcon(FontAwesomeIcons.solidUser)),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               readOnly: true,
               controller: memberNIMController,
-              decoration: const InputDecoration(
-                labelText: "Member NIM",
-                prefixIcon: SizedBox(
+              decoration: InputDecoration(
+                labelText: LocaleKeys.attendance_page_mode_page_nim_field.tr(context: context),
+                prefixIcon: const SizedBox(
                   width: 48,
                   height: 48,
                   child: Center(child: FaIcon(FontAwesomeIcons.creditCard)),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               readOnly: true,
               controller: memberDivisionController,
-              decoration: const InputDecoration(
-                labelText: "Member Division",
-                prefixIcon: SizedBox(
+              decoration: InputDecoration(
+                labelText: LocaleKeys.attendance_page_mode_page_division_field.tr(context: context),
+                prefixIcon: const SizedBox(
                   width: 48,
                   height: 48,
                   child: Center(child: FaIcon(FontAwesomeIcons.sitemap)),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
               ),
             ),
           ],
@@ -764,7 +799,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
         padding: const EdgeInsets.all(AppSizes.p16),
         child: Column(
           children: <Widget>[
-            Text("Manual Attendance", style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              LocaleKeys.attendance_page_mode_page_manual_title.tr(context: context),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 16.0),
             Container(
               decoration: BoxDecoration(
@@ -781,7 +819,9 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                     const SizedBox(width: 16.0),
                     Expanded(
                       child: Text(
-                        "Write a Member NIM below to manually attend on current active event.",
+                        LocaleKeys.attendance_page_mode_page_manual_information.tr(
+                          context: context,
+                        ),
                         textAlign: TextAlign.justify,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
@@ -801,7 +841,9 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                   TextFormField(
                     controller: memberNIMController,
                     decoration: InputDecoration(
-                      labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
+                      labelText: LocaleKeys.attendance_page_mode_page_nim_field_title.tr(
+                        context: context,
+                      ),
                       hintText: "L200250001",
                       icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
                       errorMaxLines: 2,
@@ -812,13 +854,13 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                       bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
 
                       if (value.toString().isEmpty) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_empty.tr(
+                        return LocaleKeys.attendance_page_mode_page_nim_field_required_empty.tr(
                           context: context,
                         );
                       } else if (!isValidFormat ||
                           value.toString().length < 10 ||
                           value.toString().length > 10) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_invalid.tr(
+                        return LocaleKeys.attendance_page_mode_page_nim_field_required_invalid.tr(
                           context: context,
                         );
                       }
@@ -845,7 +887,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                               );
                             },
                           )
-                        : Text("Attend Member", style: Theme.of(context).textTheme.labelLarge),
+                        : Text(
+                            LocaleKeys.attendance_page_mode_page_manual_button.tr(context: context),
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
                   ),
                 ],
               ),
@@ -936,8 +981,12 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           if (device != null) {
             setState(() => isIdCardDetected = true);
             Toastification().show(
-              title: const Text("Member Attendance"),
-              description: const Text("Member card detected! Validating data, please wait...."),
+              title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
+              description: Text(
+                LocaleKeys.notification_attendance_description_main_card_detected.tr(
+                  context: context,
+                ),
+              ),
               type: ToastificationType.info,
               style: ToastificationStyle.flat,
               alignment: Alignment.bottomCenter,
@@ -978,10 +1027,15 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                   "status": "MEMBER_ALREADY_ATTENDANCE",
                 };
 
+                if (!context.mounted) return;
+
                 Toastification().show(
-                  title: const Text("Member Attendance"),
+                  title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
                   description: Text(
-                    "Member with Card Id $cardUID has already attended the active event.",
+                    LocaleKeys.notification_attendance_description_main_has_attend.tr(
+                      context: context,
+                      namedArgs: {'cardId': cardUID},
+                    ),
                   ),
                   type: ToastificationType.error,
                   style: ToastificationStyle.flat,
@@ -1000,9 +1054,16 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                   "status": "MEMBER_NOT_EXISTS",
                 };
 
+                if (!context.mounted) return;
+
                 Toastification().show(
-                  title: const Text("Member Attendance"),
-                  description: Text("Member with Card Id $cardUID is not exists."),
+                  title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.notification_attendance_description_main_not_exists.tr(
+                      context: context,
+                      namedArgs: {'cardId': cardUID},
+                    ),
+                  ),
                   type: ToastificationType.error,
                   style: ToastificationStyle.flat,
                   alignment: Alignment.bottomCenter,
@@ -1017,9 +1078,15 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
                 jsonPayload = {"message": "No active event found.", "status": "EVENT_NOT_EXISTS"};
 
+                if (!context.mounted) return;
+
                 Toastification().show(
-                  title: const Text("Member Attendance"),
-                  description: const Text("No active event found."),
+                  title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
+                  description: Text(
+                    LocaleKeys.notification_attendance_description_no_active_event.tr(
+                      context: context,
+                    ),
+                  ),
                   type: ToastificationType.error,
                   style: ToastificationStyle.flat,
                   alignment: Alignment.bottomCenter,
@@ -1035,8 +1102,12 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             bleService.sendBluetoothData(device, encodeData);
           } else {
             Toastification().show(
-              title: const Text("Bluetooth Device"),
-              description: const Text("No Bluetooth device connected. Cannot send data."),
+              title: Text(LocaleKeys.notification_bluetooth_title.tr(context: context)),
+              description: Text(
+                LocaleKeys.notification_bluetooth_description_no_device_connected.tr(
+                  context: context,
+                ),
+              ),
               type: ToastificationType.warning,
               style: ToastificationStyle.flat,
               alignment: Alignment.bottomCenter,
@@ -1053,8 +1124,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           manualAttendanceStatus = ManualAttendanceStatus.failed;
         } else if (decodedData['status'] == "TIMEOUT_NO_DATA") {
           Toastification().show(
-            title: const Text("Member Attendance"),
-            description: const Text("Request timeout. Please try again."),
+            title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
+            description: Text(
+              LocaleKeys.notification_attendance_description_request_timeout.tr(context: context),
+            ),
             type: ToastificationType.error,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -1090,8 +1163,11 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
           }
 
           setState(() => isIdCardDetected = false);
+
+          if (!context.mounted) return;
+
           Toastification().show(
-            title: const Text("Member Attendance"),
+            title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
             description: Text(decodedData['message']),
             type: notificationType,
             style: ToastificationStyle.flat,

@@ -11,6 +11,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
+import 'core/translations/locale_keys.g.dart';
+
 class MainApp extends StatefulWidget {
   const MainApp({super.key, required this.savedThemeData});
 
@@ -65,7 +67,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     bleToastSubscription = backgroundService.on('ble_toast_callback').listen((data) {
       if (data != null) {
         Toastification().show(
-          title: const Text("Bluetooth Device"),
+          title: Text(LocaleKeys.notification_bluetooth_title.tr()),
           description: Text(data['message']),
           type: ToastificationType.info,
           style: ToastificationStyle.flat,
@@ -79,7 +81,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     simToastSubscription = backgroundService.on('sim_toast_callback').listen((data) {
       if (data != null) {
         Toastification().show(
-          title: const Text("SIM Quota"),
+          title: Text(LocaleKeys.notification_esp32_sim_title.tr()),
           description: Text(data['message']),
           type: ToastificationType.info,
           style: ToastificationStyle.flat,

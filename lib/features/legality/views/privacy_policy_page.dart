@@ -1,4 +1,5 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_constants.dart';
+import '../../../core/translations/locale_keys.g.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
@@ -18,7 +20,9 @@ class PrivacyPolicyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacy Policy'),
+        title: Text(
+          LocaleKeys.setting_page_support_about_privacy_policy_title.tr(context: context),
+        ),
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: BackButton(
@@ -34,31 +38,50 @@ class PrivacyPolicyPage extends StatelessWidget {
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
-                child: ValueListenableBuilder(
-                  valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
-                  builder: (_, mode, child) {
-                    return CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        mode == AdaptiveThemeMode.light
-                            ? AppColors.secondary
-                            : AppColors.secondary.withValues(alpha: 0.6),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    ValueListenableBuilder(
+                      valueListenable: AdaptiveTheme.of(context).modeChangeNotifier,
+                      builder: (_, mode, child) {
+                        return CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            mode == AdaptiveThemeMode.light
+                                ? AppColors.secondary
+                                : AppColors.secondary.withValues(alpha: 0.6),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    Text(
+                      LocaleKeys.setting_page_support_about_privacy_policy_data_state_loading.tr(
+                        context: context,
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               );
             } else if (snapshot.hasError) {
               return Center(
                 child: Text(
-                  'Error loading privacy policy: \n${snapshot.error}',
+                  LocaleKeys.setting_page_support_about_privacy_policy_data_state_error.tr(
+                    context: context,
+                    namedArgs: {'error': snapshot.error.toString()},
+                  ),
                   textAlign: TextAlign.center,
                 ),
               );
             } else {
               return Scrollbar(
                 child: Markdown(
-                  data: snapshot.data ?? 'No privacy policy available.',
+                  data:
+                      snapshot.data ??
+                      LocaleKeys.setting_page_support_about_privacy_policy_data_state_no_data.tr(
+                        context: context,
+                      ),
                   padding: const EdgeInsets.all(AppSizes.p16),
+                  physics: const BouncingScrollPhysics(),
                   onTapLink: (text, url, title) {
                     if (url != null) {
                       launchUrl(Uri.parse(url));

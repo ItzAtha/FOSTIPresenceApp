@@ -1,5 +1,7 @@
+import 'package:attendance_management/core/translations/locale_keys.g.dart';
 import 'package:attendance_management/features/dashboard/views/faq/member_excel_upload_faq_viewer.dart';
 import 'package:attendance_management/features/dashboard/widgets/faq_expansion_tile.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -18,23 +20,20 @@ class _FrequentlyAskQuestionPageState extends State<FrequentlyAskQuestionPage> {
   bool isFAQOpened = false;
 
   final List<FaqExpansionTile> faqList = [
-    const FaqExpansionTile(
-      title: "What is an attendance management app?",
-      description: Text(
-        "An application designed to help manage members data, events data, and member attendance data "
-        "for events organized by the Forum Open Source Teknik Informatika (FOSTI) student organization.",
-      ),
+    FaqExpansionTile(
+      title: LocaleKeys.setting_page_support_about_faq_about_app_title,
+      description: Text(LocaleKeys.setting_page_support_about_faq_about_app_description.tr()),
     ),
     const FaqExpansionTile(
-      title: "How do I register new member with Card ID?",
+      title: LocaleKeys.setting_page_support_about_faq_register_member_title,
       description: MemberRegisterFAQViewer(),
     ),
     const FaqExpansionTile(
-      title: "How do I upload all members data Excel to used in member registration?",
+      title: LocaleKeys.setting_page_support_about_faq_upload_excel_file_title,
       description: MemberExcelUploadFAQViewer(),
     ),
     const FaqExpansionTile(
-      title: "How do I attendance a member in active event with Card ID?",
+      title: LocaleKeys.setting_page_support_about_faq_attendance_member_title,
       description: MemberAttendanceFAQViewer(),
     ),
   ];
@@ -43,7 +42,7 @@ class _FrequentlyAskQuestionPageState extends State<FrequentlyAskQuestionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FAQ'),
+        title: Text(LocaleKeys.setting_page_support_about_faq_title.tr(context: context)),
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: BackButton(

@@ -2,7 +2,6 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/shared/models/event_model.dart';
 import 'package:attendance_management/shared/models/member_model.dart';
 import 'package:attendance_management/shared/provider/members_notifier.dart';
-import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/app_constants.dart';
+import '../../../core/translations/locale_keys.g.dart';
 import '../../../shared/provider/events_notifier.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -61,7 +61,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         const FaIcon(FontAwesomeIcons.calendarCheck, color: Colors.white),
                         const SizedBox(width: 8.0),
                         Text(
-                          LocaleKeys.home_page_stats_title_active_event.tr(context: context),
+                          LocaleKeys.home_page_stats_active_event_title.tr(context: context),
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(color: Colors.white),
                         ),
@@ -80,7 +80,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                           if (events.isEmpty || activeEvent == null) {
                             return Text(
-                              LocaleKeys.home_page_no_active_event.tr(context: context),
+                              LocaleKeys.home_page_stats_active_event_no_event_desc.tr(
+                                context: context,
+                              ),
                               style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(color: Colors.grey),
                               textAlign: TextAlign.center,
@@ -124,7 +126,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                           },
                         ),
                         error: (error, stackTrace) => Text(
-                          LocaleKeys.home_page_no_active_event.tr(context: context),
+                          LocaleKeys.home_page_stats_active_event_no_event_desc.tr(
+                            context: context,
+                          ),
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(color: Colors.grey),
                           textAlign: TextAlign.center,
@@ -159,9 +163,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  LocaleKeys.home_page_stats_title_total_members.tr(
-                                    context: context,
-                                  ),
+                                  LocaleKeys.home_page_stats_total_member.tr(context: context),
                                   style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
@@ -234,9 +236,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  LocaleKeys.home_page_stats_title_total_events.tr(
-                                    context: context,
-                                  ),
+                                  LocaleKeys.home_page_stats_total_event.tr(context: context),
                                   style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                                 ),

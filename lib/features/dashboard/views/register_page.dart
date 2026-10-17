@@ -14,8 +14,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/members_data_factory.dart';
-import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart';
+import '../../../core/translations/locale_keys.g.dart';
 import '../../../core/utils/debouncer.dart';
 import '../../../shared/models/member_model.dart';
 import '../../../shared/service/ble_service.dart';
@@ -69,9 +69,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         BluetoothDevice? device = bleService.connectedDevice;
         if (device == null) {
           Toastification().show(
-            title: const Text("Bluetooth Device"),
-            description: const Text("No Bluetooth device connected. Cannot send data."),
-            type: ToastificationType.success,
+            title: Text(LocaleKeys.notification_bluetooth_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.notification_bluetooth_description_no_device_connected.tr(
+                context: context,
+              ),
+            ),
+            type: ToastificationType.warning,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
             autoCloseDuration: const Duration(seconds: 2),
@@ -129,8 +133,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               ? ToastificationType.success
               : ToastificationType.error;
 
+          if (!mounted) return;
+
           Toastification().show(
-            title: const Text("Member Register"),
+            title: Text(LocaleKeys.notification_member_title_register.tr(context: context)),
             description: Text(callbackMsg),
             type: notificationType,
             style: ToastificationStyle.flat,
@@ -142,8 +148,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           if (isSuccess) ref.invalidate(membersProvider);
         } on TimeoutException {
           Toastification().show(
-            title: const Text("Member Register"),
-            description: const Text("Request timeout. Please try again."),
+            title: Text(LocaleKeys.notification_member_title_register.tr(context: context)),
+            description: Text(
+              LocaleKeys.notification_member_description_on_timeout.tr(context: context),
+            ),
             type: ToastificationType.error,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -186,7 +194,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            "Bluetooth Device",
+                            LocaleKeys.alert_card_no_bluetooth_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -197,7 +205,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Bluetooth device are connected. Please connect to ESP32 Bluetooth first in Home action button [ + ] before register new member.",
+                      LocaleKeys.alert_card_no_bluetooth_description_on_register.tr(
+                        context: context,
+                      ),
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -230,7 +240,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            "Register New Member",
+                            LocaleKeys.alert_card_no_card_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -241,7 +251,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      "There no Member ID Card detected. Please tap the Member ID Card to RFID sensor to detect it in here.",
+                      LocaleKeys.alert_card_no_card_description_on_register.tr(context: context),
                       textAlign: TextAlign.justify,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -261,7 +271,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         padding: const EdgeInsets.all(AppSizes.p16),
         child: Column(
           children: <Widget>[
-            Text("Add New Member", style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              LocaleKeys.register_page_form_title.tr(context: context),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 16.0),
             Container(
               decoration: BoxDecoration(
@@ -278,7 +291,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     const SizedBox(width: 16.0),
                     Expanded(
                       child: Text(
-                        "You can just write a Member NIM to automatically filling the field or, if it doesn't exists, write it manually.",
+                        LocaleKeys.register_page_form_information.tr(context: context),
                         textAlign: TextAlign.justify,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
@@ -298,16 +311,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   TextFormField(
                     readOnly: true,
                     controller: memberIdCardController,
-                    decoration: const InputDecoration(
-                      labelText: "Member Card ID",
-                      icon: FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
+                    decoration: InputDecoration(
+                      labelText: LocaleKeys.register_page_form_card_id_field.tr(context: context),
+                      icon: const FaIcon(FontAwesomeIcons.idBadge, size: 24.0),
                     ),
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
                     controller: memberNameController,
                     decoration: InputDecoration(
-                      labelText: LocaleKeys.member_page_dialog_field_name.tr(context: context),
+                      labelText: LocaleKeys.register_page_form_name_field_title.tr(
+                        context: context,
+                      ),
                       icon: const FaIcon(FontAwesomeIcons.user, size: 24.0),
                       errorMaxLines: 2,
                     ),
@@ -315,7 +330,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     textInputAction: TextInputAction.next,
                     validator: (String? value) {
                       if (value.toString().isEmpty) {
-                        return LocaleKeys.member_page_dialog_validation_name_required.tr(
+                        return LocaleKeys.register_page_form_name_field_required.tr(
                           context: context,
                         );
                       }
@@ -326,7 +341,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   TextFormField(
                     controller: memberNIMController,
                     decoration: InputDecoration(
-                      labelText: LocaleKeys.member_page_dialog_field_nim.tr(context: context),
+                      labelText: LocaleKeys.register_page_form_nim_field.tr(context: context),
                       hintText: "L200250001",
                       icon: const FaIcon(FontAwesomeIcons.idCard, size: 24.0),
                       errorMaxLines: 2,
@@ -355,13 +370,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       bool isValidFormat = RegExp(r'^[A-Z][0-9]+$').hasMatch(value ?? '');
 
                       if (value.toString().isEmpty) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_empty.tr(
+                        return LocaleKeys.register_page_form_nim_field_required_empty.tr(
                           context: context,
                         );
                       } else if (!isValidFormat ||
                           value.toString().length < 10 ||
                           value.toString().length > 10) {
-                        return LocaleKeys.member_page_dialog_validation_nim_required_invalid.tr(
+                        return LocaleKeys.register_page_form_nim_field_required_invalid.tr(
                           context: context,
                         );
                       }
@@ -372,8 +387,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   DropdownButtonFormField<Divisions>(
                     initialValue: selectedDivision,
                     decoration: InputDecoration(
-                      labelText: "Member Division",
-                      hintText: LocaleKeys.member_page_dialog_field_division.tr(context: context),
+                      labelText: LocaleKeys.register_page_form_division_field_label.tr(
+                        context: context,
+                      ),
+                      hintText: LocaleKeys.register_page_form_division_field_hint.tr(
+                        context: context,
+                      ),
                       icon: const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
                     ),
                     items: Divisions.values.map((item) {
@@ -404,7 +423,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                               );
                             },
                           )
-                        : Text("Register Member", style: Theme.of(context).textTheme.labelLarge),
+                        : Text(
+                            LocaleKeys.register_page_form_button.tr(context: context),
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
                   ),
                 ],
               ),
@@ -501,8 +523,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
           if (!isLoadingToRegister) {
             Toastification().show(
-              title: const Text("Member Register"),
-              description: const Text("Request timeout. Please try again."),
+              title: Text(LocaleKeys.notification_member_title_register.tr(context: context)),
+              description: Text(
+                LocaleKeys.notification_member_description_on_timeout.tr(context: context),
+              ),
               type: ToastificationType.error,
               style: ToastificationStyle.flat,
               alignment: Alignment.bottomCenter,
@@ -527,7 +551,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         appBar: AppBar(
           centerTitle: true,
           automaticallyImplyLeading: false,
-          title: Text(LocaleKeys.control_panel_page_title_register.tr(context: context)),
+          title: Text(LocaleKeys.register_page_title.tr(context: context)),
           leading: BackButton(
             style: const ButtonStyle(
               backgroundColor: WidgetStatePropertyAll<Color>(Colors.transparent),

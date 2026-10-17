@@ -1,4 +1,6 @@
 import 'package:attendance_management/core/app_constants.dart';
+import 'package:attendance_management/core/translations/locale_keys.g.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppAboutDialog extends StatelessWidget {
@@ -56,8 +58,8 @@ class AppAboutDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           style: Theme.of(context).textButtonTheme.style
-              ?.copyWith(foregroundColor: WidgetStatePropertyAll(AppColors.dangerZone)),
-          child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+              ?.copyWith(foregroundColor: const WidgetStatePropertyAll(AppColors.dangerZone)),
+          child: Text(LocaleKeys.dialog_button_close.tr(context: context)),
         ),
       ],
     );

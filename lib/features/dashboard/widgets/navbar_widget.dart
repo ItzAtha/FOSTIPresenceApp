@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_constants.dart';
@@ -151,7 +152,7 @@ class DestinationNavbarWidget extends StatelessWidget {
             children: <Widget>[
               icon,
               const SizedBox(height: 4.0),
-              Text(label, style: Theme.of(context).textTheme.labelSmall),
+              Text(label.tr(context: context), style: Theme.of(context).textTheme.labelSmall),
             ],
           ),
           onTap: () {

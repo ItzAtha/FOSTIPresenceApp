@@ -1,3 +1,5 @@
+import 'package:attendance_management/core/translations/locale_keys.g.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -70,7 +72,7 @@ class _MembersExcelViewerPageState extends State<MembersExcelViewerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Members Excel Viewer'),
+        title: Text(LocaleKeys.excel_upload_page_title_main.tr(context: context)),
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: BackButton(

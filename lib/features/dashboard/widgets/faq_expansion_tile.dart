@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,10 +27,10 @@ class _FaqExpansionTileState extends State<FaqExpansionTile> {
   Widget build(BuildContext context) {
     return ExpansionTile(
       title: Text(
-        widget._title,
+        widget._title.tr(context: context),
         style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
       ),
-      subtitle: widget._subtitle != null ? Text(widget._subtitle!) : null,
+      subtitle: widget._subtitle != null ? Text(widget._subtitle!.tr(context: context)) : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

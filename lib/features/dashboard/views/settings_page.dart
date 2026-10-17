@@ -2,7 +2,6 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:attendance_management/features/dashboard/widgets/scaled_switch_list_tile.dart';
 import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/service/preferences_service.dart';
-import 'package:attendance_management/translations/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
@@ -10,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/utils/language.dart';
 import '../../../core/app_constants.dart';
+import '../../../core/translations/locale_keys.g.dart';
 import '../../../core/utils/debouncer.dart';
 import '../widgets/app_about_dialog.dart';
 
@@ -31,14 +31,27 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
   late final Animation<double> btMaxRetriesAnimation;
   late final AnimationController btMaxRetriesAnimController;
 
-  static const List<MapEntry<int, String>> btRetryOptions = [
-    MapEntry(1, '1 attempt'),
-    MapEntry(3, '3 attempts'),
-    MapEntry(5, '5 attempts'),
-    MapEntry(10, '10 attempts'),
-    MapEntry(15, '15 attempts'),
-    MapEntry(-1, 'Unlimited'),
-  ];
+  static List<MapEntry<int, String>> getBtRetryOptions(BuildContext context) {
+    const retryCounts = [1, 3, 5, 10, 15];
+
+    return [
+      ...retryCounts.map(
+        (count) => MapEntry(
+          count,
+          LocaleKeys.setting_page_general_auto_reconnect_bt_max_retries_attempt_limited.tr(
+            context: context,
+            namedArgs: {'max': '$count'},
+          ),
+        ),
+      ),
+      MapEntry(
+        -1,
+        LocaleKeys.setting_page_general_auto_reconnect_bt_max_retries_attempt_unlimited.tr(
+          context: context,
+        ),
+      ),
+    ];
+  }
 
   @override
   void initState() {
@@ -80,6 +93,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final currentTheme = AdaptiveTheme.of(context).mode;
+    final List<MapEntry<int, String>> btRetryOptions = getBtRetryOptions(context);
 
     return Scaffold(
       body: Padding(
@@ -87,7 +101,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
         child: ListView(
           children: <Widget>[
             Text(
-              "General",
+              LocaleKeys.setting_page_general_title.tr(context: context),
               textAlign: TextAlign.start,
               style: Theme.of(context).textTheme.titleSmall,
             ),
@@ -99,14 +113,12 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                 return ScaledSwitchListTile(
                   value: isEnable,
                   title: Text(
-                    LocaleKeys.setting_page_general_app_auto_reconnect_bt_title.tr(
-                      context: context,
-                    ),
+                    LocaleKeys.setting_page_general_auto_reconnect_bt_title.tr(context: context),
                     style: Theme.of(context).textTheme.labelLarge
                         ?.copyWith(fontWeight: FontWeight.w500),
                   ),
                   subtitle: Text(
-                    LocaleKeys.setting_page_general_app_auto_reconnect_bt_description.tr(
+                    LocaleKeys.setting_page_general_auto_reconnect_bt_description.tr(
                       context: context,
                     ),
                     textAlign: TextAlign.justify,
@@ -145,12 +157,15 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                           child: ListTile(
                             leading: const FaIcon(FontAwesomeIcons.rotate, size: 22.0),
                             title: Text(
-                              "Max Retries",
+                              LocaleKeys.setting_page_general_auto_reconnect_bt_max_retries_title
+                                  .tr(context: context),
                               style: Theme.of(context).textTheme.labelLarge
                                   ?.copyWith(fontWeight: FontWeight.w500),
                             ),
                             subtitle: Text(
-                              "Number of bluetooth reconnection attempts",
+                              LocaleKeys
+                                  .setting_page_general_auto_reconnect_bt_max_retries_description
+                                  .tr(context: context),
                               textAlign: TextAlign.justify,
                               style: Theme.of(context).textTheme.labelMedium,
                             ),
@@ -191,7 +206,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             ExpansionTile(
               title: Text(
-                "Theme",
+                LocaleKeys.setting_page_general_theme_title.tr(context: context),
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(fontWeight: FontWeight.w500),
               ),
@@ -202,7 +217,13 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(currentTheme.modeName, style: Theme.of(context).textTheme.labelLarge),
+                  Text(
+                    LocaleKeys.setting_page_general_theme_options.tr(
+                      context: context,
+                      gender: currentTheme.modeName.toLowerCase(),
+                    ),
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                   const SizedBox(width: 16.0),
                   AnimatedRotation(
                     turns: isThemeOptionOpened ? 0.25 : 0.0,
@@ -236,7 +257,15 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                   child: Column(
                     children: <Widget>[
                       for (final theme in AdaptiveThemeMode.values)
-                        RadioListTile(title: Text(theme.name), value: theme),
+                        RadioListTile(
+                          title: Text(
+                            LocaleKeys.setting_page_general_theme_options.tr(
+                              context: context,
+                              gender: theme.name,
+                            ),
+                          ),
+                          value: theme,
+                        ),
                     ],
                   ),
                 ),
@@ -244,7 +273,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             ExpansionTile(
               title: Text(
-                LocaleKeys.setting_page_general_app_language_title.tr(context: context),
+                LocaleKeys.setting_page_general_language_title.tr(context: context),
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(fontWeight: FontWeight.w500),
               ),
@@ -252,7 +281,13 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(selectedLanguage.name, style: Theme.of(context).textTheme.labelLarge),
+                  Text(
+                    LocaleKeys.setting_page_general_language_options.tr(
+                      context: context,
+                      gender: selectedLanguage.name.toLowerCase(),
+                    ),
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                   const SizedBox(width: 16.0),
                   AnimatedRotation(
                     turns: isLanguageOptionOpened ? 0.25 : 0.0,
@@ -285,7 +320,15 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                   child: Column(
                     children: <Widget>[
                       for (final lang in Language.allLanguages)
-                        RadioListTile(title: Text(lang.name), value: lang),
+                        RadioListTile(
+                          title: Text(
+                            LocaleKeys.setting_page_general_language_options.tr(
+                              context: context,
+                              gender: lang.name.toLowerCase(),
+                            ),
+                          ),
+                          value: lang,
+                        ),
                     ],
                   ),
                 ),
@@ -293,7 +336,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             const SizedBox(height: 24.0),
             Text(
-              "Notifications",
+              LocaleKeys.setting_page_notifications_title.tr(context: context),
               textAlign: TextAlign.start,
               style: Theme.of(context).textTheme.titleSmall,
             ),
@@ -305,12 +348,16 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                 return ScaledSwitchListTile(
                   value: isEnable,
                   title: Text(
-                    "Notify SIM Expired",
+                    LocaleKeys.setting_page_notifications_esp32_sim_expired_title.tr(
+                      context: context,
+                    ),
                     style: Theme.of(context).textTheme.labelLarge
                         ?.copyWith(fontWeight: FontWeight.w500),
                   ),
                   subtitle: Text(
-                    "Notify when SIM Internet has been expired and must be renewed immediately before the SIM number expires",
+                    LocaleKeys.setting_page_notifications_esp32_sim_expired_description.tr(
+                      context: context,
+                    ),
                     textAlign: TextAlign.justify,
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
@@ -324,7 +371,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             const SizedBox(height: 24.0),
             Text(
-              "Support & About",
+              LocaleKeys.setting_page_support_about_title.tr(context: context),
               textAlign: TextAlign.start,
               style: Theme.of(context).textTheme.titleSmall,
             ),
@@ -332,7 +379,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             const SizedBox(height: 8.0),
             ListTile(
               title: Text(
-                "FAQ",
+                LocaleKeys.setting_page_support_about_faq_title.tr(context: context),
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(fontWeight: FontWeight.w500),
               ),
@@ -342,7 +389,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             ListTile(
               title: Text(
-                "Privacy Policy",
+                LocaleKeys.setting_page_support_about_privacy_policy_title.tr(context: context),
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(fontWeight: FontWeight.w500),
               ),
@@ -352,7 +399,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             ListTile(
               title: Text(
-                "Terms of Service",
+                LocaleKeys.setting_page_support_about_terms_of_service_title.tr(context: context),
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(fontWeight: FontWeight.w500),
               ),
@@ -362,7 +409,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
             ),
             ListTile(
               title: Text(
-                LocaleKeys.setting_page_more_info_about_app_title.tr(context: context),
+                LocaleKeys.setting_page_support_about_about_app_title.tr(context: context),
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(fontWeight: FontWeight.w500),
               ),
@@ -381,7 +428,9 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                     applicationLegalese: '\u{a9} 2026 Atha - FOSTI UMS',
                     children: <Widget>[
                       Text(
-                        LocaleKeys.setting_page_more_info_about_app_dialog.tr(context: context),
+                        LocaleKeys.setting_page_support_about_about_app_description.tr(
+                          context: context,
+                        ),
                         textAlign: TextAlign.justify,
                       ),
                     ],

@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart' show AppSizes, AppColors;
+import '../../../core/translations/locale_keys.g.dart';
 import '../../../shared/service/ble_service.dart';
 
 class BluetoothPage extends StatefulWidget {
@@ -40,9 +40,9 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
               if (bleStatus == BleStatus.scanning_success) {
                 Toastification().show(
-                  title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: context)),
+                  title: Text(LocaleKeys.notification_bluetooth_title.tr(context: context)),
                   description: Text(
-                    LocaleKeys.alert_notify_bluetooth_description_success_discover.tr(
+                    LocaleKeys.notification_bluetooth_description_discover_success.tr(
                       context: context,
                     ),
                   ),
@@ -54,9 +54,9 @@ class _BluetoothPageState extends State<BluetoothPage> {
                 );
               } else if (bleStatus == BleStatus.ble_stream_sub_error) {
                 Toastification().show(
-                  title: Text(LocaleKeys.alert_notify_bluetooth_title.tr(context: context)),
+                  title: Text(LocaleKeys.notification_bluetooth_title.tr(context: context)),
                   description: Text(
-                    LocaleKeys.alert_notify_bluetooth_description_fail_discover.tr(
+                    LocaleKeys.notification_bluetooth_description_discover_failed.tr(
                       context: context,
                     ),
                   ),
@@ -72,9 +72,13 @@ class _BluetoothPageState extends State<BluetoothPage> {
               if (!mounted) return;
 
               Toastification().show(
-                title: Text(LocaleKeys.alert_notify_permission_title.tr(context: context)),
+                title: Text(
+                  LocaleKeys.notification_bluetooth_permission_title.tr(context: context),
+                ),
                 description: Text(
-                  LocaleKeys.alert_notify_permission_description_request_fail.tr(context: context),
+                  LocaleKeys.notification_bluetooth_permission_description_request_failed.tr(
+                    context: context,
+                  ),
                 ),
                 type: ToastificationType.info,
                 style: ToastificationStyle.flat,
@@ -87,9 +91,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
               if (!mounted) return;
 
               Toastification().show(
-                title: Text(LocaleKeys.alert_notify_permission_title.tr(context: context)),
+                title: Text(
+                  LocaleKeys.notification_bluetooth_permission_title.tr(context: context),
+                ),
                 description: Text(
-                  LocaleKeys.alert_notify_permission_description_not_granted.tr(
+                  LocaleKeys.notification_bluetooth_permission_description_not_granted.tr(
                     context: context,
                     namedArgs: {'permission': permission.toString()},
                   ),
@@ -105,9 +111,13 @@ class _BluetoothPageState extends State<BluetoothPage> {
               if (!mounted) return;
 
               Toastification().show(
-                title: Text(LocaleKeys.alert_notify_permission_title.tr(context: context)),
-                description: const Text(
-                  "Bluetooth request permission is not support on this device.",
+                title: Text(
+                  LocaleKeys.notification_bluetooth_permission_title.tr(context: context),
+                ),
+                description: Text(
+                  LocaleKeys.notification_bluetooth_permission_description_not_support.tr(
+                    context: context,
+                  ),
                 ),
                 type: ToastificationType.info,
                 style: ToastificationStyle.flat,
@@ -164,7 +174,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                             },
                           ),
                           const SizedBox(height: 16.0),
-                          Text(LocaleKeys.bluetooth_page_loading_data_process.tr(context: context)),
+                          Text(LocaleKeys.bluetooth_page_data_state_loading.tr(context: context)),
                         ],
                       ),
                     );
@@ -179,9 +189,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                             constraints: BoxConstraints(minHeight: constraints.maxHeight),
                             child: Center(
                               child: Text(
-                                LocaleKeys.bluetooth_page_loading_data_no_device.tr(
-                                  context: context,
-                                ),
+                                LocaleKeys.bluetooth_page_data_state_no_device.tr(context: context),
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(fontSize: 16.0, color: Colors.grey),
                               ),
@@ -206,13 +214,12 @@ class _BluetoothPageState extends State<BluetoothPage> {
                       final device = devicesList[index].key;
                       final state = devicesList[index].value;
                       final deviceName = bleService.getDeviceName(device);
+                      final unknownDevice = LocaleKeys.bluetooth_page_unknown_device.tr(
+                        context: context,
+                      );
 
                       return ListTile(
-                        title: Text(
-                          deviceName.isNotEmpty
-                              ? deviceName
-                              : LocaleKeys.bluetooth_page_unknown_device.tr(context: context),
-                        ),
+                        title: Text(deviceName.isNotEmpty ? deviceName : unknownDevice),
                         subtitle: Text("${device.remoteId}"),
                         trailing: switch (state) {
                           BleConnectionState.connected => ElevatedButton(
@@ -224,19 +231,16 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               if (status == BleConnectionStatus.success_disconnect) {
                                 Toastification().show(
                                   title: Text(
-                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                    LocaleKeys.notification_bluetooth_title.tr(context: context),
                                   ),
                                   description: Text(
-                                    LocaleKeys
-                                        .alert_notify_bluetooth_description_bt_success_disconnect
+                                    LocaleKeys.notification_bluetooth_description_disconnect_success
                                         .tr(
                                           context: context,
                                           namedArgs: {
-                                            'device': deviceName.isEmpty
-                                                ? LocaleKeys.bluetooth_page_unknown_device.tr(
-                                                    context: context,
-                                                  )
-                                                : deviceName,
+                                            'device': deviceName.isNotEmpty
+                                                ? deviceName
+                                                : unknownDevice,
                                           },
                                         ),
                                   ),
@@ -249,9 +253,12 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               } else if (status == BleConnectionStatus.no_device_connected) {
                                 Toastification().show(
                                   title: Text(
-                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                    LocaleKeys.notification_bluetooth_title.tr(context: context),
                                   ),
-                                  description: const Text("This device already disconnected!"),
+                                  description: Text(
+                                    LocaleKeys.notification_bluetooth_description_already_disconnect
+                                        .tr(context: context),
+                                  ),
                                   type: ToastificationType.success,
                                   style: ToastificationStyle.flat,
                                   alignment: Alignment.bottomCenter,
@@ -262,7 +269,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                             },
                             style: ElevatedButton.styleFrom(minimumSize: const Size(120.0, 40.0)),
                             child: Text(
-                              LocaleKeys.device_button_state_disconnect.tr(context: context),
+                              LocaleKeys.bluetooth_state_disconnect.tr(context: context),
                               style: Theme.of(context).textTheme.labelMedium,
                             ),
                           ),
@@ -273,10 +280,10 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                 Toastification().show(
                                   context: context,
                                   title: Text(
-                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                    LocaleKeys.notification_bluetooth_title.tr(context: context),
                                   ),
                                   description: Text(
-                                    LocaleKeys.alert_notify_bluetooth_description_already_connected
+                                    LocaleKeys.notification_bluetooth_description_already_connected
                                         .tr(context: context),
                                   ),
                                   type: ToastificationType.warning,
@@ -292,10 +299,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
                                 Toastification().show(
                                   context: context,
                                   title: Text(
-                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                    LocaleKeys.notification_bluetooth_title.tr(context: context),
                                   ),
-                                  description: const Text(
-                                    "Another device is already connecting. Please wait it to be connected.",
+                                  description: Text(
+                                    LocaleKeys.notification_bluetooth_description_already_connecting
+                                        .tr(context: context),
                                   ),
                                   type: ToastificationType.warning,
                                   style: ToastificationStyle.flat,
@@ -315,18 +323,16 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               if (status == BleConnectionStatus.success_connect) {
                                 Toastification().show(
                                   title: Text(
-                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                    LocaleKeys.notification_bluetooth_title.tr(context: context),
                                   ),
                                   description: Text(
-                                    LocaleKeys.alert_notify_bluetooth_description_bt_success_connect
+                                    LocaleKeys.notification_bluetooth_description_connect_success
                                         .tr(
                                           context: context,
                                           namedArgs: {
-                                            'device': deviceName.isEmpty
-                                                ? LocaleKeys.bluetooth_page_unknown_device.tr(
-                                                    context: context,
-                                                  )
-                                                : deviceName,
+                                            'device': deviceName.isNotEmpty
+                                                ? deviceName
+                                                : unknownDevice,
                                           },
                                         ),
                                   ),
@@ -339,20 +345,17 @@ class _BluetoothPageState extends State<BluetoothPage> {
                               } else if (status == BleConnectionStatus.failed_connect) {
                                 Toastification().show(
                                   title: Text(
-                                    LocaleKeys.alert_notify_bluetooth_title.tr(context: context),
+                                    LocaleKeys.notification_bluetooth_title.tr(context: context),
                                   ),
                                   description: Text(
-                                    LocaleKeys.alert_notify_bluetooth_description_bt_fail_connect
-                                        .tr(
-                                          context: context,
-                                          namedArgs: {
-                                            'device': deviceName.isEmpty
-                                                ? LocaleKeys.bluetooth_page_unknown_device.tr(
-                                                    context: context,
-                                                  )
-                                                : deviceName,
-                                          },
-                                        ),
+                                    LocaleKeys.notification_bluetooth_description_connect_failed.tr(
+                                      context: context,
+                                      namedArgs: {
+                                        'device': deviceName.isNotEmpty
+                                            ? deviceName
+                                            : unknownDevice,
+                                      },
+                                    ),
                                   ),
                                   type: ToastificationType.error,
                                   style: ToastificationStyle.flat,
@@ -364,7 +367,7 @@ class _BluetoothPageState extends State<BluetoothPage> {
                             },
                             style: ElevatedButton.styleFrom(minimumSize: const Size(120.0, 40.0)),
                             child: Text(
-                              LocaleKeys.device_button_state_connect.tr(context: context),
+                              LocaleKeys.bluetooth_state_connect.tr(context: context),
                               style: Theme.of(context).textTheme.labelMedium,
                             ),
                           ),

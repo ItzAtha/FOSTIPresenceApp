@@ -8,7 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../core/app_constants.dart';
-import '../../translations/locale_keys.g.dart';
+import '../../core/translations/locale_keys.g.dart';
 
 class BasePages extends StatefulWidget {
   const BasePages({super.key, required this._navigationShell});
@@ -30,8 +30,8 @@ class _BasePagesState extends State<BasePages> {
       currentBackPressTime = now;
       Toastification().show(
         context: context,
-        title: const Text(LocaleKeys.exit_alert_title).tr(context: context),
-        description: const Text(LocaleKeys.exit_alert_desc).tr(context: context),
+        title: Text(LocaleKeys.notification_exit_app_title.tr(context: context)),
+        description: Text(LocaleKeys.notification_exit_app_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
@@ -79,7 +79,7 @@ class _BasePagesState extends State<BasePages> {
                 child: const FaIcon(FontAwesomeIcons.fileExcel, size: 25.0),
                 backgroundColor: Colors.lightGreen,
                 foregroundColor: Colors.white,
-                label: 'Members Excel',
+                label: LocaleKeys.navigation_quick_button_member_excel.tr(context: context),
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
                 onTap: () => const MemberExcelRoute().push(context),
@@ -88,7 +88,7 @@ class _BasePagesState extends State<BasePages> {
                 child: const FaIcon(FontAwesomeIcons.bluetoothB, size: 25.0),
                 backgroundColor: Colors.orangeAccent,
                 foregroundColor: Colors.white,
-                label: 'Bluetooth',
+                label: LocaleKeys.navigation_quick_button_bluetooth.tr(context: context),
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
                 onTap: () => const BluetoothMenuRoute().push(context),
@@ -97,7 +97,7 @@ class _BasePagesState extends State<BasePages> {
                 child: const FaIcon(FontAwesomeIcons.creditCard, size: 25.0),
                 backgroundColor: Colors.blueAccent,
                 foregroundColor: Colors.white,
-                label: 'Attendance',
+                label: LocaleKeys.navigation_quick_button_attendance.tr(context: context),
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
                 onTap: () => const MemberAttendanceRoute().push(context),
@@ -106,7 +106,7 @@ class _BasePagesState extends State<BasePages> {
                 child: const FaIcon(FontAwesomeIcons.userPlus, size: 20.0),
                 backgroundColor: Colors.cyan,
                 foregroundColor: Colors.white,
-                label: 'Add Member',
+                label: LocaleKeys.navigation_quick_button_register.tr(context: context),
                 labelStyle: Theme.of(context).textTheme.labelMedium,
                 labelBackgroundColor: Theme.of(context).cardTheme.color,
                 onTap: () => const AddMemberRoute().push(context),
@@ -115,19 +115,19 @@ class _BasePagesState extends State<BasePages> {
           ),
           destinations: [
             const DestinationNavbarWidget(
-              label: 'Home',
+              label: LocaleKeys.navigation_home,
               icon: FaIcon(FontAwesomeIcons.solidHouse, size: 20.0),
             ),
             const DestinationNavbarWidget(
-              label: 'Members',
+              label: LocaleKeys.navigation_member,
               icon: FaIcon(FontAwesomeIcons.users, size: 20.0),
             ),
             const DestinationNavbarWidget(
-              label: 'Events',
+              label: LocaleKeys.navigation_event,
               icon: FaIcon(FontAwesomeIcons.calendarDays, size: 20.0),
             ),
             const DestinationNavbarWidget(
-              label: 'Settings',
+              label: LocaleKeys.navigation_setting,
               icon: FaIcon(FontAwesomeIcons.gear, size: 20.0),
             ),
           ],

@@ -15,8 +15,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/utils/connectivity_utils.dart';
-import '../../../../translations/locale_keys.g.dart';
 import '../../../core/app_constants.dart';
+import '../../../core/translations/locale_keys.g.dart';
 import '../../../core/utils/events_recap_factory.dart';
 import '../../../shared/models/event_log_model.dart';
 import '../../../shared/provider/members_notifier.dart';
@@ -50,8 +50,8 @@ class _EventPageState extends ConsumerState<EventPage> {
       if (!mounted) return;
 
       Toastification().show(
-        title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-        description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+        title: Text(LocaleKeys.notification_internet_lost_title.tr(context: context)),
+        description: Text(LocaleKeys.notification_internet_lost_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
@@ -79,7 +79,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventNameController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_name.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_name_field.tr(context: context),
                   hintText: "Event FOSTI 202X",
                   icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -90,9 +90,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_name_required.tr(
-                      context: context,
-                    );
+                    return LocaleKeys.event_page_dialog_name_field_required.tr(context: context);
                   }
                   return null;
                 },
@@ -101,7 +99,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventDescController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_description.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_description_field.tr(context: context),
                   hintText: "FOSTI event held once a year",
                   icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -113,7 +111,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_description_required.tr(
+                    return LocaleKeys.event_page_dialog_description_field_required.tr(
                       context: context,
                     );
                   }
@@ -124,7 +122,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventLocController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_location.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_location_field.tr(context: context),
                   hintText: "Gedung J, Kampus 2, UMS",
                   icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -136,7 +134,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_location_required.tr(
+                    return LocaleKeys.event_page_dialog_location_field_required.tr(
                       context: context,
                     );
                   }
@@ -148,8 +146,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 controller: eventDateTimeController,
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_date_label.tr(context: context),
-                  hintText: LocaleKeys.event_page_dialog_field_date_hint.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_date_field_title_label.tr(
+                    context: context,
+                  ),
+                  hintText: LocaleKeys.event_page_dialog_date_field_title_hint.tr(context: context),
                   icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
@@ -194,9 +194,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 },
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_date_required.tr(
-                      context: context,
-                    );
+                    return LocaleKeys.event_page_dialog_date_field_required.tr(context: context);
                   }
                   return null;
                 },
@@ -214,7 +212,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 onPressed: () => validateFormInput(),
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                 child: Text(
-                  LocaleKeys.event_page_dialog_button_create.tr(context: context),
+                  LocaleKeys.dialog_button_create.tr(context: context),
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
@@ -227,7 +225,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                   foregroundColor: AppColors.dangerZone,
                   side: const BorderSide(color: AppColors.dangerZone),
                 ),
-                child: Text(LocaleKeys.event_page_dialog_button_cancel.tr(context: context)),
+                child: Text(LocaleKeys.dialog_button_cancel.tr(context: context)),
               ),
             ),
           ],
@@ -259,8 +257,8 @@ class _EventPageState extends ConsumerState<EventPage> {
       if (!mounted) return;
 
       Toastification().show(
-        title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-        description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+        title: Text(LocaleKeys.notification_internet_lost_title.tr(context: context)),
+        description: Text(LocaleKeys.notification_internet_lost_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
@@ -295,7 +293,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventNameController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_name.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_name_field.tr(context: context),
                   hintText: "Event FOSTI 202X",
                   icon: const FaIcon(FontAwesomeIcons.calendar, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -306,9 +304,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_name_required.tr(
-                      context: context,
-                    );
+                    return LocaleKeys.event_page_dialog_name_field_required.tr(context: context);
                   }
                   return null;
                 },
@@ -317,7 +313,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventDescController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_description.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_description_field.tr(context: context),
                   hintText: "FOSTI event held once a year",
                   icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -329,7 +325,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_description_required.tr(
+                    return LocaleKeys.event_page_dialog_description_field_required.tr(
                       context: context,
                     );
                   }
@@ -340,7 +336,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventLocController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_location.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_location_field.tr(context: context),
                   hintText: "Gedung J, Kampus 2, UMS",
                   icon: const FaIcon(FontAwesomeIcons.locationDot, size: 24.0),
                   border: const OutlineInputBorder(),
@@ -352,7 +348,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_location_required.tr(
+                    return LocaleKeys.event_page_dialog_location_field_required.tr(
                       context: context,
                     );
                   }
@@ -364,8 +360,10 @@ class _EventPageState extends ConsumerState<EventPage> {
                 controller: eventDateTimeController,
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_field_date_label.tr(context: context),
-                  hintText: LocaleKeys.event_page_dialog_field_date_hint.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_date_field_title_label.tr(
+                    context: context,
+                  ),
+                  hintText: LocaleKeys.event_page_dialog_date_field_title_hint.tr(context: context),
                   icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 24.0),
                   border: const OutlineInputBorder(),
                   errorMaxLines: 2,
@@ -410,9 +408,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 },
                 validator: (String? value) {
                   if (value.toString().isEmpty) {
-                    return LocaleKeys.event_page_dialog_validation_date_required.tr(
-                      context: context,
-                    );
+                    return LocaleKeys.event_page_dialog_date_field_required.tr(context: context);
                   }
                   return null;
                 },
@@ -430,7 +426,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                 onPressed: () => validateFormInput(eventData: event),
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                 child: Text(
-                  LocaleKeys.member_page_dialog_button_update.tr(context: context),
+                  LocaleKeys.dialog_button_update.tr(context: context),
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
@@ -443,7 +439,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                   foregroundColor: AppColors.dangerZone,
                   side: const BorderSide(color: AppColors.dangerZone),
                 ),
-                child: Text(LocaleKeys.member_page_dialog_button_cancel.tr(context: context)),
+                child: Text(LocaleKeys.dialog_button_cancel.tr(context: context)),
               ),
             ),
           ],
@@ -473,8 +469,10 @@ class _EventPageState extends ConsumerState<EventPage> {
           if (!mounted) return;
 
           Toastification().show(
-            title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-            description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+            title: Text(LocaleKeys.notification_internet_lost_title.tr(context: context)),
+            description: Text(
+              LocaleKeys.notification_internet_lost_description.tr(context: context),
+            ),
             type: ToastificationType.info,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -510,9 +508,9 @@ class _EventPageState extends ConsumerState<EventPage> {
 
           if (isSuccess) {
             Toastification().show(
-              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              title: Text(LocaleKeys.notification_event_title.tr(context: context)),
               description: Text(
-                LocaleKeys.alert_notify_event_description_update_success.tr(context: context),
+                LocaleKeys.notification_event_description_on_update_success.tr(context: context),
               ),
               type: ToastificationType.success,
               style: ToastificationStyle.flat,
@@ -522,9 +520,9 @@ class _EventPageState extends ConsumerState<EventPage> {
             );
           } else {
             Toastification().show(
-              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              title: Text(LocaleKeys.notification_event_title.tr(context: context)),
               description: Text(
-                LocaleKeys.alert_notify_event_description_update_failed.tr(context: context),
+                LocaleKeys.notification_event_description_on_update_failed.tr(context: context),
               ),
               type: ToastificationType.error,
               style: ToastificationStyle.flat,
@@ -551,9 +549,9 @@ class _EventPageState extends ConsumerState<EventPage> {
 
           if (isSuccess) {
             Toastification().show(
-              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              title: Text(LocaleKeys.notification_event_title.tr(context: context)),
               description: Text(
-                LocaleKeys.alert_notify_event_description_create_success.tr(context: context),
+                LocaleKeys.notification_event_description_on_create_success.tr(context: context),
               ),
               type: ToastificationType.success,
               style: ToastificationStyle.flat,
@@ -569,9 +567,9 @@ class _EventPageState extends ConsumerState<EventPage> {
             ref.invalidate(eventsProvider);
           } else {
             Toastification().show(
-              title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+              title: Text(LocaleKeys.notification_event_title.tr(context: context)),
               description: Text(
-                LocaleKeys.alert_notify_event_description_create_failed.tr(context: context),
+                LocaleKeys.notification_event_description_on_create_failed.tr(context: context),
               ),
               type: ToastificationType.error,
               style: ToastificationStyle.flat,
@@ -588,9 +586,9 @@ class _EventPageState extends ConsumerState<EventPage> {
 
   Future<void> eventDownloadButton(EventModel eventData) async {
     Toastification().show(
-      title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+      title: Text(LocaleKeys.notification_event_title.tr(context: context)),
       description: Text(
-        LocaleKeys.alert_notify_event_description_saving_recap_process.tr(context: context),
+        LocaleKeys.notification_event_description_on_saving_process.tr(context: context),
       ),
       type: ToastificationType.info,
       style: ToastificationStyle.flat,
@@ -625,9 +623,9 @@ class _EventPageState extends ConsumerState<EventPage> {
 
     if (recapResult?.result == SaveResult.success) {
       Toastification().show(
-        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+        title: Text(LocaleKeys.notification_event_title.tr(context: context)),
         description: Text(
-          LocaleKeys.alert_notify_event_description_saving_recap_success.tr(context: context),
+          LocaleKeys.notification_event_description_on_saving_success.tr(context: context),
         ),
         type: ToastificationType.success,
         style: ToastificationStyle.flat,
@@ -645,14 +643,19 @@ class _EventPageState extends ConsumerState<EventPage> {
         ),
         builder: (dialogContext) {
           return SimpleDialog(
-            title: const Text("Open File Confirmation", textAlign: TextAlign.center),
+            title: Text(
+              LocaleKeys.event_page_dialog_open_file_confirmation_title.tr(context: dialogContext),
+              textAlign: TextAlign.center,
+            ),
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
                 child: Column(
                   children: <Widget>[
-                    const Text(
-                      "Do you want to open this excel file recap?",
+                    Text(
+                      LocaleKeys.event_page_dialog_open_file_confirmation_message.tr(
+                        context: dialogContext,
+                      ),
                       textAlign: TextAlign.justify,
                     ),
                     const SizedBox(height: 25.0),
@@ -664,7 +667,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                             onPressed: () => dialogContext.pop(DialogAcceptance.YES),
                             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                             child: Text(
-                              LocaleKeys.event_page_dialog_button_yes.tr(context: dialogContext),
+                              LocaleKeys.dialog_button_yes.tr(context: dialogContext),
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
@@ -677,9 +680,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                               foregroundColor: AppColors.dangerZone,
                               side: const BorderSide(color: AppColors.dangerZone),
                             ),
-                            child: Text(
-                              LocaleKeys.event_page_dialog_button_no.tr(context: dialogContext),
-                            ),
+                            child: Text(LocaleKeys.dialog_button_no.tr(context: dialogContext)),
                           ),
                         ),
                       ],
@@ -707,9 +708,9 @@ class _EventPageState extends ConsumerState<EventPage> {
       }
     } else if (recapResult?.result == SaveResult.failed) {
       Toastification().show(
-        title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+        title: Text(LocaleKeys.notification_event_title.tr(context: context)),
         description: Text(
-          LocaleKeys.alert_notify_event_description_saving_recap_failed.tr(context: context),
+          LocaleKeys.notification_event_description_on_saving_failed.tr(context: context),
         ),
         type: ToastificationType.error,
         style: ToastificationStyle.flat,
@@ -725,8 +726,8 @@ class _EventPageState extends ConsumerState<EventPage> {
       if (!mounted) return;
 
       Toastification().show(
-        title: Text(LocaleKeys.alert_notify_internet_title.tr(context: context)),
-        description: Text(LocaleKeys.alert_notify_internet_description.tr(context: context)),
+        title: Text(LocaleKeys.notification_internet_lost_title.tr(context: context)),
+        description: Text(LocaleKeys.notification_internet_lost_description.tr(context: context)),
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
@@ -748,7 +749,7 @@ class _EventPageState extends ConsumerState<EventPage> {
       builder: (dialogContext) {
         return SimpleDialog(
           title: Text(
-            LocaleKeys.event_page_dialog_delete_confirm_title.tr(context: dialogContext),
+            LocaleKeys.event_page_dialog_delete_confirmation_title.tr(context: dialogContext),
             textAlign: TextAlign.center,
           ),
           children: <Widget>[
@@ -757,7 +758,7 @@ class _EventPageState extends ConsumerState<EventPage> {
               child: Column(
                 children: <Widget>[
                   Text(
-                    LocaleKeys.event_page_dialog_delete_confirm_description.tr(
+                    LocaleKeys.event_page_dialog_delete_confirmation_message.tr(
                       context: dialogContext,
                     ),
                     textAlign: TextAlign.justify,
@@ -771,7 +772,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                           onPressed: () => dialogContext.pop(DialogAcceptance.YES),
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                           child: Text(
-                            LocaleKeys.event_page_dialog_button_yes.tr(context: dialogContext),
+                            LocaleKeys.dialog_button_yes.tr(context: dialogContext),
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -784,9 +785,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                             foregroundColor: AppColors.dangerZone,
                             side: const BorderSide(color: AppColors.dangerZone),
                           ),
-                          child: Text(
-                            LocaleKeys.event_page_dialog_button_no.tr(context: dialogContext),
-                          ),
+                          child: Text(LocaleKeys.dialog_button_no.tr(context: dialogContext)),
                         ),
                       ),
                     ],
@@ -806,9 +805,9 @@ class _EventPageState extends ConsumerState<EventPage> {
 
       if (isSuccess) {
         Toastification().show(
-          title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+          title: Text(LocaleKeys.notification_event_title.tr(context: context)),
           description: Text(
-            LocaleKeys.alert_notify_event_description_delete_success.tr(context: context),
+            LocaleKeys.notification_event_description_on_delete_success.tr(context: context),
           ),
           type: ToastificationType.success,
           style: ToastificationStyle.flat,
@@ -818,9 +817,9 @@ class _EventPageState extends ConsumerState<EventPage> {
         );
       } else {
         Toastification().show(
-          title: Text(LocaleKeys.alert_notify_event_title.tr(context: context)),
+          title: Text(LocaleKeys.notification_event_title.tr(context: context)),
           description: Text(
-            LocaleKeys.alert_notify_event_description_delete_failed.tr(context: context),
+            LocaleKeys.notification_event_description_on_delete_failed.tr(context: context),
           ),
           type: ToastificationType.error,
           style: ToastificationStyle.flat,
@@ -851,7 +850,7 @@ class _EventPageState extends ConsumerState<EventPage> {
           ),
           const SizedBox(height: 16.0),
           Text(
-            LocaleKeys.event_page_loading_data_process.tr(context: context),
+            LocaleKeys.event_page_data_state_loading.tr(context: context),
             style: Theme.of(context).textTheme.labelMedium,
           ),
         ],
@@ -879,7 +878,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Text(
-                            LocaleKeys.event_page_loading_data_no_data_title.tr(context: context),
+                            LocaleKeys.event_page_data_state_no_data_title.tr(context: context),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -890,7 +889,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                     const Divider(thickness: 1.5),
                     const SizedBox(height: 8.0),
                     Text(
-                      LocaleKeys.event_page_loading_data_no_data_description.tr(context: context),
+                      LocaleKeys.event_page_data_state_no_data_description.tr(context: context),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
@@ -908,7 +907,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Text(
-                            LocaleKeys.event_page_dialog_button_create.tr(context: context),
+                            LocaleKeys.dialog_button_create.tr(context: context),
                             style: const TextStyle(color: Colors.white),
                           ),
                           const SizedBox(width: 8.0),
@@ -947,7 +946,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                       const SizedBox(width: 16.0),
                       Expanded(
                         child: Text(
-                          "No Filtered Event Found",
+                          LocaleKeys.event_page_filter_not_found_title.tr(context: context),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
@@ -958,7 +957,7 @@ class _EventPageState extends ConsumerState<EventPage> {
                   const Divider(thickness: 1.5),
                   const SizedBox(height: 8.0),
                   Text(
-                    "Search with another name key",
+                    LocaleKeys.event_page_filter_not_found_description.tr(context: context),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
