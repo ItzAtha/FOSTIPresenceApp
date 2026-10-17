@@ -102,7 +102,9 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventDescController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_description_field_title.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_description_field_title.tr(
+                    context: context,
+                  ),
                   hintText: "FOSTI event held once a year",
                   prefixIcon: const Center(
                     widthFactor: 1.0,
@@ -328,7 +330,9 @@ class _EventPageState extends ConsumerState<EventPage> {
               TextFormField(
                 controller: eventDescController,
                 decoration: InputDecoration(
-                  labelText: LocaleKeys.event_page_dialog_description_field_title.tr(context: context),
+                  labelText: LocaleKeys.event_page_dialog_description_field_title.tr(
+                    context: context,
+                  ),
                   hintText: "FOSTI event held once a year",
                   prefixIcon: const Center(
                     widthFactor: 1.0,
@@ -627,6 +631,23 @@ class _EventPageState extends ConsumerState<EventPage> {
     List<MemberModel> membersList = await ref.read(membersProvider.future);
 
     List<MemberModel> membersData = [];
+
+    if (logsList.isEmpty) {
+      if (!mounted) return;
+
+      Toastification().show(
+        title: Text(LocaleKeys.notification_event_title.tr(context: context)),
+        description: Text(
+          LocaleKeys.notification_event_description_on_saving_no_logs.tr(context: context),
+        ),
+        type: ToastificationType.error,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 500),
+      );
+      return;
+    }
 
     for (final log in logsList) {
       final member = membersList.firstWhere((member) => member.cardId == log.cardId);
