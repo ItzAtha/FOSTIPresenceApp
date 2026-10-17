@@ -30,7 +30,7 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
-  String callbackMsg = "";
+  String callbackMsgLocale = "";
 
   bool isIdCardDetected = false;
   bool isLoadingToRegister = false;
@@ -137,7 +137,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
           Toastification().show(
             title: Text(LocaleKeys.notification_member_title_register.tr(context: context)),
-            description: Text(callbackMsg),
+            description: Text(callbackMsgLocale.tr(context: context, namedArgs: {'cardId': cardId})),
             type: notificationType,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
@@ -164,7 +164,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           memberNIMController.clear();
 
           setState(() {
-            callbackMsg = "";
+            callbackMsgLocale = "";
             selectedDivision = null;
             isIdCardDetected = false;
             isLoadingToRegister = false;
@@ -537,7 +537,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           }
         }
 
-        callbackMsg = decodedData['message'];
+        callbackMsgLocale = decodedData['message_locale'];
         if (decodedData['status'] == "CARD_DETECTED") {
           setState(() => isIdCardDetected = true);
           memberIdCardController.text = data['cardId'];
@@ -566,7 +566,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             memberNIMController.clear();
 
             setState(() {
-              callbackMsg = "";
+              callbackMsgLocale = "";
               selectedDivision = null;
               isIdCardDetected = false;
               registerStatus = RegisterStatus.none;

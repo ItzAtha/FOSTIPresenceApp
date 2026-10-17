@@ -41,7 +41,7 @@ class PresenceModePage extends ConsumerStatefulWidget {
 }
 
 class _PresenceModePageState extends ConsumerState<PresenceModePage> {
-  String callbackMsg = "";
+  String callbackMsgLocale = "";
 
   bool isIdCardDetected = false;
   bool isSuccessAttendance = false;
@@ -139,7 +139,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               Toastification().show(
                 title: Text(LocaleKeys.notification_attendance_title_manual.tr(context: context)),
                 description: Text(
-                  LocaleKeys.notification_attendance_description_manual_has_attend.tr(
+                  LocaleKeys.notification_attendance_description_on_manual_has_attend.tr(
                     context: context,
                     namedArgs: {'nim': ?member?.nim},
                   ),
@@ -169,7 +169,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
               Toastification().show(
                 title: Text(LocaleKeys.notification_attendance_title_manual.tr(context: context)),
                 description: Text(
-                  LocaleKeys.notification_attendance_description_manual_not_exists.tr(
+                  LocaleKeys.notification_attendance_description_on_manual_not_exists.tr(
                     context: context,
                     namedArgs: {'nim': nim},
                   ),
@@ -261,7 +261,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
             Toastification().show(
               title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
-              description: Text(callbackMsg),
+              description: Text(callbackMsgLocale.tr(context: context, namedArgs: {'nim': nim})),
               type: notificationType,
               style: ToastificationStyle.flat,
               alignment: Alignment.bottomCenter,
@@ -288,7 +288,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             memberNIMController.clear();
 
             setState(() {
-              callbackMsg = "";
+              callbackMsgLocale = "";
               isLoadingToAttendance = false;
             });
 
@@ -724,7 +724,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             Toastification().show(
               title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
               description: Text(
-                LocaleKeys.notification_attendance_description_main_card_detected.tr(
+                LocaleKeys.notification_attendance_description_on_attend_card_detected.tr(
                   context: context,
                 ),
               ),
@@ -773,7 +773,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 Toastification().show(
                   title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
                   description: Text(
-                    LocaleKeys.notification_attendance_description_main_has_attend.tr(
+                    LocaleKeys.notification_attendance_description_on_attend_has_attend.tr(
                       context: context,
                       namedArgs: {'cardId': cardUID},
                     ),
@@ -800,7 +800,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
                 Toastification().show(
                   title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
                   description: Text(
-                    LocaleKeys.notification_attendance_description_main_not_exists.tr(
+                    LocaleKeys.notification_attendance_description_on_attend_not_exists.tr(
                       context: context,
                       namedArgs: {'cardId': cardUID},
                     ),
@@ -858,10 +858,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             print("No Bluetooth device connected. Cannot send data.");
           }
         } else if (decodedData['status'] == "MEMBER_SUCCESS_MANUAL_ATTENDANCE") {
-          callbackMsg = decodedData['message'];
+          callbackMsgLocale = decodedData['message_locale'];
           manualAttendanceStatus = ManualAttendanceStatus.success;
         } else if (decodedData['status'] == "MEMBER_FAILED_MANUAL_ATTENDANCE") {
-          callbackMsg = decodedData['message'];
+          callbackMsgLocale = decodedData['message_locale'];
           manualAttendanceStatus = ManualAttendanceStatus.failed;
         } else if (decodedData['status'] == "TIMEOUT_NO_DATA") {
           Toastification().show(
@@ -876,9 +876,10 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
             animationDuration: const Duration(milliseconds: 500),
           );
         } else {
+          String cardUID = data['cardId'];
           ToastificationType notificationType = ToastificationType.error;
+
           if (decodedData['status'] == "MEMBER_SUCCESS_ATTENDANCE") {
-            String cardUID = data['cardId'];
             final membersList = await ref.read(membersProvider.future);
             final member = membersList.firstWhere((m) => m.cardId == cardUID);
 
@@ -909,7 +910,7 @@ class _PresenceModePageState extends ConsumerState<PresenceModePage> {
 
           Toastification().show(
             title: Text(LocaleKeys.notification_attendance_title_main.tr(context: context)),
-            description: Text(decodedData['message']),
+            description: Text((decodedData['message_locale'] as String).tr(context: context, namedArgs: {'cardId': cardUID})),
             type: notificationType,
             style: ToastificationStyle.flat,
             alignment: Alignment.bottomCenter,
