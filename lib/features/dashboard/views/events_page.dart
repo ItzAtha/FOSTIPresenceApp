@@ -234,7 +234,10 @@ class _EventPageState extends ConsumerState<EventPage> {
             const SizedBox(width: 24.0),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => context.pop(),
+                onPressed: () {
+                  context.pop();
+                  clearFieldForm();
+                },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.dangerZone,
                   side: const BorderSide(color: AppColors.dangerZone),
@@ -462,7 +465,10 @@ class _EventPageState extends ConsumerState<EventPage> {
             const SizedBox(width: 24.0),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => context.pop(),
+                onPressed: () {
+                  context.pop();
+                  clearFieldForm();
+                },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.dangerZone,
                   side: const BorderSide(color: AppColors.dangerZone),
@@ -588,10 +594,6 @@ class _EventPageState extends ConsumerState<EventPage> {
               animationDuration: const Duration(milliseconds: 500),
             );
 
-            eventNameController.text = "";
-            eventDescController.text = "";
-            eventLocController.text = "";
-            eventDateTimeController.text = "";
             ref.invalidate(eventsProvider);
           } else {
             Toastification().show(
@@ -607,7 +609,9 @@ class _EventPageState extends ConsumerState<EventPage> {
             );
           }
         }
+
         context.pop();
+        clearFieldForm();
       }
     }
   }
@@ -874,6 +878,15 @@ class _EventPageState extends ConsumerState<EventPage> {
         );
       }
     }
+  }
+
+  void clearFieldForm() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      eventNameController.text = "";
+      eventDescController.text = "";
+      eventLocController.text = "";
+      eventDateTimeController.text = "";
+    });
   }
 
   Widget loadingData() {
