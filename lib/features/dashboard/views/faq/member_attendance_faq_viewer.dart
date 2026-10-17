@@ -15,18 +15,17 @@ class MemberAttendanceFAQViewer extends StatefulWidget {
 }
 
 class _MemberAttendanceFAQViewerState extends State<MemberAttendanceFAQViewer> {
-  late final Future<String> memberAttendanceDataFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    memberAttendanceDataFuture = rootBundle.loadString('assets/faq/member_attendance_faq.md');
+  Future<String> loadFaqFile(Locale locale) {
+    return rootBundle.loadString(
+      'assets/faq/member_attendance_faq_${locale.languageCode.toUpperCase()}.md',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-      future: memberAttendanceDataFuture,
+      key: ValueKey(context.locale),
+      future: loadFaqFile(context.locale),
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
