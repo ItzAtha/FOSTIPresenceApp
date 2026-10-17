@@ -163,29 +163,35 @@ class _MemberPageState extends ConsumerState<MemberPage> {
                     },
                   ),
                   const SizedBox(height: 16.0),
-                  Row(
-                    children: <Widget>[
-                      const FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
-                      const SizedBox(width: 16.0),
-                      DropdownButton<Divisions>(
-                        value: selectedDivision,
-                        hint: Text(
-                          LocaleKeys.member_page_edit_dialog_division_field_title.tr(
-                            context: context,
-                          ),
-                        ),
-                        items: Divisions.values.map((item) {
-                          return DropdownMenuItem<Divisions>(
-                            value: item,
-                            child: Text(item.aliases),
-                          );
-                        }).toList(),
-                        onChanged: (Divisions? value) {
-                          if (value == selectedDivision) return;
-                          dialogSetState(() => selectedDivision = value);
-                        },
+                  DropdownButtonFormField<Divisions>(
+                    initialValue: selectedDivision,
+                    decoration: InputDecoration(
+                      labelText: LocaleKeys.member_page_edit_dialog_division_field_label.tr(
+                        context: context,
                       ),
-                    ],
+                      hintText: LocaleKeys.member_page_edit_dialog_division_field_hint.tr(
+                        context: context,
+                      ),
+                      prefixIcon: const Center(
+                        widthFactor: 1.0,
+                        child: FaIcon(FontAwesomeIcons.sitemap, size: 24.0),
+                      ),
+                    ),
+                    items: Divisions.values.map((item) {
+                      return DropdownMenuItem<Divisions>(value: item, child: Text(item.aliases));
+                    }).toList(),
+                    onChanged: (Divisions? value) {
+                      if (value == selectedDivision) return;
+                      setState(() => selectedDivision = value);
+                    },
+                    validator: (Divisions? value) {
+                      if (value == null) {
+                        return LocaleKeys.member_page_edit_dialog_division_field_required.tr(
+                          context: context,
+                        );
+                      }
+                      return null;
+                    },
                   ),
                 ],
               ),
