@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:attendance_management/core/app_constants.dart';
+import 'package:attendance_management/core/translations/locale_keys.g.dart';
 import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/service/ble_service.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -124,22 +124,19 @@ class AppBackgroundService {
 
             if (bleState != null) {
               if (bleState == BleConnectionState.reconnected) {
-                bleDescription =
-                    "The Bluetooth device connection with name $bleName has been reconnected.";
+                bleDescription = LocaleKeys.notification_bluetooth_description_reconnect_success;
               } else if (bleState == BleConnectionState.disconnected) {
-                bleDescription =
-                    "The Bluetooth device connection with name $bleName has been lost.";
+                bleDescription = LocaleKeys.notification_bluetooth_description_connection_lost;
               }
             } else {
-              bleDescription =
-                  "The Bluetooth device connection with name $bleName is in an unknown state.";
+              bleDescription = LocaleKeys.notification_bluetooth_description_unknown_state;
             }
 
             if (!isAppInForeground) {
               await localNotification.show(
                 id: bleNotificationId,
-                title: "Bluetooth Device",
-                body: bleDescription,
+                title: LocaleKeys.notification_bluetooth_title,
+                body: bleDescription.tr(namedArgs: {'name': bleName}),
                 notificationDetails: const NotificationDetails(
                   android: AndroidNotificationDetails(
                     channelId,
@@ -259,13 +256,13 @@ class AppBackgroundService {
 
             String simDescription = "";
             if (currentDate.isAfter(expiredQuota)) {
-              simDescription = "SIM quota has expired. Please top up the SIM card's data allowance so the ESP32 modem can reconnect to the internet.";
+              simDescription = LocaleKeys.notification_esp32_sim_description_has_expired;
 
               if (kDebugMode) {
                 debugPrint("[Background Service] SIM quota has expired!");
               }
             } else if (notifyDay.contains(daysRemaining)) {
-              simDescription = "SIM quota is about to be expired in $daysRemaining day(s).";
+              simDescription = LocaleKeys.notification_esp32_sim_description_is_about_expired;
 
               if (kDebugMode) {
                 debugPrint("[Background Service] Quota expires in $daysRemaining day(s)");
@@ -280,8 +277,8 @@ class AppBackgroundService {
             if (!isAppInForeground) {
               await localNotification.show(
                 id: simNotificationId,
-                title: "SIM Quota",
-                body: simDescription,
+                title: LocaleKeys.notification_esp32_sim_title.tr(),
+                body: simDescription.tr(namedArgs: {'remaining': daysRemaining.toString()}),
                 notificationDetails: const NotificationDetails(
                   android: AndroidNotificationDetails(
                     channelId,
