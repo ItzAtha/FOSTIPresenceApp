@@ -65,9 +65,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     });
 
     bleToastSubscription = backgroundService.on('ble_toast_callback').listen((data) {
-      if (data != null) {
+      if (data != null && mounted) {
         Toastification().show(
-          title: Text(LocaleKeys.notification_bluetooth_title.tr()),
+          title: Text(LocaleKeys.notification_bluetooth_title.tr(context: context)),
           description: Text(data['message']),
           type: ToastificationType.info,
           style: ToastificationStyle.flat,
@@ -79,9 +79,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     });
 
     simToastSubscription = backgroundService.on('sim_toast_callback').listen((data) {
-      if (data != null) {
+      if (data != null && mounted) {
         Toastification().show(
-          title: Text(LocaleKeys.notification_esp32_sim_title.tr()),
+          title: Text(LocaleKeys.notification_esp32_sim_title.tr(context: context)),
           description: Text(data['message']),
           type: ToastificationType.info,
           style: ToastificationStyle.flat,
