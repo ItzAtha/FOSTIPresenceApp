@@ -24,6 +24,14 @@ class _BasePagesState extends State<BasePages> {
   DateTime? currentBackPressTime;
 
   void onPopInvoked(bool canPop, Object? result) {
+    if (widget._navigationShell.currentIndex != 0) {
+      widget._navigationShell.goBranch(
+        0,
+        initialLocation: 0 == widget._navigationShell.currentIndex,
+      );
+      return;
+    }
+
     DateTime now = DateTime.now();
     if (currentBackPressTime == null ||
         now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
