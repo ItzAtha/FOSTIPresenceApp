@@ -3,6 +3,7 @@ import 'package:attendance_management/features/dashboard/widgets/scaled_switch_l
 import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/service/preferences_service.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -316,6 +317,7 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
                     setState(() {
                       selectedLanguage = value!;
                       context.setLocale(Locale(selectedLanguage.code));
+                      FlutterBackgroundService().invoke('update_locale', {'locale': selectedLanguage.code});
                     });
                   },
                   child: Column(
