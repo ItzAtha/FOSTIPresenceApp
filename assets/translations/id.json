@@ -189,9 +189,9 @@
   },
 
   "bluetooth_state": {
-    "connect": "Menghubungkan",
+    "connect": "Hubungkan",
     "connected": "Terhubung",
-    "disconnect": "Memutuskan",
+    "disconnect": "Putuskan",
     "disconnected": "Terputus"
   },
 
