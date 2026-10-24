@@ -6,12 +6,56 @@ import 'package:attendance_management/core/translations/locale_keys.g.dart';
 import 'package:attendance_management/routes/app_router.dart';
 import 'package:attendance_management/shared/service/ble_service.dart';
 import 'package:easy_localization/easy_localization.dart';
+
+// ignore: implementation_imports
+import 'package:easy_localization/src/easy_localization_controller.dart';
+
+// ignore: implementation_imports
+import 'package:easy_localization/src/localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_android/shared_preferences_android.dart';
+
+Future<void> initBackgroundLocalization([Locale? targetLocale]) async {
+  await EasyLocalization.ensureInitialized();
+
+  Locale localeToUse = targetLocale ?? const Locale('en');
+
+  if (targetLocale == null) {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    final savedLocale = prefs.getString('locale');
+    if (savedLocale != null && savedLocale.isNotEmpty) {
+      final parts = savedLocale.split('_');
+      localeToUse = parts.length > 1 ? Locale(parts[0], parts[1]) : Locale(parts[0]);
+    }
+  }
+
+  final controller = EasyLocalizationController(
+    saveLocale: true,
+    useFallbackTranslations: true,
+    useOnlyLangCode: true,
+    path: 'assets/translations',
+    supportedLocales: const [Locale('en'), Locale('id')],
+    fallbackLocale: const Locale('en'),
+    startLocale: localeToUse,
+    onLoadError: (e) {
+      debugPrint('[Background Localization Error] $e');
+    },
+    assetLoader: const RootBundleAssetLoader(),
+  );
+
+  await controller.loadTranslations();
+
+  Localization.load(
+    localeToUse,
+    translations: controller.translations,
+    fallbackTranslations: controller.fallbackTranslations,
+  );
+}
 
 @pragma('vm:entry-point')
 class AppBackgroundService {
@@ -65,6 +109,8 @@ class AppBackgroundService {
     DartPluginRegistrant.ensureInitialized();
     WidgetsFlutterBinding.ensureInitialized();
 
+    await initBackgroundLocalization();
+
     final localNotification = FlutterLocalNotificationsPlugin();
     const AndroidInitializationSettings initializationSettings = AndroidInitializationSettings(
       '@mipmap/launcher_icon',
@@ -93,6 +139,17 @@ class AppBackgroundService {
           debugPrint(
             "[Background Service] User position status updated: ${isAppInForeground ? 'Inside App' : 'Outside App'}",
           );
+        }
+      }
+    });
+
+    service.on('update_locale').listen((data) async {
+      if (data != null && data['locale'] != null) {
+        final String langCode = data['locale'] as String;
+        await initBackgroundLocalization(Locale(langCode));
+
+        if (kDebugMode) {
+          debugPrint("[Background Service] Locale dynamically updated to: $langCode");
         }
       }
     });
@@ -135,7 +192,7 @@ class AppBackgroundService {
             if (!isAppInForeground) {
               await localNotification.show(
                 id: bleNotificationId,
-                title: LocaleKeys.notification_bluetooth_title,
+                title: LocaleKeys.notification_bluetooth_title.tr(),
                 body: bleDescription.tr(namedArgs: {'name': bleName}),
                 notificationDetails: const NotificationDetails(
                   android: AndroidNotificationDetails(
@@ -152,7 +209,9 @@ class AppBackgroundService {
               return;
             }
 
-            service.invoke('ble_toast_callback', {'message': bleDescription});
+            service.invoke('ble_toast_callback', {
+              'message': bleDescription.tr(namedArgs: {'name': bleName}),
+            });
           },
           onError: (_, trace) {
             if (kDebugMode) {
@@ -217,6 +276,8 @@ class AppBackgroundService {
     Timer.periodic(const Duration(hours: 6), (timer) async {
       bool notifySIMExpired = await settingPrefs.getBool('notifySIMExpired') ?? false;
       if (!notifySIMExpired) return;
+
+      await initBackgroundLocalization();
 
       if (kDebugMode) {
         debugPrint("[Background Service] Checking SIM quota expired date....");
@@ -293,7 +354,9 @@ class AppBackgroundService {
               return;
             }
 
-            service.invoke('sim_toast_callback', {'message': simDescription});
+            service.invoke('sim_toast_callback', {
+              'message': simDescription.tr(namedArgs: {'remaining': daysRemaining.toString()}),
+            });
           }
         }
       }
